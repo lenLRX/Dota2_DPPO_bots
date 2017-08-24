@@ -1,5 +1,24 @@
 import torch
 import torch.multiprocessing as mp
+import threading
+
+class AtomicInteger:
+    def __init__(self):
+        self.val = 0
+        self.lock = threading.Lock()
+    
+    def getVal(self):
+        return self.val
+
+    def setVal(self,val):
+        self.lock.acquire()
+        self.val = val
+        self.lock.release()
+
+    def inc(self):
+        self.lock.acquire()
+        self.val += 1
+        self.lock.release()
 
 class TrafficLight:
     """used by chief to allow workers to run or not"""

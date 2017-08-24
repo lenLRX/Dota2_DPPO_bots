@@ -1,7 +1,5 @@
 import os
 import sys
-import gym
-from gym import wrappers
 import time
 from collections import deque
 import numpy as np
