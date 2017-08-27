@@ -87,20 +87,20 @@ def start_env():
 
 class Params():
     def __init__(self):
-        self.batch_size = 10
+        self.batch_size = 200
         self.lr = 3e-4
-        self.gamma = 0.5
+        self.gamma = 0.9
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.
-        self.num_epoch = 10
-        self.num_steps = 20
-        self.exploration_size = 40
+        self.num_epoch = 100
+        self.num_steps = 20000
+        self.exploration_size = 500
         self.num_processes = 4
         self.update_treshold = 2 - 1
         self.max_episode_length = 100
         self.seed = int(time.time())
-        self.num_inputs = 13
+        self.num_inputs = {"self_input":13,"ally_input":7}
         self.num_outputs = 2
 
 if __name__ == '__main__':

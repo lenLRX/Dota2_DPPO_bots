@@ -15,7 +15,8 @@ import torch.multiprocessing as mp
 from model import Model
 
 class ReplayMemory(object):
-    def __init__(self, capacity):
+    def __init__(self, params, capacity):
+        self.params = params
         self.capacity = capacity
         self.memory = []
 
@@ -30,7 +31,30 @@ class ReplayMemory(object):
 
     def sample(self, batch_size):
         samples = zip(*random.sample(self.memory, batch_size))
-        return map(lambda x: torch.cat(x, 0), samples)
+        _out = []
+        for _s in samples:
+            if isinstance(_s[0],dict):
+                _out_dict = {}
+                for k in self.params.num_inputs:
+                    _out_dict[k] = []
+                for _t in _s:
+                    for k in _t:
+                        if isinstance(_t[k],list):
+                            _out_dict[k].append(_t[k])
+                        else:
+                            _out_dict[k].append(_t[k].view(
+                                -1,self.params.num_inputs[k]))
+                for k in _out_dict:
+                    if not isinstance(_out_dict[k][0],list):
+                        #dont cat list
+                        _out_dict[k] = torch.cat(_out_dict[k],0)
+                    #print(_out_dict[k].size())
+                _out.append(_out_dict)
+            else:
+                #print(_s)
+                _out.append(torch.cat(_s,0))
+                #print(torch.cat(_s,0).size())
+        return _out
 
 def ensure_shared_grads(model, shared_model):
     for param, shared_param in zip(model.parameters(), shared_model.parameters()):
@@ -43,6 +67,21 @@ def normal(x, mu, std):
     b = 1/(2*std*np.pi).sqrt()
     return a*b
 
+def detach_state(state):
+    new_state = {}
+    for k in state:
+        if isinstance(state[k],list):
+            #print(state[k])
+            _temp = []
+            for t in state[k]:
+                _temp.append(t[0].detach())
+            new_state[k] = _temp
+        else:
+            new_state[k] = state[k].detach()
+    
+    return new_state
+
+
 class trainer(object):
     def __init__(self,params, shared_model, shared_grad_buffers, shared_obs_stats, atomicInt, ChiefConV):
         self.atomicInt = atomicInt
@@ -50,10 +89,12 @@ class trainer(object):
         torch.manual_seed(self.params.seed)
         self.model = Model(self.params.num_inputs,self.params.num_outputs)
 
-        self.memory = ReplayMemory(self.params.exploration_size)
+        self.memory = ReplayMemory(params,10000)
 
-        self.state = Variable(torch.Tensor(np.zeros((self.params.num_inputs))).unsqueeze(0))
-        self.done = True
+        self.state = {"self_input":[0 for x in range(self.params.num_inputs["self_input"])],
+                "ally_input":[[0 for x in range(self.params.num_inputs["ally_input"])]]}
+        
+        self.done = False
         self.episode_length = 0
         self.shared_model = shared_model
         self.shared_obs_stats = shared_obs_stats
@@ -64,21 +105,23 @@ class trainer(object):
 
         self.ChiefConV = ChiefConV
 
-        self.action_out = None
+        self.action_out = [0,0]
         self.state_tuple_in = None
+        self.flag = False
     
     def set_state(self,st):
-        self.get_state_Conv.acquire()
-        self.state_tuple_in = (st["state"]["self_input"],float(st["reward"]),st["first"] == "true")
-        self.get_state_Conv.notify()
-        self.get_state_Conv.release()
+        #self.get_state_Conv.acquire()
+        self.state_tuple_in = (st["state"],float(st["reward"]),st["done"] == "true")
+        #self.get_state_Conv.notify()
+        #self.get_state_Conv.release()
+        self.flag = True
         
     
     def get_action(self):
-        self.get_action_ConV.acquire()
+        #self.get_action_ConV.acquire()
         ret = self.action_out
-        self.get_action_ConV.notify()
-        self.get_action_ConV.release()
+        #self.get_action_ConV.notify()
+        #self.get_action_ConV.release()
         return ret
     
     def loop(self):
@@ -92,6 +135,9 @@ class trainer(object):
             self.reward_0 = 0
             self.t = -1
             while self.w < self.params.exploration_size:
+                if self.state_tuple_in == None:
+                    time.sleep(0.2)
+                    continue
                 print("explore %d"%self.w)
                 self.t += 1
                 self.states = []
@@ -115,16 +161,27 @@ class trainer(object):
                     self.actions.append(self.action)
                     self.values.append(v)
 
-                    self.get_action_ConV.acquire()
+                    #self.get_action_ConV.acquire()
                     self.action_out = self.action.data.squeeze().numpy()
-                    self.get_action_ConV.wait()
-                    self.get_action_ConV.release()
+                    #self.get_action_ConV.wait()
+                    #self.get_action_ConV.release()
 
-                    self.get_state_Conv.acquire()
-                    self.get_state_Conv.wait()
+                    #self.get_state_Conv.acquire()
+                    #self.get_state_Conv.wait()
+                    _start_time = time.time()
+                    while not self.flag:
+                        if time.time() - _start_time > 5:
+                            self.done = True
+                            break
+                    
+                    if self.done:
+                        break
+
+                    print(self.w)
+                    self.flag = False
                     self.state, self.reward, self.done = self.state_tuple_in
-                    self.get_state_Conv.release()
-                    self.state = Variable(torch.Tensor(np.asarray(self.state)).unsqueeze(0))
+                    #self.get_state_Conv.release()
+                    #self.state = Variable(torch.Tensor(np.asarray(self.state)).unsqueeze(0))
                     self.cum_reward += self.reward
                     self.rewards.append(self.reward)
                     if self.done:
@@ -134,6 +191,11 @@ class trainer(object):
                         self.episode_length = 0
                     if self.done:
                         break
+
+                self.state_tuple_in = None
+                self.done = False
+                if len(self.states) < 50:
+                    continue
                 R = torch.zeros(1, 1)
                 if not self.done:
                     _,_,v = self.model(self.state)
@@ -142,7 +204,7 @@ class trainer(object):
                 R = Variable(R)
                 A = Variable(torch.zeros(1, 1))
                 for i in reversed(range(len(self.rewards))):
-                    td = self.rewards[i] + self.params.gamma*self.values[i+1].data[0,0] - self.values[i].data[0,0]
+                    td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
                     A = float(td) + self.params.gamma*self.params.gae_param*A
                     self.advantages.insert(0, A)
                     R = A + self.values[i]
@@ -163,7 +225,7 @@ class trainer(object):
                 # new mini_batch
                 batch_states, batch_actions, batch_returns, batch_advantages = self.memory.sample(self.params.batch_size)
                 # old probas
-                mu_old, sigma_sq_old, v_pred_old = model_old(batch_states.detach())
+                mu_old, sigma_sq_old, v_pred_old = model_old(detach_state(batch_states))
                 probs_old = normal(batch_actions, mu_old, sigma_sq_old)
                 # new probas
                 mu, sigma_sq, v_pred = self.model(batch_states)
@@ -183,7 +245,7 @@ class trainer(object):
                 loss_ent = -self.params.ent_coeff*torch.mean(probs*torch.log(probs+1e-5))
                 # total
                 total_loss = (loss_clip + loss_value + loss_ent)
-                #print(total_loss.data[0])
+                print(total_loss.data[0])
                 # before step, update old_model:
                 model_old.load_state_dict(self.model.state_dict())
                 # prepare for step
