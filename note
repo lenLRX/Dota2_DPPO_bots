@@ -14,3 +14,10 @@ state reward          state reward)
 action
 http req--------------------------------
 state reward
+
+sample msg:
+{"done":"false","state":{"enemy_input":[[0,0,0,0,0,0,0]],"self_input":[38,1.2000000476837,1,500,500,273,273,45,0,0,0,-0.95714285714286,-0.95714341517857],"ally_input":[[0,0,0,0,0,0,0]],"side":"Radiant","enem
+y_hero_input":[0,0,0,0,0,0,0,0,0,0]},"seq_num":0,"reward":-0.01,"first":"true"}
+
+{"done":"false","state":{"enemy_input":[[0,0,0,0,0,0,0]],"self_input":[38,1.2000000476837,1,500,500,273,273,225,0,0,0,0.98571428571429,0.94999944196429],"ally_input":[[0,0,0,0,0,0,0]],"side":"Dire","enemy_he
+ro_input":[0,0,0,0,0,0,0,0,0,0]},"seq_num":0,"reward":-0.01,"first":"true"}

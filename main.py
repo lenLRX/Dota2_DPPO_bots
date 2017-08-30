@@ -19,6 +19,7 @@ from train import trainer
 from test import test
 from chief import chief
 from utils import TrafficLight, Counter,AtomicInteger
+from simulator import *
 
 dispatch_table = {}
 
@@ -68,6 +69,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         return obj["state"]["side"] , obj
 
     def dispatch(self,msg):
+        #print(msg)
         target , json_obj = self.get_target(msg)
         agent = dispatch_table[target]
         st = json_obj
@@ -83,6 +85,30 @@ def start_env():
     server = HTTPServer(('', port), RequestHandler)
     server.serve_forever()
 
+def start_simulator():
+    time.sleep(0.5)
+    config = Config()
+
+    count = 0
+
+    while True:
+        count += 1
+        print("%d simulated game starts!"%count)
+        dire_act = [0.0,0.0]
+        dire_sim = DotaSimulator(config.dire_init_pos)
+        dire_agent = dispatch_table["Dire"]
+
+        rad_act = [0.0,0.0]
+        rad_sim = DotaSimulator(config.rad_init_pos)
+        rad_agent = dispatch_table["Radiant"]
+
+        for i in range(400):
+            d_tup = dire_sim.step(dire_act)
+            dire_act = dire_agent.step(d_tup)
+
+            r_tup = rad_sim.step(rad_act)
+            rad_act = rad_agent.step(r_tup)
+        time.sleep(120)
 
 
 class Params():
@@ -142,4 +168,5 @@ if __name__ == '__main__':
     _thread.start_new_thread(rad_trainer.loop,())
     _thread.start_new_thread(dire_trainer.loop,())
 
-    start_env()
+    #start_env()
+    start_simulator()
