@@ -70,8 +70,8 @@ class RequestHandler(BaseHTTPRequestHandler):
     def dispatch(self,msg):
         target , json_obj = self.get_target(msg)
         agent = dispatch_table[target]
-        raw_act = agent.get_action()
-        agent.set_state(json_obj)
+        st = json_obj
+        raw_act = agent.step((st["state"],float(st["reward"]),st["done"] == "true"))
         return "%f %f"%(raw_act[0] * 1000,raw_act[1] * 1000)
 
     do_PUT = do_POST
@@ -89,13 +89,13 @@ class Params():
     def __init__(self):
         self.batch_size = 200
         self.lr = 3e-4
-        self.gamma = 0.9
+        self.gamma = 0.8
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.
         self.num_epoch = 100
         self.num_steps = 20000
-        self.exploration_size = 500
+        self.exploration_size = 50#make it small
         self.num_processes = 4
         self.update_treshold = 2 - 1
         self.max_episode_length = 100
@@ -104,7 +104,7 @@ class Params():
         self.num_outputs = 2
 
 if __name__ == '__main__':
-    os.environ["NO_CUDA"] = "1"
+    #os.environ["NO_CUDA"] = "1"
     params = Params()
     torch.manual_seed(params.seed)
 

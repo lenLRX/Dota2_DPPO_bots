@@ -1,0 +1,16 @@
+init state
+(action
+state reward)
+(action
+state reward)
+
+
+server:
+http req
+first state reward
+action               (last_action
+http req--------------------------------
+state reward          state reward)
+action
+http req--------------------------------
+state reward

@@ -8,8 +8,8 @@ import torch.multiprocessing as mp
 class Model(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
-        self.h_size_1 = 20
-        self.h_size_2 = 20
+        self.h_size_1 = 100
+        self.h_size_2 = 100
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2
         self.num_inputs = num_inputs
@@ -44,22 +44,17 @@ class Model(nn.Module):
         ally_creep_inputs = inputs["ally_input"]
         #print(ally_creep_inputs)
         avg_creep = None
-        if isinstance(ally_creep_inputs,list):
-            #print("training")
-            _temp = []
-            for item in ally_creep_inputs:
-                if isinstance(item,list):
-                    item = item[0]
-                _out1 = F.tanh(
-                        self.p_ally_creep_input(item)).view(-1,self.h_size_1)
-                _temp.append(
-                    torch.mean(_out1,0).view(-1,self.h_size_1))
-            avg_creep = torch.cat(_temp,0)
-        else:
-            print("err")
-            #print(tuple(ally_creep_inputs.size()))
-            avg_creep = torch.mean(F.tanh(self.p_ally_creep_input(ally_creep_inputs)),0).view(-1,self.h_size_1)
 
+        #print("training")
+        _temp = []
+        for item in ally_creep_inputs:
+            if isinstance(item,list):
+                item = item[0]
+            _out1 = F.tanh(
+                        self.p_ally_creep_input(item)).view(-1,self.h_size_1)
+            _temp.append(
+                    torch.mean(_out1,0).view(-1,self.h_size_1))
+        avg_creep = torch.cat(_temp,0)
         #print(self_input_out.size(),avg_creep.size())
 
         cat_out = F.tanh(
@@ -72,7 +67,7 @@ class Model(nn.Module):
         #print(cat_out)
         
         x = F.tanh(self.p_fc(cat_out))
-        mu = self.mu(x)
+        mu = F.tanh(self.mu(x))
         #print(mu,torch.exp(self.log_std).unsqueeze(0))
         log_std = torch.exp(self.log_std).unsqueeze(0).expand_as(mu)
         # critic
@@ -104,7 +99,7 @@ class Shared_obs_stats():
 
     def observes(self, obs):
         for k in self.num_inputs:
-            try:
+            if True:
                 obj = obs[k]
                 if isinstance(obj[0],list):
                     #nested
@@ -112,9 +107,6 @@ class Shared_obs_stats():
                         self._obs[k].observes(l)
                 else:
                     self._obs[k].observes(obj)
-            except Exception as e:
-                print(e)
-                print("error",k,obs[k])
 
     def normalize(self, inputs):
         _out = {}
@@ -132,16 +124,13 @@ class _s_Shared_obs_stats():
         self.mean = torch.zeros(num_inputs).share_memory_()
         self.mean_diff = torch.zeros(num_inputs).share_memory_()
         self.var = torch.zeros(num_inputs).share_memory_()
-        print(self.n.size())
 
     def observes(self, obs):
         # observation mean var updates
         #print(obs)
         #obs =  torch.FloatTensor(obs)
-        if not isinstance(obs,Variable):
-            #print(obs)
-            obs = Variable(torch.FloatTensor(obs))
-            #print(obs.size())
+
+        obs = Variable(torch.FloatTensor(obs))
         x = obs.data.squeeze()
         self.n += 1.
         last_mean = self.mean.clone()
@@ -150,10 +139,9 @@ class _s_Shared_obs_stats():
         self.var = torch.clamp(self.mean_diff/self.n, min=1e-2)
 
     def normalize(self, inputs):
-        if not isinstance(inputs,Variable):
-            inputs = Variable(torch.FloatTensor(inputs))
-            if len(inputs.size()) == 1:
-                inputs = torch.unsqueeze(inputs,0)
+        inputs = Variable(torch.FloatTensor(inputs))
+        if len(inputs.size()) == 1:
+            inputs = torch.unsqueeze(inputs,0)
         obs_mean = Variable(self.mean.unsqueeze(0).expand_as(inputs))
         obs_std = Variable(torch.sqrt(self.var).unsqueeze(0).expand_as(inputs))
         return torch.clamp((inputs-obs_mean)/obs_std, -5., 5.)
