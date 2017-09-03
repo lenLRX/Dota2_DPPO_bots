@@ -5,6 +5,10 @@ import time
 import threading
 import _thread
 
+import ptvsd
+ptvsd.enable_attach("dota2_bot", address = ('0.0.0.0', 3421))
+
+
 from http.server import BaseHTTPRequestHandler,HTTPServer
 import json
 
