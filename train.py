@@ -46,6 +46,8 @@ class ReplayMemory(object):
                         if not k == "self_input":
                             _out_dict[k].append(_t[k])
                         else:
+                            if isinstance(_t[k],list):
+                                print(_s,k)
                             _out_dict[k].append(_t[k].view(
                                 -1,self.params.num_inputs[k]))
                 for k in _out_dict:
@@ -123,6 +125,8 @@ class trainer(object):
         self.get_action_ConV = threading.Condition()
         self.get_state_Conv = threading.Condition()
 
+        self.is_training = False
+
         self.ChiefConV = ChiefConV
 
         self.action_out = [0,0]
@@ -133,6 +137,19 @@ class trainer(object):
         self.has_last_action = False
 
         self.reward_normalizer = _s_Shared_obs_stats(1)
+    
+    def notifyTrainingFinish(self):
+        while not self.is_training:
+            time.sleep(1)
+        self.is_training = False
+        print("notify training finish")
+    
+    def waitTraningFinish(self):
+        print("waiting training finish")
+        self.is_training = True
+        while self.is_training:
+            time.sleep(1)
+        print("waiting training finish done")
     
     def set_state(self,st):
         raise NotImplementedError()
@@ -296,3 +313,4 @@ class trainer(object):
                 self.ChiefConV.release()
 
             self.memory.clear()
+            self.notifyTrainingFinish()

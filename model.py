@@ -130,6 +130,8 @@ class _s_Shared_obs_stats():
         #print(obs)
         #obs =  torch.FloatTensor(obs)
 
+        return
+
         obs = Variable(torch.FloatTensor(obs))
         x = obs.data.squeeze()
         self.n += 1.
@@ -142,6 +144,7 @@ class _s_Shared_obs_stats():
         inputs = Variable(torch.FloatTensor(inputs))
         if len(inputs.size()) == 1:
             inputs = torch.unsqueeze(inputs,0)
+        return inputs
         obs_mean = Variable(self.mean.unsqueeze(0).expand_as(inputs))
         obs_std = Variable(torch.sqrt(self.var).unsqueeze(0).expand_as(inputs))
         return torch.clamp((inputs-obs_mean)/obs_std, -5., 5.)

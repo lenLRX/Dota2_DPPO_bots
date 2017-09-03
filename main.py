@@ -102,23 +102,27 @@ def start_simulator():
         rad_sim = DotaSimulator(config.rad_init_pos)
         rad_agent = dispatch_table["Radiant"]
 
-        for i in range(400):
+        for i in range(200):
             d_tup = dire_sim.step(dire_act)
+            print(d_tup)
             dire_act = dire_agent.step(d_tup)
 
             r_tup = rad_sim.step(rad_act)
+            print(r_tup)
             rad_act = rad_agent.step(r_tup)
-        time.sleep(120)
+        
+        rad_agent.waitTraningFinish()
+        dire_agent.waitTraningFinish()
 
 
 class Params():
     def __init__(self):
         self.batch_size = 200
-        self.lr = 3e-4
+        self.lr = 3e-5
         self.gamma = 0.8
         self.gae_param = 0.95
         self.clip = 0.2
-        self.ent_coeff = 0.
+        self.ent_coeff = 0.1
         self.num_epoch = 100
         self.num_steps = 20000
         self.exploration_size = 50#make it small
@@ -138,6 +142,10 @@ if __name__ == '__main__':
     counter = Counter()
 
     shared_model = Model(params.num_inputs, params.num_outputs)
+
+    if len(sys.argv) == 2:
+        shared_model.load_state_dict(torch.load(sys.argv[1]))
+
     shared_model.share_memory()
     shared_grad_buffers = Shared_grad_buffers(shared_model)
     #shared_grad_buffers.share_memory()
