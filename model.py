@@ -69,7 +69,7 @@ class Model(nn.Module):
         x = F.tanh(self.p_fc(cat_out))
         mu = F.tanh(self.mu(x))
         #print(mu,torch.exp(self.log_std).unsqueeze(0))
-        log_std = torch.exp(self.log_std).unsqueeze(0).expand_as(mu)
+        log_std = torch.exp(self.log_std - 5).unsqueeze(0).expand_as(mu)
         # critic
         x = F.tanh(self.v_fc(cat_out))
         v = self.v(x)

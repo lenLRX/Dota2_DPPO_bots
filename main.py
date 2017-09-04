@@ -108,11 +108,11 @@ def start_simulator():
 
         for i in range(200):
             d_tup = dire_sim.step(dire_act)
-            print(d_tup)
+            #print(d_tup)
             dire_act = dire_agent.step(d_tup)
 
             r_tup = rad_sim.step(rad_act)
-            print(r_tup)
+            #print(r_tup)
             rad_act = rad_agent.step(r_tup)
         
         rad_agent.waitTraningFinish()
@@ -127,7 +127,7 @@ class Params():
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
-        self.num_epoch = 100
+        self.num_epoch = 50
         self.num_steps = 20000
         self.exploration_size = 50#make it small
         self.num_processes = 4

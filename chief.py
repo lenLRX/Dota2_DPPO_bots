@@ -23,5 +23,5 @@ def chief(params, CheifConV, counter, shared_model, shared_grad_buffers, optimiz
             CheifConV.notify_all()
             CheifConV.release()
             print('update')
-            if i % 100 == 0:
+            if i % 1000 == 0:
                 torch.save(shared_model.state_dict(),"./model/" + str(i))

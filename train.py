@@ -177,7 +177,7 @@ class trainer(object):
 
         self.state, self.reward, self.done = state_tuple_in
         raw_reward = self.reward
-        _start_time = time.time()
+        #_start_time = time.time()
 
         self.shared_obs_stats.observes(self.state)
         self.state = self.shared_obs_stats.normalize(self.state)
@@ -189,7 +189,7 @@ class trainer(object):
 
         self.action_out = self.action.data.squeeze().numpy()
         self.action_spin_flag = True
-        print(time.time() - _start_time)
+        #print(time.time() - _start_time)
 
         self.cum_reward += self.reward
 
@@ -202,8 +202,8 @@ class trainer(object):
         self.last_action = self.action
         self.has_last_action = True
         
-        print("%d: action = %f %f value=%f reward = %f"%(
-            self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),raw_reward))
+        #print("%d: action = %f %f value=%f reward = %f"%(
+        #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),raw_reward))
         
         return self.action_out
 

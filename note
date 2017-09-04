@@ -1,3 +1,6 @@
+putty -L local-port:host:remote-port
+
+
 init state
 (action
 state reward)
