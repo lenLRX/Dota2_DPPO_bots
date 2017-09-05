@@ -106,7 +106,7 @@ def start_simulator():
         rad_sim = DotaSimulator(config.rad_init_pos)
         rad_agent = dispatch_table["Radiant"]
 
-        for i in range(200):
+        for i in range(2000):
             d_tup = dire_sim.step(dire_act)
             #print(d_tup)
             dire_act = dire_agent.step(d_tup)
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     test_n.share_memory_()
 
     atomic_counter = AtomicInteger()
-    CommonConV = threading.Condition()
+    CommonConV = threading.Barrier(3)
 
     rad_trainer = trainer(params,
     shared_model,shared_grad_buffers,shared_obs_stats,

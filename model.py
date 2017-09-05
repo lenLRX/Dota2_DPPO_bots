@@ -23,7 +23,7 @@ class Model(nn.Module):
         self.v_fc = nn.Linear(h_size_2, h_size_2)
 
         self.mu = nn.Linear(h_size_2, num_outputs)
-        self.log_std = nn.Parameter(torch.zeros(num_outputs))
+        self.log_std = nn.Parameter(torch.zeros(num_outputs) - 3)
         self.v = nn.Linear(h_size_2,1)
         for name, p in self.named_parameters():
             # init parameters
@@ -69,7 +69,7 @@ class Model(nn.Module):
         x = F.tanh(self.p_fc(cat_out))
         mu = F.tanh(self.mu(x))
         #print(mu,torch.exp(self.log_std).unsqueeze(0))
-        log_std = torch.exp(self.log_std - 5).unsqueeze(0).expand_as(mu)
+        log_std = torch.exp(self.log_std).unsqueeze(0).expand_as(mu)
         # critic
         x = F.tanh(self.v_fc(cat_out))
         v = self.v(x)

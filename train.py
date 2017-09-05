@@ -308,9 +308,7 @@ class trainer(object):
 
                 self.atomicInt.inc()
 
-                self.ChiefConV.acquire()
                 self.ChiefConV.wait()
-                self.ChiefConV.release()
 
             self.memory.clear()
             self.notifyTrainingFinish()
