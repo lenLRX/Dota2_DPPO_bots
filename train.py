@@ -184,7 +184,11 @@ class trainer(object):
         
         mu, sigma_sq, v = self.model(self.state)
         eps = torch.randn(mu.size())
-        self.action = (mu + sigma_sq.sqrt()*Variable(eps))
+
+        if np.random.rand() < 0.05:
+            self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(-1,2)
+        else:
+            self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         
 
         self.action_out = self.action.data.squeeze().numpy()

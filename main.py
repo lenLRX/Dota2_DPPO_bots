@@ -18,6 +18,8 @@ import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
 
+import numpy as np
+
 from model import Model, Shared_grad_buffers, Shared_obs_stats
 from train import trainer
 from test import test
@@ -106,7 +108,7 @@ def start_simulator():
         rad_sim = DotaSimulator(config.rad_init_pos)
         rad_agent = dispatch_table["Radiant"]
 
-        for i in range(2000):
+        for i in range(500):
             d_tup = dire_sim.step(dire_act)
             #print(d_tup)
             dire_act = dire_agent.step(d_tup)
@@ -127,7 +129,7 @@ class Params():
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
-        self.num_epoch = 50
+        self.num_epoch = 10
         self.num_steps = 20000
         self.exploration_size = 50#make it small
         self.num_processes = 4
@@ -138,7 +140,11 @@ class Params():
         self.num_outputs = 2
 
 if __name__ == '__main__':
-    #os.environ["NO_CUDA"] = "1"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action",help = "start_server or simulator")
+    parser.add_argument("--model",help = "path to pretrained model")
+    args = parser.parse_args()
+
     params = Params()
     torch.manual_seed(params.seed)
 
@@ -147,8 +153,8 @@ if __name__ == '__main__':
 
     shared_model = Model(params.num_inputs, params.num_outputs)
 
-    if len(sys.argv) == 2:
-        shared_model.load_state_dict(torch.load(sys.argv[1]))
+    if args.model != None:
+        shared_model.load_state_dict(torch.load(args.model))
 
     shared_model.share_memory()
     shared_grad_buffers = Shared_grad_buffers(shared_model)
@@ -180,5 +186,9 @@ if __name__ == '__main__':
     _thread.start_new_thread(rad_trainer.loop,())
     _thread.start_new_thread(dire_trainer.loop,())
 
-    #start_env()
-    start_simulator()
+    if args.action == "start_server":
+        start_env()
+    elif args.action == "simulator":
+        start_simulator()
+    else:
+        print("argument error")
