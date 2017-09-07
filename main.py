@@ -108,7 +108,7 @@ def start_simulator():
         rad_sim = DotaSimulator(config.rad_init_pos)
         rad_agent = dispatch_table["Radiant"]
 
-        for i in range(500):
+        for i in range(1000):
             d_tup = dire_sim.step(dire_act)
             #print(d_tup)
             dire_act = dire_agent.step(d_tup)
@@ -125,11 +125,11 @@ class Params():
     def __init__(self):
         self.batch_size = 200
         self.lr = 3e-5
-        self.gamma = 0.8
+        self.gamma = 0.0
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
-        self.num_epoch = 10
+        self.num_epoch = 20
         self.num_steps = 20000
         self.exploration_size = 50#make it small
         self.num_processes = 4
