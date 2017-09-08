@@ -279,7 +279,6 @@ class trainer(object):
                 self.model.zero_grad()
                 # new mini_batch
                 batch_states, batch_actions, batch_returns, batch_advantages = self.memory.sample(self.params.batch_size)
-                print(torch.mean(batch_returns,0))
                 # old probas
                 mu_old, sigma_sq_old, v_pred_old = model_old(detach_state(batch_states))
                 probs_old = normal(batch_actions, mu_old, sigma_sq_old)
@@ -301,7 +300,7 @@ class trainer(object):
                 loss_ent = -self.params.ent_coeff*torch.mean(probs*torch.log(probs+1e-5))
                 # total
                 total_loss = (loss_clip + loss_value + loss_ent)
-                print("training %d / %d loss = %f"%(k,self.params.num_epoch,total_loss.data[0]))
+                print("training %d / %d loss = %f"%(k,self.params.num_epoch,total_loss.data[0]),torch.mean(batch_returns,0))
                 # before step, update old_model:
                 model_old.load_state_dict(self.model.state_dict())
                 # prepare for step

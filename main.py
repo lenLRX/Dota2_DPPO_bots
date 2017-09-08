@@ -108,7 +108,7 @@ def start_simulator():
         rad_sim = DotaSimulator(config.rad_init_pos)
         rad_agent = dispatch_table["Radiant"]
 
-        for i in range(1000):
+        for i in range(100):
             d_tup = dire_sim.step(dire_act)
             #print(d_tup)
             dire_act = dire_agent.step(d_tup)
@@ -124,12 +124,12 @@ def start_simulator():
 class Params():
     def __init__(self):
         self.batch_size = 200
-        self.lr = 3e-5
+        self.lr = 3e-4
         self.gamma = 0.0
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
-        self.num_epoch = 20
+        self.num_epoch = 100
         self.num_steps = 20000
         self.exploration_size = 50#make it small
         self.num_processes = 4
@@ -143,6 +143,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("action",help = "start_server or simulator")
     parser.add_argument("--model",help = "path to pretrained model")
+    parser.add_argument("-i",help = "start iteration")
     args = parser.parse_args()
 
     params = Params()
@@ -153,8 +154,13 @@ if __name__ == '__main__':
 
     shared_model = Model(params.num_inputs, params.num_outputs)
 
+    num_iter = 0
+
     if args.model != None:
         shared_model.load_state_dict(torch.load(args.model))
+    
+    if args.i != None:
+        num_iter = args.i
 
     shared_model.share_memory()
     shared_grad_buffers = Shared_grad_buffers(shared_model)
@@ -181,7 +187,7 @@ if __name__ == '__main__':
 
     _thread.start_new_thread(chief,
     (params,CommonConV,atomic_counter,
-    shared_model,shared_grad_buffers,optimizer))
+    shared_model,shared_grad_buffers,optimizer,num_iter))
 
     _thread.start_new_thread(rad_trainer.loop,())
     _thread.start_new_thread(dire_trainer.loop,())
