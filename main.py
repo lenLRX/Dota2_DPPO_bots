@@ -91,11 +91,11 @@ def start_env():
     server = HTTPServer(('', port), RequestHandler)
     server.serve_forever()
 
-def start_simulator():
+def start_simulator(num_iter):
     time.sleep(0.5)
     config = Config()
 
-    count = 0
+    count = num_iter
 
     while True:
         count += 1
@@ -160,7 +160,7 @@ if __name__ == '__main__':
         shared_model.load_state_dict(torch.load(args.model))
     
     if args.i != None:
-        num_iter = args.i
+        num_iter = int(args.i)
 
     shared_model.share_memory()
     shared_grad_buffers = Shared_grad_buffers(shared_model)
@@ -195,6 +195,6 @@ if __name__ == '__main__':
     if args.action == "start_server":
         start_env()
     elif args.action == "simulator":
-        start_simulator()
+        start_simulator(num_iter)
     else:
         print("argument error")
