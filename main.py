@@ -108,7 +108,7 @@ def start_simulator(num_iter):
         rad_sim = DotaSimulator(config.rad_init_pos)
         rad_agent = dispatch_table["Radiant"]
 
-        for i in range(100):
+        for i in range(1000):
             d_tup = dire_sim.step(dire_act)
             #print(d_tup)
             dire_act = dire_agent.step(d_tup)
@@ -136,7 +136,7 @@ class Params():
         self.update_treshold = 2 - 1
         self.max_episode_length = 100
         self.seed = int(time.time())
-        self.num_inputs = {"self_input":13,"ally_input":7}
+        self.num_inputs = {"self_input":2,"ally_input":7}
         self.num_outputs = 2
 
 if __name__ == '__main__':
@@ -195,6 +195,6 @@ if __name__ == '__main__':
     if args.action == "start_server":
         start_env()
     elif args.action == "simulator":
-        start_simulator(num_iter)
+        start_simulator(num_iter / params.num_epoch)
     else:
         print("argument error")

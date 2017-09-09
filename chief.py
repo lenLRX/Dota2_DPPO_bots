@@ -19,5 +19,5 @@ def chief(params, CheifConV, atomic_counter, shared_model, shared_grad_buffers, 
             optimizer.step()
             shared_grad_buffers.reset()
             print('update')
-            if i % 200 == 0:
+            if i % 100 == 0:
                 torch.save(shared_model.state_dict(),"./model/" + str(i))

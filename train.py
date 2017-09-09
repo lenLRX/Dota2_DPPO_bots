@@ -207,7 +207,7 @@ class trainer(object):
         self.has_last_action = True
         
         #print("%d: action = %f %f value=%f reward = %f"%(
-        #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),raw_reward))
+        #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),raw_reward),sigma_sq.sqrt())
         
         return self.action_out
 

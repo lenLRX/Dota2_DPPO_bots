@@ -10,12 +10,13 @@ class Config(object):
         self.dire_init_pos = [0.98571428571429 * self.map_div,
             0.949999441964297 * self.map_div]
         self.velocity = 315
+        self.bound_length = 8000
 
 
 class DotaSimulator(object):
     def __init__(self,init_pos):
         self.config = Config()
-        self.self_input = [38,1.2000000476837,1,500,500,273,273,45,0,0,0,None,None]
+        self.self_input = [None,None]
         self.pos = init_pos[:]
         self.self_input[-1] = self.pos[-1] / self.config.map_div
         self.self_input[-2] = self.pos[-2] / self.config.map_div
@@ -43,14 +44,14 @@ class DotaSimulator(object):
             self.pos[0] += self.config.velocity * math.cos(a) * self.config.delta_time
             self.pos[1] += self.config.velocity * math.sin(a) * self.config.delta_time
 
-        if self.pos[0] > 7000.0:
-            self.pos[0] = 7000.0
-        if self.pos[1] > 7000.0:
-            self.pos[1] = 7000.0
-        if self.pos[0] < -7000.0:
-            self.pos[0] = -7000.0
-        if self.pos[1] < -7000.0:
-            self.pos[1] = -7000.0
+        if self.pos[0] > self.config.bound_length:
+            self.pos[0] = self.config.bound_length
+        if self.pos[1] > self.config.bound_length:
+            self.pos[1] = self.config.bound_length
+        if self.pos[0] < -self.config.bound_length:
+            self.pos[0] = -self.config.bound_length
+        if self.pos[1] < -self.config.bound_length:
+            self.pos[1] = -self.config.bound_length
 
         self.self_input[-1] = self.pos[-1] / self.config.map_div
         self.self_input[-2] = self.pos[-2] / self.config.map_div
