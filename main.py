@@ -79,6 +79,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         target , json_obj = self.get_target(msg)
         agent = dispatch_table[target]
         st = json_obj
+        st["state"]["self_input"] = st["state"]["self_input"][-2:]
         raw_act = agent.step((st["state"],float(st["reward"]),st["done"] == "true"))
         return "%f %f"%(raw_act[0] * 1000,raw_act[1] * 1000)
 
