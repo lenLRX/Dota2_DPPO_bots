@@ -25,7 +25,7 @@ from train import trainer
 from test import test
 from chief import chief
 from utils import TrafficLight, Counter,AtomicInteger
-from simulator import *
+from simulator.simulator import *
 
 dispatch_table = {}
 
@@ -94,7 +94,6 @@ def start_env():
 
 def start_simulator(num_iter):
     time.sleep(0.5)
-    config = Config()
 
     count = num_iter
 
@@ -102,11 +101,11 @@ def start_simulator(num_iter):
         count += 1
         print("%d simulated game starts!"%count)
         dire_act = [0.0,0.0]
-        dire_sim = DotaSimulator(config.dire_init_pos)
+        dire_sim = DotaSimulator(Config.dire_init_pos)
         dire_agent = dispatch_table["Dire"]
 
         rad_act = [0.0,0.0]
-        rad_sim = DotaSimulator(config.rad_init_pos)
+        rad_sim = DotaSimulator(Config.rad_init_pos)
         rad_agent = dispatch_table["Radiant"]
 
         for i in range(1000):
