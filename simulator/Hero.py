@@ -1,5 +1,5 @@
-from Config import Config
-from Sprite import Sprite
+from .Config import Config
+from .Sprite import Sprite
 
 HeroData = {}
 

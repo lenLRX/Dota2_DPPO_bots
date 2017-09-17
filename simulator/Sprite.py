@@ -1,13 +1,14 @@
 import numpy as np
-from Config import Config
-from Event import Event
+from .Config import Config
+from .Event import Event
 import math
 import sys
 
 class Sprite(object):
-    def __init__(self, Engine, loc, HP, MP, Speed, Armor,
+    def __init__(self, Engine, side, loc, HP, MP, Speed, Armor,
                  ATK, ATKRange, SightRange, Bounty, EXP, BAT, AS):
         self.Engine = Engine
+        self.side = side
         self.location = loc
         self.HP = HP
         self.MP = MP
@@ -38,7 +39,8 @@ class Sprite(object):
         raise NotImplementedError
     
     def pos_in_wnd(self):
-        return (self.location[0] * Config.game2window_scale,self.location[1] * Config.game2window_scale)
+        return (self.location[0] * Config.game2window_scale * 0.5 + Config.windows_size * 0.5,
+            self.location[1] * Config.game2window_scale * 0.5 + Config.windows_size * 0.5)
     
     def attack(self,target):
         self.LastAttackTime = self.Engine.get_time()
@@ -51,7 +53,7 @@ class Sprite(object):
             return
 
         dx = self.move_target[0] - self.location[0]
-        dy = self.move_target[0] - self.location[1]
+        dy = self.move_target[1] - self.location[1]
 
         a  = math.atan2(dy,dx)
 
@@ -75,3 +77,10 @@ class Sprite(object):
             self.location[0] = -Config.bound_length
         if self.location[1] < -Config.bound_length:
             self.location[1] = -Config.bound_length
+    
+    @staticmethod
+    def S2Sdistance(s1,s2):
+        dx = s1.location[0] - s2.location[0]
+        dy = s1.location[1] - s2.location[1]
+        return math.sqrt(dx * dx + dy * dy)
+    

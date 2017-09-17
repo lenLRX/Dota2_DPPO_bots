@@ -1,16 +1,19 @@
 #we can use simulator to train the bots
 import math
 import sys
-from Config import Config
-from Event import Event, EventQueue
-from Creep import Creep
+from .Config import Config
+from .Event import Event, EventQueue
+from .Creep import Creep
+from .Sprite import Sprite
 
-def spawn_fn(engine):
-    engine.sprites += [Creep("Radiant","MeleeCreep") for i in range(5)]
-    engine.sprites += [Creep("Dire","MeleeCreep") for i in range(5)]
+def spawn_fn(engine, t):
+    print("spawn")
+    engine.sprites += [Creep(engine,"Radiant","MeleeCreep") for i in range(1)]
+    engine.sprites += [Creep(engine,"Dire","MeleeCreep") for i in range(1)]
+    engine.event_queue.enqueue(Event(t + 30,spawn_fn,(engine, t + 30)))
 
 class DotaSimulator(object):
-    def __init__(self,init_pos):
+    def __init__(self, init_pos, canvas = None):
         self.self_input = [None,None]
         self.pos = init_pos[:]
         self.self_input[-1] = self.pos[-1] / Config.map_div
@@ -22,7 +25,9 @@ class DotaSimulator(object):
         self.event_queue = EventQueue()
         self.sprites = []
 
-        self.event_queue.enqueue(Event(30.0,spawn_fn,self))
+        self.canvas = canvas
+
+        self.event_queue.enqueue(Event(30.0,spawn_fn,(self,30.0)))
     
     def d(self):
         dist2_0_0 = math.hypot(self.pos[0],self.pos[1])
@@ -35,16 +40,24 @@ class DotaSimulator(object):
         self.last_d = _d
         return r
 
-    def draw(self, canvas):
+    def draw(self):
         for sprite in self.sprites:
-            sprite.draw(canvas)
+            sprite.draw()
+    
+    def tick_tick(self):
+        self.tick_time += self.delta_tick
+    
+    def get_time(self):
+        return self.tick_time
 
     def loop(self):
+        print("time",self.tick_time)
         #process events
         while True:
             event = self.event_queue.fetch(self.tick_time)
             if event != None:
                 event.activate()
+                print("activate")
             else:
                 break
         
@@ -87,4 +100,13 @@ class DotaSimulator(object):
         done = False
 
         return (state,reward,done)
+
     
+    def get_nearest_enemy(self, sprite):
+        ret_pair = []
+        for s in self.sprites:
+            if s.side != sprite.side:
+                tmp_d = Sprite.S2Sdistance(sprite,s)
+                if tmp_d <= sprite.SightRange:
+                    ret_pair.append((s,tmp_d))
+        return sorted(ret_pair,key=lambda x:x[1])

@@ -26,6 +26,7 @@ from test import test
 from chief import chief
 from utils import TrafficLight, Counter,AtomicInteger
 from simulator.simulator import *
+from simulator.visualizer import visualize
 
 dispatch_table = {}
 
@@ -197,4 +198,5 @@ if __name__ == '__main__':
     elif args.action == "simulator":
         start_simulator(num_iter / params.num_epoch)
     else:
-        print("argument error")
+        visualize()
+        #print("argument error")
