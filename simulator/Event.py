@@ -9,7 +9,9 @@ class Event(object):
     def activate(self):
         self.callback(*self.args)
         
-    
+    def __lt__(self, other):
+        return self.time < other.time
+
     def __cmp__(self, other):
         return self.time - other.time
 

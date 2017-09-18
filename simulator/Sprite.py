@@ -1,6 +1,8 @@
 import numpy as np
 from .Config import Config
 from .Event import Event
+from .Events import *
+
 import math
 import sys
 
@@ -8,6 +10,8 @@ class Sprite(object):
     def __init__(self, Engine, side, loc, HP, MP, Speed, Armor,
                  ATK, ATKRange, SightRange, Bounty, EXP, BAT, AS):
         self.Engine = Engine
+        self.canvas = self.Engine.canvas
+        self.v_handle = None
         self.side = side
         self.location = loc
         self.HP = HP
@@ -44,6 +48,7 @@ class Sprite(object):
     
     def attack(self,target):
         self.LastAttackTime = self.Engine.get_time()
+        AttackEvent.Create(self,target)
     
     def set_move(self,target):
         self.move_target = target
@@ -77,6 +82,17 @@ class Sprite(object):
             self.location[0] = -Config.bound_length
         if self.location[1] < -Config.bound_length:
             self.location[1] = -Config.bound_length
+    
+    def damadged(self, dmg, dmg_type = None):
+        #TODO
+        self.HP -= dmg
+        if self.HP <= 0.0:
+            print("I'm Dead")
+            self.dead()
+    
+    def dead(self):
+        if self.v_handle != None:
+            self.canvas.delete(self.v_handle)
     
     @staticmethod
     def S2Sdistance(s1,s2):

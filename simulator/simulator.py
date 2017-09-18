@@ -10,7 +10,7 @@ def spawn_fn(engine, t):
     print("spawn")
     engine.sprites += [Creep(engine,"Radiant","MeleeCreep") for i in range(1)]
     engine.sprites += [Creep(engine,"Dire","MeleeCreep") for i in range(1)]
-    engine.event_queue.enqueue(Event(t + 30,spawn_fn,(engine, t + 30)))
+    #engine.event_queue.enqueue(Event(t + 30,spawn_fn,(engine, t + 30)))
 
 class DotaSimulator(object):
     def __init__(self, init_pos, canvas = None):
@@ -66,6 +66,14 @@ class DotaSimulator(object):
         
         for sprite in self.sprites:
             sprite.move()
+        
+        dead_sprites = []
+        for sprite in self.sprites:
+            if sprite.HP <= 0.0:
+                dead_sprites.append(sprite)
+        
+        for d in dead_sprites:
+            self.sprites.remove(d)
     
     def step(self,action):
         a  = math.atan2(*action)

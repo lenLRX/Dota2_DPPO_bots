@@ -45,8 +45,8 @@ class Creep(Sprite):
 
         p = self.pos_in_wnd()
 
-        if Engine.canvas != None:
-            self.v_handle = Engine.canvas.create_rectangle(p[0] - self.vis_r,
+        if self.Engine.canvas != None:
+            self.v_handle = self.Engine.canvas.create_rectangle(p[0] - self.vis_r,
                             p[1] + self.vis_r,
                             p[0] + self.vis_r,
                             p[1] - self.vis_r,
