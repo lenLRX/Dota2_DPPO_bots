@@ -31,7 +31,7 @@ HeroData["visualize"] = {
 }
 
 class Hero(Sprite):
-    def __init__(self, side, type_name):
+    def __init__(self, Engine, side, type_name):
         super().__init__(loc = HeroData[side]["init_loc"],
                         **HeroData[type_name])
         
@@ -39,6 +39,14 @@ class Hero(Sprite):
         self.vis_r = HeroData["visualize"]["radius"]
         self.color = Config.Colors[self.side]
         self.move_order = (0.0,0.0)
+
+        if self.Engine.canvas != None:
+            p = self.pos_in_wnd()
+            self.v_handle = self.Engine.canvas.create_oval(p[0] - self.vis_r,
+                            p[1] + self.vis_r,
+                            p[0] + self.vis_r,
+                            p[1] - self.vis_r,
+                            fill = self.color)
     
     def step(self):
         p = (self.move_order[0] + self.location[0],
@@ -46,9 +54,11 @@ class Hero(Sprite):
         self.set_move(p)
     
     def draw(self, canvas):
-        p = self.pos_in_wnd()
-        canvas.create_oval(p[0] - self.vis_r,
-                           p[1] + self.vis_r,
-                           p[0] + self.vis_r,
-                           p[1] - self.vis_r,
-                           fill = self.color)
+        if self.Engine.canvas != None:
+            p = self.pos_in_wnd()
+            self.Engine.canvas.coords(
+                            self.v_handle,
+                            p[0] - self.vis_r,
+                            p[1] + self.vis_r,
+                            p[0] + self.vis_r,
+                            p[1] - self.vis_r)

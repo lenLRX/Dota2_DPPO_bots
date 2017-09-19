@@ -43,9 +43,8 @@ class Creep(Sprite):
         self.vis_r = CreepData["visualize"]["radius"]
         self.color = Config.Colors[self.side]
 
-        p = self.pos_in_wnd()
-
         if self.Engine.canvas != None:
+            p = self.pos_in_wnd()
             self.v_handle = self.Engine.canvas.create_rectangle(p[0] - self.vis_r,
                             p[1] + self.vis_r,
                             p[0] + self.vis_r,
@@ -53,7 +52,7 @@ class Creep(Sprite):
                             fill = self.color)
     
     def step(self):
-        if self.Engine.get_time() - self.LastAttackTime < self.AttackTime:
+        if self.isAttacking():
             #in Attack animation
             return
         nearby_enemy = self.Engine.get_nearest_enemy(self)

@@ -13,6 +13,7 @@ class Sprite(object):
         self.canvas = self.Engine.canvas
         self.v_handle = None
         self.side = side
+        self.isDead = False
         self.location = loc
         self.HP = HP
         self.MP = MP
@@ -50,11 +51,18 @@ class Sprite(object):
         self.LastAttackTime = self.Engine.get_time()
         AttackEvent.Create(self,target)
     
+    def isAttacking(self):
+        return self.Engine.get_time() - self.LastAttackTime < self.AttackTime
+    
     def set_move(self,target):
         self.move_target = target
     
     def move(self):
         if self.move_target is None:
+            return
+
+        #Sprite cant move when it is attacking
+        if self.isAttacking():
             return
 
         dx = self.move_target[0] - self.location[0]
@@ -85,12 +93,16 @@ class Sprite(object):
     
     def damadged(self, dmg, dmg_type = None):
         #TODO
+        if self.isDead:
+            return False
         self.HP -= dmg
         if self.HP <= 0.0:
             print("I'm Dead")
             self.dead()
+        return True
     
     def dead(self):
+        self.isDead = True
         if self.v_handle != None:
             self.canvas.delete(self.v_handle)
     

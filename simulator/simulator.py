@@ -8,8 +8,8 @@ from .Sprite import Sprite
 
 def spawn_fn(engine, t):
     print("spawn")
-    engine.sprites += [Creep(engine,"Radiant","MeleeCreep") for i in range(1)]
-    engine.sprites += [Creep(engine,"Dire","MeleeCreep") for i in range(1)]
+    engine.sprites += [Creep(engine,"Radiant","MeleeCreep") for i in range(5)]
+    engine.sprites += [Creep(engine,"Dire","MeleeCreep") for i in range(5)]
     #engine.event_queue.enqueue(Event(t + 30,spawn_fn,(engine, t + 30)))
 
 class DotaSimulator(object):
