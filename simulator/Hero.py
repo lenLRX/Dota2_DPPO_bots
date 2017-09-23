@@ -13,17 +13,17 @@ HeroData["ShadowFiend"] = \
     "ATKRange":500,
     "SightRange":1800,
     "Bounty":200,
-    "EXP":200,
+    "bountyEXP":200,
     "BAT":1.7,
     "AS":120
 }
 
 HeroData["Radiant"] = {
-    "init_loc":(-7205 / Config.map_div, -6610 / Config.map_div)
+    "init_loc":(-7205, -6610)
 }
 
 HeroData["Dire"] = {
-    "init_loc":(7000 / Config.map_div, 6475 / Config.map_div)
+    "init_loc":(7000, 6475)
 }
 
 HeroData["visualize"] = {
@@ -32,13 +32,14 @@ HeroData["visualize"] = {
 
 class Hero(Sprite):
     def __init__(self, Engine, side, type_name):
-        super().__init__(loc = HeroData[side]["init_loc"],
+        super().__init__(Engine, side = side, loc = HeroData[side]["init_loc"],
                         **HeroData[type_name])
         
-        self.side = side
         self.vis_r = HeroData["visualize"]["radius"]
         self.color = Config.Colors[self.side]
         self.move_order = (0.0,0.0)
+
+        self.last_exp = 0
 
         if self.Engine.canvas != None:
             p = self.pos_in_wnd()
@@ -53,7 +54,24 @@ class Hero(Sprite):
              self.move_order[1] + self.location[1])
         self.set_move(p)
     
-    def draw(self, canvas):
+    def get_state_tup(self):
+        state = {}
+        state["self_input"] = \
+            [p / Config.map_div for p in self.location]
+        
+        nearby_ally = self.Engine.get_nearby_ally(self)
+        ally_locations = [_ut[0] for _ut in nearby_ally]
+        state["ally_input"] = [
+            [p.location[0] / Config.map_div,p.location[1] / Config.map_div] for p in ally_locations
+        ]
+
+
+        reward = self.exp - self.last_exp
+        done = self.isDead
+
+        return (state, reward, done)
+    
+    def draw(self):
         if self.Engine.canvas != None:
             p = self.pos_in_wnd()
             self.Engine.canvas.coords(

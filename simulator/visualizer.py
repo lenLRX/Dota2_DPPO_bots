@@ -5,13 +5,26 @@ from .simulator import DotaSimulator
 master = Tk()
 canvas = None
 _engine = None
-def visualize():
+def _visualize():
     global canvas,_engine,master
     canvas = Canvas(master,width = Config.windows_size, height = Config.windows_size)
     eng = DotaSimulator(Config.dire_init_pos,canvas = canvas)
     canvas.pack()
     _engine = eng
     master.after(0,loop)
+    master.mainloop()
+
+def tk_main_loop(tup):
+    global canvas,_engine
+    fn, num_iter = tup
+    fn.send((num_iter, canvas))
+    master.after(1, tk_main_loop, (fn, num_iter))
+
+def visualize(fn, num_iter):
+    global canvas,_engine,master
+    canvas = Canvas(master,width = Config.windows_size, height = Config.windows_size)
+    canvas.pack()
+    master.after(1,tk_main_loop,(fn,num_iter))
     master.mainloop()
 
 def loop():

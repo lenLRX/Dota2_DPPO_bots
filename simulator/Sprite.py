@@ -8,7 +8,7 @@ import sys
 
 class Sprite(object):
     def __init__(self, Engine, side, loc, HP, MP, Speed, Armor,
-                 ATK, ATKRange, SightRange, Bounty, EXP, BAT, AS):
+                 ATK, ATKRange, SightRange, Bounty, bountyEXP, BAT, AS):
         self.Engine = Engine
         self.canvas = self.Engine.canvas
         self.v_handle = None
@@ -25,9 +25,10 @@ class Sprite(object):
         self.AttackRange = ATKRange
         self.SightRange = SightRange
         self.Bounty = Bounty
-        self.EXP = EXP
+        self.bountyEXP = bountyEXP
         self.LastAttackTime = -1
         self.AttackTime = None
+        self.exp = 0
 
         self.move_target  = None
 
@@ -105,6 +106,9 @@ class Sprite(object):
         self.isDead = True
         if self.v_handle != None:
             self.canvas.delete(self.v_handle)
+        for s in self.Engine.sprites:
+            s.exp += self.bountyEXP
+
     
     @staticmethod
     def S2Sdistance(s1,s2):

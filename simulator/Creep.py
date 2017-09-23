@@ -16,7 +16,7 @@ CreepData["MeleeCreep"] = \
     "ATKRange":100,
     "SightRange":750,
     "Bounty":36,
-    "EXP":40,
+    "bountyEXP":40,
     "BAT":1,
     "AS":100
 }
@@ -55,7 +55,7 @@ class Creep(Sprite):
         if self.isAttacking():
             #in Attack animation
             return
-        nearby_enemy = self.Engine.get_nearest_enemy(self)
+        nearby_enemy = self.Engine.get_nearby_enemy(self)
         if len(nearby_enemy) > 0:
             #Enemy in Sight, go to attack it
             target = nearby_enemy[0]

@@ -4,13 +4,14 @@ import sys
 from .Config import Config
 from .Event import Event, EventQueue
 from .Creep import Creep
+from .Hero import Hero
 from .Sprite import Sprite
 
 def spawn_fn(engine, t):
     print("spawn")
-    engine.sprites += [Creep(engine,"Radiant","MeleeCreep") for i in range(5)]
-    engine.sprites += [Creep(engine,"Dire","MeleeCreep") for i in range(5)]
-    #engine.event_queue.enqueue(Event(t + 30,spawn_fn,(engine, t + 30)))
+    engine.sprites += [Creep(engine,"Radiant","MeleeCreep") for i in range(1)]
+    engine.sprites += [Creep(engine,"Dire","MeleeCreep") for i in range(1)]
+    engine.event_queue.enqueue(Event(t + 30,spawn_fn,(engine, t + 30)))
 
 class DotaSimulator(object):
     def __init__(self, init_pos, canvas = None):
@@ -28,6 +29,9 @@ class DotaSimulator(object):
         self.canvas = canvas
 
         self.event_queue.enqueue(Event(30.0,spawn_fn,(self,30.0)))
+    
+    def add_hero(self, hero):
+        self.sprites.append(hero)
     
     def d(self):
         dist2_0_0 = math.hypot(self.pos[0],self.pos[1])
@@ -51,13 +55,12 @@ class DotaSimulator(object):
         return self.tick_time
 
     def loop(self):
-        print("time",self.tick_time)
         #process events
         while True:
             event = self.event_queue.fetch(self.tick_time)
             if event != None:
                 event.activate()
-                print("activate")
+                #print("activate")
             else:
                 break
         
@@ -108,13 +111,25 @@ class DotaSimulator(object):
         done = False
 
         return (state,reward,done)
-
     
-    def get_nearest_enemy(self, sprite):
+    def get_nearby_enemy(self, sprite, _range = None):
         ret_pair = []
+        if _range == None:
+            _range = sprite.SightRange
         for s in self.sprites:
             if s.side != sprite.side:
                 tmp_d = Sprite.S2Sdistance(sprite,s)
-                if tmp_d <= sprite.SightRange:
+                if tmp_d <= _range:
+                    ret_pair.append((s,tmp_d))
+        return sorted(ret_pair,key=lambda x:x[1])
+
+    def get_nearby_ally(self, sprite, _range = None):
+        ret_pair = []
+        if _range == None:
+            _range = sprite.SightRange
+        for s in self.sprites:
+            if s.side == sprite.side:
+                tmp_d = Sprite.S2Sdistance(sprite,s)
+                if tmp_d <= _range:
                     ret_pair.append((s,tmp_d))
         return sorted(ret_pair,key=lambda x:x[1])

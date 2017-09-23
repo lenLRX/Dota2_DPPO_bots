@@ -5,8 +5,8 @@ import time
 import threading
 import _thread
 
-import ptvsd
-ptvsd.enable_attach("dota2_bot", address = ('0.0.0.0', 3421))
+#import ptvsd
+#ptvsd.enable_attach("dota2_bot", address = ('0.0.0.0', 3421))
 
 
 from http.server import BaseHTTPRequestHandler,HTTPServer
@@ -121,6 +121,57 @@ def start_simulator(num_iter):
         rad_agent.waitTraningFinish()
         dire_agent.waitTraningFinish()
 
+def start_simulator2():
+    time.sleep(0.5)
+
+    yield
+
+    num_iter, canvas = yield
+
+    count = num_iter
+
+    from simulator.Hero import Hero
+
+    while True:
+        eng = DotaSimulator(Config.dire_init_pos,canvas = canvas)
+        _engine = eng
+        count += 1
+        print("%d simulated game starts!"%count)
+        dire_act = [0.0,0.0]
+        rad_act = [0.0,0.0]
+        dire_agent = dispatch_table["Dire"]
+        rad_agent = dispatch_table["Radiant"]
+
+        dire_hero = Hero(_engine, "Dire", "ShadowFiend")
+        rad_hero = Hero(_engine, "Radiant", "ShadowFiend")
+
+        _engine.add_hero(dire_hero)
+        _engine.add_hero(rad_hero)
+
+        while True:
+            print(_engine.get_time())
+            dire_hero.move_order = (dire_act[0],dire_act[1])
+            rad_hero.move_order = (rad_act[0],rad_act[1])
+
+            _engine.loop()
+            _engine.draw()
+            canvas.update_idletasks()
+            _engine.tick_tick()
+
+            d_tup = dire_hero.get_state_tup()
+            r_tup = rad_hero.get_state_tup()
+
+            dire_act = dire_agent.step(d_tup)
+            rad_act = rad_agent.step(r_tup)
+
+            yield
+
+            if dire_hero.isDead or rad_hero.isDead:
+                break
+        
+        rad_agent.waitTraningFinish()
+        dire_agent.waitTraningFinish()
+
 
 class Params():
     def __init__(self):
@@ -137,7 +188,7 @@ class Params():
         self.update_treshold = 2 - 1
         self.max_episode_length = 100
         self.seed = int(time.time())
-        self.num_inputs = {"self_input":2,"ally_input":7}
+        self.num_inputs = {"self_input":2,"ally_input":2}
         self.num_outputs = 2
 
 if __name__ == '__main__':
@@ -197,6 +248,8 @@ if __name__ == '__main__':
         start_env()
     elif args.action == "simulator":
         start_simulator(num_iter / params.num_epoch)
-    else:
-        visualize()
+    elif args.action == "simulator2":
+        g = start_simulator2()
+        g.send(None)
+        visualize(g, num_iter / params.num_epoch)
         #print("argument error")
