@@ -132,6 +132,16 @@ def start_simulator2():
 
     from simulator.Hero import Hero
 
+    def dist2mid(pos):
+        return math.hypot(pos[0],pos[1])
+
+    def reward(last, now, a):
+        _d = dist2mid(now)
+        _ld = dist2mid(last)
+        return (_ld - _d) * 0.01 * a
+
+    discount_factor = 1.0
+
     while True:
         eng = DotaSimulator(Config.dire_init_pos,canvas = canvas)
         _engine = eng
@@ -145,24 +155,38 @@ def start_simulator2():
         dire_hero = Hero(_engine, "Dire", "ShadowFiend")
         rad_hero = Hero(_engine, "Radiant", "ShadowFiend")
 
+        last_dire_location = dire_hero.location
+        last_rad_location = rad_hero.location
+
         _engine.add_hero(dire_hero)
         _engine.add_hero(rad_hero)
 
-        while True:
-            print(_engine.get_time())
-            dire_hero.move_order = (dire_act[0],dire_act[1])
-            rad_hero.move_order = (rad_act[0],rad_act[1])
+        
+
+        while _engine.get_time() < 600:
+            dire_hero.move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
+            rad_hero.move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
+
+            print(_engine.get_time(),rad_act,dire_act)
 
             _engine.loop()
-            _engine.draw()
-            canvas.update_idletasks()
+            if _engine.canvas != None:
+                _engine.draw()
+                canvas.update_idletasks()
             _engine.tick_tick()
 
             d_tup = dire_hero.get_state_tup()
             r_tup = rad_hero.get_state_tup()
 
-            dire_act = dire_agent.step(d_tup)
-            rad_act = rad_agent.step(r_tup)
+            dire_act = dire_agent.step((d_tup[0],
+                d_tup[1] + reward(last_dire_location,
+                dire_hero.location,discount_factor),
+                d_tup[2]))
+            
+            rad_act = rad_agent.step((r_tup[0],
+                r_tup[1] + reward(last_rad_location,
+                rad_hero.location, discount_factor),
+                r_tup[2]))
 
             yield
 
@@ -171,6 +195,11 @@ def start_simulator2():
         
         rad_agent.waitTraningFinish()
         dire_agent.waitTraningFinish()
+
+        if discount_factor >= 0.0:
+            discount_factor -= 0.01
+        else:
+            discount_factor = 0.0
 
 
 class Params():
@@ -248,8 +277,15 @@ if __name__ == '__main__':
         start_env()
     elif args.action == "simulator":
         start_simulator(num_iter / params.num_epoch)
-    elif args.action == "simulator2":
+    elif args.action == "simulator2_viz":
         g = start_simulator2()
         g.send(None)
         visualize(g, num_iter / params.num_epoch)
         #print("argument error")
+    elif args.action == "simulator2":
+        g = start_simulator2()
+        g.send(None)
+        g.send(None)
+        g.send((num_iter / params.num_epoch, None))
+        while True:
+            g.send(None)

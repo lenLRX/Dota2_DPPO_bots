@@ -84,13 +84,13 @@ class Sprite(object):
                             self.location[1] + d * math.sin(a))
             
         if self.location[0] > Config.bound_length:
-            self.location[0] = Config.bound_length
+            self.location = (Config.bound_length, self.location[1])
         if self.location[1] > Config.bound_length:
-            self.location[1] = Config.bound_length
+            self.location = (self.location[0], Config.bound_length)
         if self.location[0] < -Config.bound_length:
-            self.location[0] = -Config.bound_length
+            self.location = (-Config.bound_length, self.location[1])
         if self.location[1] < -Config.bound_length:
-            self.location[1] = -Config.bound_length
+            self.location = (self.location[0], -Config.bound_length)
     
     def damadged(self, dmg, dmg_type = None):
         #TODO
@@ -107,7 +107,8 @@ class Sprite(object):
         if self.v_handle != None:
             self.canvas.delete(self.v_handle)
         for s in self.Engine.sprites:
-            s.exp += self.bountyEXP
+            if Sprite.S2Sdistance(self, s) <= 1300:
+                s.exp += self.bountyEXP
 
     
     @staticmethod
