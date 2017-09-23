@@ -26,7 +26,12 @@ from test import test
 from chief import chief
 from utils import TrafficLight, Counter,AtomicInteger
 from simulator.simulator import *
-from simulator.visualizer import visualize
+try:
+    from simulator.visualizer import visualize
+except Exception:
+    print("running without tkinter")
+finally:
+    pass
 
 dispatch_table = {}
 
