@@ -107,8 +107,9 @@ class Sprite(object):
         if self.v_handle != None:
             self.canvas.delete(self.v_handle)
         for s in self.Engine.sprites:
-            if Sprite.S2Sdistance(self, s) <= 1300:
+            if s.side != self.side and Sprite.S2Sdistance(self, s) <= 1300:
                 s.exp += self.bountyEXP
+                print(s,"get exp")
 
     
     @staticmethod
