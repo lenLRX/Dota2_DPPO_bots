@@ -6,6 +6,7 @@ from .Event import Event, EventQueue
 from .Creep import Creep
 from .Hero import Hero
 from .Sprite import Sprite
+from .Tower import Tower
 
 def spawn_fn(engine, t):
     print("spawn")
@@ -16,6 +17,7 @@ def spawn_fn(engine, t):
 class DotaSimulator(object):
     def __init__(self, init_pos, canvas = None):
         self.self_input = [None,None]
+        self.canvas = canvas
         self.pos = init_pos[:]
         self.self_input[-1] = self.pos[-1] / Config.map_div
         self.self_input[-2] = self.pos[-2] / Config.map_div
@@ -26,7 +28,17 @@ class DotaSimulator(object):
         self.event_queue = EventQueue()
         self.sprites = []
 
-        self.canvas = canvas
+        rad_t1towers = [Tower(self, "Radiant", "Tier1Tower", loc = (-1661,-1505)),\
+            Tower(self, "Radiant", "Tier1Tower", loc = (-6254, 1823)),\
+            Tower(self, "Radiant", "Tier1Tower", loc = (4922, -6122))]
+        dire_t1towers = [Tower(self, "Dire", "Tier1Tower", loc = (1032, 359)),\
+            Tower(self, "Dire", "Tier1Tower" , loc = (-4706, 6022)),\
+            Tower(self, "Dire", "Tier1Tower" , loc = (6242, -1610))]
+
+        self.sprites += rad_t1towers
+        self.sprites += dire_t1towers
+
+        
 
         self.event_queue.enqueue(Event(30.0,spawn_fn,(self,30.0)))
     
