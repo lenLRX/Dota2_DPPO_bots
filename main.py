@@ -143,7 +143,7 @@ def start_simulator2():
     def reward(last, now, a):
         _d = dist2mid(now)
         _ld = dist2mid(last)
-        return ((_ld - _d) * 0.01 - 0.00001 * _d) * a
+        return ((_ld - _d) * 0.001 - 0.00001 * _d) * a
 
     discount_factor = 1.0
 
@@ -166,7 +166,7 @@ def start_simulator2():
         _engine.add_hero(dire_hero)
         _engine.add_hero(rad_hero)
 
-        discount_factor = 1.0 - count * 0.01
+        discount_factor = 0.0
 
         if discount_factor < 0.0:
             discount_factor = 0.0
@@ -223,7 +223,7 @@ class Params():
     def __init__(self):
         self.batch_size = 200
         self.lr = 3e-4
-        self.gamma = 0.95
+        self.gamma = 0.998
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
