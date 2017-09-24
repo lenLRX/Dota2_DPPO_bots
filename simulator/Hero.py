@@ -64,6 +64,10 @@ class Hero(Sprite):
         if len(nearby_ally) > 0 and\
             isinstance(nearby_ally[0][0], Creep):
             ret = nearby_ally[0][0].location
+            if self.side == "Radiant":
+                ret = (ret[0] - 200, ret[1] - 200)
+            else:
+                ret = (ret[0] + 200, ret[1] + 200)
         else:
             ret = (0,0)
         dx = ret[0] - self.location[0]
