@@ -166,12 +166,12 @@ def start_simulator2():
         _engine.add_hero(dire_hero)
         _engine.add_hero(rad_hero)
 
-        discount_factor = 1.0 - count * 0.001
+        discount_factor = 1.0 - count * 0.01
 
         if discount_factor < 0.0:
             discount_factor = 0.0
 
-        while _engine.get_time() < 600:
+        while _engine.get_time() < 300:
             dire_hero.move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             rad_hero.move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
 
