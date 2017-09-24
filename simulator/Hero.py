@@ -1,5 +1,8 @@
 from .Config import Config
 from .Sprite import Sprite
+from .Creep import Creep
+
+import math
 
 HeroData = {}
 
@@ -54,6 +57,20 @@ class Hero(Sprite):
         p = (self.move_order[0] + self.location[0],
              self.move_order[1] + self.location[1])
         self.set_move(p)
+    
+    def predefined_step(self):
+        nearby_ally = self.Engine.get_nearby_ally(self)
+        ret = None
+        if len(nearby_ally) > 0 and\
+            isinstance(nearby_ally[0][0], Creep):
+            ret = nearby_ally[0][0].location
+        else:
+            ret = (0,0)
+        dx = ret[0] - self.location[0]
+        dy = ret[1] - self.location[1]
+
+        a  = math.atan2(dy,dx)
+        return (math.cos(a), math.sin(a))
     
     def get_state_tup(self):
         state = {}

@@ -188,15 +188,21 @@ def start_simulator2():
                 d_tup[1] + reward(last_dire_location,
                 dire_hero.location,discount_factor),
                 d_tup[2])
-
-            dire_act = dire_agent.step(d_tup)
-
+            
             r_tup = (r_tup[0],
                 r_tup[1] + reward(last_rad_location,
                 rad_hero.location, discount_factor),
                 r_tup[2])
             
-            rad_act = rad_agent.step(r_tup)
+            dire_pd_act = None
+            rad_pd_act = None
+
+            if count % 2 == 1:
+                dire_pd_act = dire_hero.predefined_step()
+                rad_pd_act = rad_hero.predefined_step()
+
+            dire_act = dire_agent.step(d_tup, dire_pd_act)
+            rad_act = rad_agent.step(r_tup, rad_pd_act)
 
             print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
                 %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))

@@ -140,7 +140,7 @@ class DotaSimulator(object):
         if _range == None:
             _range = sprite.SightRange
         for s in self.sprites:
-            if s.side == sprite.side:
+            if not s is sprite and s.side == sprite.side:
                 tmp_d = Sprite.S2Sdistance(sprite,s)
                 if tmp_d <= _range:
                     ret_pair.append((s,tmp_d))

@@ -171,7 +171,7 @@ class trainer(object):
         #self.get_action_ConV.release()
         return ret
 
-    def step(self,state_tuple_in):
+    def step(self, state_tuple_in, predifined = None):
         self.w += 1
         self.flag = True
 
@@ -185,7 +185,9 @@ class trainer(object):
         mu, sigma_sq, v = self.model(self.state)
         eps = torch.randn(mu.size())
 
-        if np.random.rand() < 0.05:
+        if predifined != None:
+            self.action = Variable(torch.FloatTensor(predifined)).view(-1,2)
+        elif np.random.rand() < 0.05:
             self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(-1,2)
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
