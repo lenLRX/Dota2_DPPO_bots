@@ -168,11 +168,9 @@ def start_simulator2():
 
         
 
-        while _engine.get_time() < 600:
+        while _engine.get_time() < 300:
             dire_hero.move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             rad_hero.move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
-
-            print(_engine.get_time(),rad_act,dire_act)
 
             _engine.loop()
             if _engine.canvas != None:
@@ -183,15 +181,25 @@ def start_simulator2():
             d_tup = dire_hero.get_state_tup()
             r_tup = rad_hero.get_state_tup()
 
-            dire_act = dire_agent.step((d_tup[0],
+            d_tup = (d_tup[0],
                 d_tup[1] + reward(last_dire_location,
                 dire_hero.location,discount_factor),
-                d_tup[2]))
-            
-            rad_act = rad_agent.step((r_tup[0],
+                d_tup[2])
+
+            dire_act = dire_agent.step(d_tup)
+
+            r_tup = (r_tup[0],
                 r_tup[1] + reward(last_rad_location,
                 rad_hero.location, discount_factor),
-                r_tup[2]))
+                r_tup[2])
+            
+            rad_act = rad_agent.step(r_tup)
+
+            print("t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+                %(_engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            
+            last_dire_location = dire_hero.location
+            last_rad_location = rad_hero.location
 
             yield
 
