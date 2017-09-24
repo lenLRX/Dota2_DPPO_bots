@@ -143,7 +143,7 @@ def start_simulator2():
     def reward(last, now, a):
         _d = dist2mid(now)
         _ld = dist2mid(last)
-        return (_ld - _d) * 0.01 * a
+        return ((_ld - _d) * 0.01 - 0.001 * _d) * a
 
     discount_factor = 1.0
 

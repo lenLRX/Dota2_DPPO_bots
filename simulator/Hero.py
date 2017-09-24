@@ -72,6 +72,8 @@ class Hero(Sprite):
         reward = self.exp - self.last_exp
         done = self.isDead
 
+        self.last_exp = self.exp
+
         return (state, reward, done)
     
     def draw(self):
