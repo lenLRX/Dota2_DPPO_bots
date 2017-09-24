@@ -195,8 +195,8 @@ def start_simulator2():
             
             rad_act = rad_agent.step(r_tup)
 
-            print("t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-                %(_engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
             last_dire_location = dire_hero.location
             last_rad_location = rad_hero.location
@@ -219,7 +219,7 @@ class Params():
     def __init__(self):
         self.batch_size = 200
         self.lr = 3e-4
-        self.gamma = 0.0
+        self.gamma = 0.9
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1

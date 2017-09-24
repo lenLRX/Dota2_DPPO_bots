@@ -40,6 +40,7 @@ class Hero(Sprite):
         self.move_order = (0.0,0.0)
 
         self.last_exp = 0
+        self.last_HP = self.HP
 
         if self.Engine.canvas != None:
             p = self.pos_in_wnd()
@@ -69,7 +70,9 @@ class Hero(Sprite):
             state["ally_input"] = [[0.0, 0.0]]
 
 
-        reward = self.exp - self.last_exp
+        reward = \
+            (self.exp - self.last_exp)\
+            + (self.HP - self.last_HP)
         done = self.isDead
 
         self.last_exp = self.exp
