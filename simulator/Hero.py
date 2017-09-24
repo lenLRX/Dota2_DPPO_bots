@@ -65,6 +65,9 @@ class Hero(Sprite):
             [p.location[0] / Config.map_div,p.location[1] / Config.map_div] for p in ally_locations
         ]
 
+        if len(state["ally_input"]) == 0:
+            state["ally_input"] = [[0.0, 0.0]]
+
 
         reward = self.exp - self.last_exp
         done = self.isDead
