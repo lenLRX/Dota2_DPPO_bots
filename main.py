@@ -140,6 +140,9 @@ def start_simulator2():
     def dist2mid(pos):
         return math.hypot(pos[0],pos[1])
 
+    def dotproduct(pd_act, act, a):
+        return (pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a
+
     def reward(last, now, a):
         _d = dist2mid(now)
         _ld = dist2mid(last)
@@ -166,7 +169,7 @@ def start_simulator2():
         _engine.add_hero(dire_hero)
         _engine.add_hero(rad_hero)
 
-        discount_factor = 0.0
+        discount_factor = 1.0
 
         if discount_factor < 0.0:
             discount_factor = 0.0
@@ -174,6 +177,9 @@ def start_simulator2():
         while _engine.get_time() < 300:
             dire_hero.move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             rad_hero.move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
+
+            dire_pd_act = dire_hero.predefined_step()
+            rad_pd_act = rad_hero.predefined_step()
 
             _engine.loop()
             if _engine.canvas != None:
@@ -185,24 +191,17 @@ def start_simulator2():
             r_tup = rad_hero.get_state_tup()
 
             d_tup = (d_tup[0],
-                d_tup[1] + reward(last_dire_location,
-                dire_hero.location,discount_factor),
+                d_tup[1] + dotproduct(dire_pd_act,
+                dire_act, discount_factor),
                 d_tup[2])
             
             r_tup = (r_tup[0],
-                r_tup[1] + reward(last_rad_location,
-                rad_hero.location, discount_factor),
+                r_tup[1] + dotproduct(rad_pd_act,
+                rad_act, discount_factor),
                 r_tup[2])
-            
-            dire_pd_act = None
-            rad_pd_act = None
 
-            if count % 2 == 1:
-                dire_pd_act = dire_hero.predefined_step()
-                rad_pd_act = rad_hero.predefined_step()
-
-            dire_act = dire_agent.step(d_tup, dire_pd_act)
-            rad_act = rad_agent.step(r_tup, rad_pd_act)
+            dire_act = dire_agent.step(d_tup)
+            rad_act = rad_agent.step(r_tup)
 
             print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
                 %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
