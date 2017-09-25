@@ -141,7 +141,7 @@ def start_simulator2():
         return math.hypot(pos[0],pos[1])
 
     def dotproduct(pd_act, act, a):
-        return (pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a
+        return float(pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a
 
     def reward(last, now, a):
         _d = dist2mid(now)
@@ -155,8 +155,8 @@ def start_simulator2():
         _engine = eng
         count += 1
         print("%d simulated game starts!"%count)
-        dire_act = [0.0,0.0]
-        rad_act = [0.0,0.0]
+        dire_act = np.asarray([0.0,0.0])
+        rad_act = np.asarray([0.0,0.0])
         dire_agent = dispatch_table["Dire"]
         rad_agent = dispatch_table["Radiant"]
 
