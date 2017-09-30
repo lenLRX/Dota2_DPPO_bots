@@ -259,11 +259,20 @@ class trainer(object):
                 R = Variable(R)
                 A = Variable(torch.zeros(1, 1))
                 for i in reversed(range(len(self.rewards))):
-                    td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
-                    A = td + self.params.gamma*self.params.gae_param*A
-                    self.advantages.insert(0, A)
-                    R = A + self.values[i]
-                    self.returns.insert(0, R)
+                    try:
+                        td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
+                        A = td + self.params.gamma*self.params.gae_param*A
+                        self.advantages.insert(0, A)
+                        R = A + self.values[i]
+                        self.returns.insert(0, R)
+                    except:
+                        print("error at %d"%i)
+                        with open("./debug.out", "w+") as dbgout:
+                            for r in self.rewards:
+                                dbgout.write("%d  %s\n"%(i,str(r)))
+                            dbgout.write("\n\n\n\n")
+                            for v in self.values:
+                                dbgout.write("%d  %s\n"%(i,str(v)))
                 # store usefull info:
                 self.memory.push([self.states, self.actions, self.returns, self.advantages])
             # policy grad updates:
