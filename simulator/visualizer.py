@@ -3,7 +3,8 @@ from .Config import Config
 from .simulator import DotaSimulator
 
 master = Tk()
-canvas = None
+canvas = Canvas(master,width = Config.windows_size, height = Config.windows_size)
+canvas.pack()
 _engine = None
 def _visualize():
     global canvas,_engine,master
@@ -22,8 +23,7 @@ def tk_main_loop(tup):
 
 def visualize(fn, num_iter):
     global canvas,_engine,master
-    canvas = Canvas(master,width = Config.windows_size, height = Config.windows_size)
-    canvas.pack()
+    canvas.delete("all")
     fn.send(None)
     fn.send((num_iter, canvas))
     master.after(1,tk_main_loop,(fn,num_iter))
