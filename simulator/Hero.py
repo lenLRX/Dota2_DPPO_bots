@@ -97,6 +97,7 @@ class Hero(Sprite):
         done = self.isDead
 
         self.last_exp = self.exp
+        self.last_HP = self.HP
 
         return (state, reward, done)
     
