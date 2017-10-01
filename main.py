@@ -141,7 +141,8 @@ def start_simulator2():
         return math.hypot(pos[0],pos[1])
 
     def dotproduct(pd_act, act, a):
-        return float(pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a
+        return float(pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a\
+            / math.hypot(act[0],act[1])# normalize
 
     def reward(last, now, a):
         _d = dist2mid(now)
@@ -169,7 +170,7 @@ def start_simulator2():
         _engine.add_hero(dire_hero)
         _engine.add_hero(rad_hero)
 
-        discount_factor = 1.0
+        discount_factor -= 0.001
 
         if discount_factor < 0.0:
             discount_factor = 0.0
