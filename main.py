@@ -196,13 +196,11 @@ def start_simulator2():
             r_tup = rad_hero.get_state_tup()
 
             d_tup = (d_tup[0],
-                d_tup[1] + dotproduct(dire_pd_act,
-                dire_act, discount_factor),
+                d_tup[1],
                 d_tup[2])
             
             r_tup = (r_tup[0],
-                r_tup[1] + dotproduct(rad_pd_act,
-                rad_act, discount_factor),
+                r_tup[1],
                 r_tup[2])
 
             dire_act = dire_agent.step(d_tup)
