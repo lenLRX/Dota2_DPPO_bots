@@ -179,7 +179,7 @@ def start_simulator2():
         if discount_factor < 0.0:
             discount_factor = 0.0
 
-        while _engine.get_time() < 300:
+        while _engine.get_time() < 100:
             dire_hero.move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             rad_hero.move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
 
@@ -229,7 +229,7 @@ class Params():
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
-        self.num_epoch = 100
+        self.num_epoch = 10
         self.num_steps = 20000
         self.exploration_size = 50#make it small
         self.num_processes = 4
