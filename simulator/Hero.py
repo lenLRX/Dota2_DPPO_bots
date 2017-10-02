@@ -93,7 +93,7 @@ class Hero(Sprite):
 
         reward = \
             (self.exp - self.last_exp)\
-            + (self.HP - self.last_HP)
+            + (self.HP - self.last_HP) * 0.1
         done = self.isDead
 
         self.last_exp = self.exp
