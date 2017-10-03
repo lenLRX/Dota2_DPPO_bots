@@ -1,5 +1,19 @@
 #include "simulator.h"
 
+static void
+cppSimulator_dealloc(cppSimulatorObject* self)
+{
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static PyObject *
+cppSimulator_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    cppSimulatorObject *self;
+    self = (cppSimulatorObject *)type->tp_alloc(type, 0);
+    return (PyObject *)self;
+}
+
 static int
 cppSimulator_init(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
     return 0;
@@ -19,10 +33,10 @@ static PyMethodDef cppSimulator_methods[] = {
 
 static PyTypeObject cppSimulatorType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "cppSimulator",             /* tp_name */
+    "cppSimulator.cppSimulator",             /* tp_name */
     sizeof(cppSimulatorObject), /* tp_basicsize */
     0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
+    (destructor)cppSimulator_dealloc,/* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
@@ -56,12 +70,12 @@ static PyTypeObject cppSimulatorType = {
     0,                         /* tp_dictoffset */
     (initproc)cppSimulator_init,      /* tp_init */
     0,                         /* tp_alloc */
-    0,                         /* tp_new */
+    cppSimulator_new,          /* tp_new */
 };
 
 static PyModuleDef cppSimulatorModule = {
     PyModuleDef_HEAD_INIT,
-    "cppSimulator module",
+    "cppSimulator",
     "cppSimulator module",
     -1,
     NULL, NULL, NULL, NULL, NULL

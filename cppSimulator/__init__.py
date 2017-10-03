@@ -1,1 +1,1 @@
-import cppSimulator
+from .cppSimulator import *

@@ -174,7 +174,7 @@ def start_simulator2():
         _engine.add_hero(dire_hero)
         _engine.add_hero(rad_hero)
 
-        discount_factor -= 0.001
+        #discount_factor -= 0.001
 
         if discount_factor < 0.0:
             discount_factor = 0.0
