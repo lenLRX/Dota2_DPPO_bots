@@ -7,10 +7,12 @@ FIND_PACKAGE(PythonLibs)
 include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARY})
 
+include_directories(include)
+
+file(GLOB HEADERS include/*.h)
+
 aux_source_directory(src SRCS)
-add_library(cppSimulator SHARED ${SRCS})
-
-
+add_library(cppSimulator SHARED ${SRCS} ${HEADERS})
 
 if (WIN32)
     set(LIB_SUFFIX ".pyd")
