@@ -4,8 +4,12 @@
 #include <Python.h>
 #include "Config.h"
 
+#include <memory>
+
 //forward decl
 class cppSimulatorImp;
+
+#define SETATTR(data,attr) attr = data.at(#attr)
 
 class Sprite {
 public:
@@ -26,6 +30,9 @@ public:
         _update_para();
     }
 
+    Sprite() :LastAttackTime(-1),
+        exp(0), isDead(false), b_move(false), v_handle(NULL) {}
+
     virtual ~Sprite(){}
 
     inline void _update_para() {
@@ -34,21 +41,27 @@ public:
     }
 
     virtual void step() = 0;
+
     inline pos_tup pos_in_wnd() {
         return pos_tup(std::get<0>(location) * Config::game2window_scale * 0.5 + Config::windows_size * 0.5,
             std::get<1>(location) * Config::game2window_scale * 0.5 + Config::windows_size * 0.5);
     }
 
-    void attack(const Sprite& target);
+    void attack(Sprite* target);
     bool isAttacking();
     inline void set_move(pos_tup target) {
         move_target = target;
     }
     void move();
-    void damadged();
+    bool damadged(double dmg);
     void dead();
 
     static double S2Sdistance(const Sprite& s1,const Sprite& s2);
+
+    inline cppSimulatorImp* get_engine() { return Engine; }
+
+    inline double get_AttackTime() { return AttackTime; }
+    inline double get_Attack() { return Attack; }
 
 protected:
     cppSimulatorImp* Engine;

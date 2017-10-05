@@ -3,6 +3,10 @@
 
 #include <functional>
 #include <queue>
+#include <memory>
+
+//forward decl
+class Sprite;
 
 class Event {
 public:
@@ -15,9 +19,18 @@ public:
     inline double get_time() const {
         return time;
     }
+
+    ~Event(){}
 private:
     double time;
     std::function<void(void)> fn;
+};
+
+class EventFactory{
+public:
+    static void CreateAttackEvnt(Sprite* attacker,
+        Sprite* victim);
+    static void CreateSpawnEvnt(cppSimulatorImp* Engine);
 };
 
 #endif//__EVENT_H__

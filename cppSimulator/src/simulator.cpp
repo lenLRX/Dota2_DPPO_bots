@@ -1,8 +1,11 @@
 #include "simulator.h"
+#include "simulatorImp.h"
 
 static void
 cppSimulator_dealloc(cppSimulatorObject* self)
 {
+    printf("going to delete pImp\n");
+    delete self->pImp;
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -16,17 +19,35 @@ cppSimulator_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 static int
 cppSimulator_init(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
+    printf("initing simulator\n");
+    PyObject* obj_canvas = NULL;
+    if (!PyArg_ParseTuple(args, "|O")) {
+        return -1;
+    }
+    self->pImp = new cppSimulatorImp(self, obj_canvas);
     return 0;
 }
 
 static PyObject*
 cppSimulator_get_time(cppSimulatorObject* self) {
-    return PyLong_FromLong(0L);
+    cppSimulatorImp* pImp = self->pImp;
+    return PyFloat_FromDouble(pImp->get_time());
+}
+
+static PyObject*
+cppSimulator_loop(cppSimulatorObject* self) {
+    self->pImp->loop();
+//https://stackoverflow.com/questions/15287590/why-should-py-increfpy-none-be-required-before-returning-py-none-in-c
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 static PyMethodDef cppSimulator_methods[] = {
     { "get_time", (PyCFunction)cppSimulator_get_time, METH_NOARGS,
     "get time of simulator"
+    },
+    { "loop", (PyCFunction)cppSimulator_loop, METH_NOARGS,
+    "mainloop of simulator"
     },
     { NULL }  /* Sentinel */
 };

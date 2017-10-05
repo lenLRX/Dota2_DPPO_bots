@@ -16,6 +16,10 @@ public:
     double get_time();
     inline void tick_tick() { tick_time += delta_tick; }
     inline void addSprite(Sprite* s) { Sprites.push_back(s); }
+    inline PyObject* get_canvas() const { return canvas; }
+    inline const std::list<Sprite*>& get_sprites() { return Sprites; }
+    inline double get_deltatick() const { return delta_tick; }
+    inline std::priority_queue<Event>& get_queue() { return queue; }
     void loop();
 private:
     cppSimulatorObject* self;
@@ -24,6 +28,7 @@ private:
     double delta_tick;
     PyObject* canvas;
     std::list<Sprite*> Sprites;
+    std::list<Sprite*> allSprites;
     std::priority_queue<Event> queue;
 };
 
