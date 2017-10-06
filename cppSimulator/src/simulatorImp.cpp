@@ -2,6 +2,8 @@
 #include "Config.h"
 #include "Event.h"
 
+#include <algorithm>
+
 cppSimulatorImp::cppSimulatorImp(cppSimulatorObject* obj, PyObject* canvas)
     :self(obj), tick_time(0.0), tick_per_second(Config::tick_per_second), 
     delta_tick(1.0 / Config::tick_per_second), canvas(canvas)
@@ -39,4 +41,39 @@ void cppSimulatorImp::loop()
     for (Sprite* s : Sprites) {
         s->step();
     }
+
+    for (Sprite* s : Sprites) {
+        s->move();
+    }
+
+    for (Sprite* s : Sprites) {
+        s->draw();
+    }
+
+    for (auto it = Sprites.begin(); it != Sprites.end();) {
+        if ((*it)->isDead()) {
+            it = Sprites.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+std::vector<std::pair<Sprite*, double>> cppSimulatorImp::get_nearby_enemy(Sprite * sprite)
+{
+    std::vector<std::pair<Sprite*, double>> ret;
+    for (Sprite* s : Sprites) {
+        if (s->get_side() != sprite->get_side()) {
+            double d = Sprite::S2Sdistance(*s, *sprite);
+            if (d < sprite->get_SightRange()) {
+                ret.push_back(std::make_pair(s, d));
+            }
+        }
+    }
+    auto sort_fn = [](const std::pair<Sprite*, double>& l, const std::pair<Sprite*, double>&r)->bool {
+        return l.second < r.second;
+    };
+    std::sort(ret.begin(), ret.end(), sort_fn);
+    return ret;
 }

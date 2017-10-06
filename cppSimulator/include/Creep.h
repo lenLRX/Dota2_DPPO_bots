@@ -10,6 +10,7 @@ public:
     Creep(cppSimulatorImp* Engine,Side side,std::string type_name);
     ~Creep();
     virtual void step();
+    virtual void draw();
 private:
     pos_tup init_loc;
     pos_tup dest;

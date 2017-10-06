@@ -25,10 +25,10 @@ static int init_CreepData = [&]()->int {
 
 
 
-Creep::Creep(cppSimulatorImp* Engine, Side side, std::string type_name)
+Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
 {
-    Engine = Engine;
-    side = side;
+    Engine = _Engine;
+    side = _side;
     const auto& data = CreepData[type_name];
     SETATTR(data, HP);
     SETATTR(data, MP);
@@ -55,17 +55,32 @@ Creep::Creep(cppSimulatorImp* Engine, Side side, std::string type_name)
         dest = pos_tup(-4899, -4397);
         color = Config::Dire_Colors;
     }
+
+    location = init_loc;
+
     if (Engine->get_canvas() != NULL) {
+        canvas = Engine->get_canvas();
         pos_tup p = pos_in_wnd();
-        v_handle = PyObject_CallMethod(Engine->get_canvas(),
-            "create_rectangle",
-            "dddd",
+        PyObject* create_rectangle = PyObject_GetAttrString(canvas, "create_rectangle");
+        PyObject* args = Py_BuildValue("(dddd)",
             std::get<0>(p) - viz_radius,
             std::get<1>(p) + viz_radius,
             std::get<0>(p) + viz_radius,
+            std::get<1>(p) - viz_radius);
+        PyObject* kwargs = Py_BuildValue("{s:s}", "fill", color);
+        v_handle = PyObject_Call(create_rectangle, args, kwargs);
+        Py_DECREF(kwargs);
+        Py_DECREF(args);
+        Py_DECREF(create_rectangle);
+        /*
+        v_handle = PyObject_CallMethod(canvas,
+            "create_rectangle",
+            "(dddd)",
             std::get<0>(p) - viz_radius,
-            NULL);
-        Py_INCREF(v_handle);
+            std::get<1>(p) + viz_radius,
+            std::get<0>(p) + viz_radius,
+            std::get<1>(p) - viz_radius);
+        */
     }
 }
 
@@ -76,5 +91,35 @@ Creep::~Creep()
 
 void Creep::step()
 {
-    printf("%p stepping\n", this);
+    if (isAttacking()) {
+        return;
+    }
+    auto nearby_enemy = Engine->get_nearby_enemy(this);
+    if (!nearby_enemy.empty()) {
+        Sprite* target = nearby_enemy.front().first;
+        if (nearby_enemy.front().second < AttackRange) {
+            attack(target);
+        }
+        else {
+            set_move(target->get_location());
+        }
+    }
+    else {
+        set_move(dest);
+    }
+}
+
+void Creep::draw()
+{
+    if (canvas != NULL) {
+        auto p = pos_in_wnd();
+        Py_XDECREF(PyObject_CallMethod(canvas,
+            "coords",
+            "(Odddd)",
+            v_handle,
+            std::get<0>(p) - viz_radius,
+            std::get<1>(p) + viz_radius,
+            std::get<0>(p) + viz_radius,
+            std::get<1>(p) - viz_radius));
+    }
 }

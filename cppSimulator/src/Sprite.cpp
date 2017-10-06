@@ -22,8 +22,11 @@ void Sprite::move()
     if (!b_move)
         return;
 
-    if (isAttacking())
+    if (isAttacking()) {
+        b_move = false;
         return;
+    }
+        
 
     double dx = std::get<0>(move_target) - std::get<0>(location);
     double dy = std::get<1>(move_target) - std::get<1>(location);
@@ -40,6 +43,7 @@ void Sprite::move()
         double d = MovementSpeed * Engine->get_deltatick();
         if (hypot(dx, dy) < d) {
             location = move_target;
+            b_move = false;
         }
         else {
             location = pos_tup(std::get<0>(location) + d * cos(a),
@@ -63,7 +67,7 @@ void Sprite::move()
 
 bool Sprite::damadged(double dmg)
 {
-    if (isDead) {
+    if (isDead()) {
         return false;
     }
     HP -= dmg;
@@ -76,19 +80,18 @@ bool Sprite::damadged(double dmg)
 
 void Sprite::dead()
 {
-    isDead = true;
+    _isDead = true;
     if (NULL != v_handle) {
-        PyObject_CallMethodObjArgs(
-            Engine->get_canvas(), PyUnicode_FromString("delete"),
-            v_handle,
-            NULL
-        );
-
-        for (Sprite* s : Engine->get_sprites()) {
-            if (s->side != side && S2Sdistance(*s, *this) <= 1300.0) {
-                s->exp += bountyEXP;
-                printf("%p get exp\n", s);
-            }
+        PyObject* delete_fn = PyObject_GetAttrString(canvas, "delete");
+        PyObject* args = Py_BuildValue("(O)", v_handle);
+        Py_XDECREF(PyObject_Call(delete_fn, args, NULL));
+        Py_DECREF(v_handle);
+        v_handle = NULL;
+    }
+    for (Sprite* s : Engine->get_sprites()) {
+        if (s->side != side && S2Sdistance(*s, *this) <= 1300.0) {
+            s->exp += bountyEXP;
+            printf("%p get exp\n", s);
         }
     }
 }

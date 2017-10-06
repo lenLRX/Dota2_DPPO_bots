@@ -6,6 +6,7 @@
 #include "Event.h"
 #include <queue>
 #include <list>
+#include <vector>
 
 class cppSimulatorImp
 {
@@ -21,6 +22,7 @@ public:
     inline double get_deltatick() const { return delta_tick; }
     inline std::priority_queue<Event>& get_queue() { return queue; }
     void loop();
+    std::vector<std::pair<Sprite*, double>> get_nearby_enemy(Sprite* s);
 private:
     cppSimulatorObject* self;
     double tick_time;

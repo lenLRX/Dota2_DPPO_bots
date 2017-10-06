@@ -25,13 +25,13 @@ public:
         BaseAttackTime(BAT),AttackSpeed(AS),Armor(Armor),
         Attack(ATK),AttackRange(ATKRange),SightRange(SightRange),
         Bounty(Bounty), bountyEXP(bountyEXP), LastAttackTime(-1),
-        exp(0),isDead(false),b_move(false), v_handle(NULL)
+        exp(0),_isDead(false),b_move(false), v_handle(NULL)
     {   
         _update_para();
     }
 
     Sprite() :LastAttackTime(-1),
-        exp(0), isDead(false), b_move(false), v_handle(NULL) {}
+        exp(0), _isDead(false), b_move(false), canvas(NULL), v_handle(NULL) {}
 
     virtual ~Sprite(){}
 
@@ -41,6 +41,7 @@ public:
     }
 
     virtual void step() = 0;
+    virtual void draw() = 0;
 
     inline pos_tup pos_in_wnd() {
         return pos_tup(std::get<0>(location) * Config::game2window_scale * 0.5 + Config::windows_size * 0.5,
@@ -50,6 +51,7 @@ public:
     void attack(Sprite* target);
     bool isAttacking();
     inline void set_move(pos_tup target) {
+        b_move = true;
         move_target = target;
     }
     void move();
@@ -62,6 +64,10 @@ public:
 
     inline double get_AttackTime() { return AttackTime; }
     inline double get_Attack() { return Attack; }
+    inline Side get_side() { return side; }
+    inline double get_SightRange() { return SightRange; }
+    inline pos_tup get_location() { return location; }
+    inline bool isDead(){return _isDead;}
 
 protected:
     cppSimulatorImp* Engine;
@@ -82,7 +88,7 @@ protected:
     double LastAttackTime;
     double AttackTime;
     double exp;
-    bool isDead;
+    bool _isDead;
     bool b_move;
     PyObject* v_handle;
     pos_tup move_target;

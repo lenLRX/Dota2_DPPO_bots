@@ -15,7 +15,11 @@ void EventFactory::CreateAttackEvnt(Sprite* attacker, Sprite* victim)
 }
 
 static void spawn_fn(cppSimulatorImp* Engine) {
-    Engine->addSprite(new Creep(Engine, Side::Radiant, "MeleeCreep"));
+    for (int i = 0; i < 5; ++i) {
+        Engine->addSprite(new Creep(Engine, Side::Radiant, "MeleeCreep"));
+        Engine->addSprite(new Creep(Engine, Side::Dire, "MeleeCreep"));
+    }
+    
     std::function<void()> fn = std::bind(spawn_fn, Engine);
     Engine->get_queue().push(Event(Engine->get_time() + 30, fn));
 }
