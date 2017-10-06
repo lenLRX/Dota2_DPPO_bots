@@ -42,12 +42,26 @@ cppSimulator_loop(cppSimulatorObject* self) {
     return Py_None;
 }
 
+static PyObject*
+cppSimulator_get_state_tup(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
+    char* side = NULL;
+    int idx = NULL;
+    if (!PyArg_ParseTuple(args, "si", &side, &idx)) {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    return self->pImp->get_state_tup(side, idx);
+}
+
 static PyMethodDef cppSimulator_methods[] = {
     { "get_time", (PyCFunction)cppSimulator_get_time, METH_NOARGS,
     "get time of simulator"
     },
     { "loop", (PyCFunction)cppSimulator_loop, METH_NOARGS,
     "mainloop of simulator"
+    },
+    { "get_state_tup", (PyCFunction)cppSimulator_get_state_tup, METH_VARARGS|METH_KEYWORDS,
+    "get (state, reward, done) by side and idx"
     },
     { NULL }  /* Sentinel */
 };

@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "Event.h"
 #include "Tower.h"
+#include "Hero.h"
 
 #include <algorithm>
 
@@ -13,6 +14,12 @@ cppSimulatorImp::cppSimulatorImp(cppSimulatorObject* obj, PyObject* canvas)
     Py_XINCREF(canvas);
     EventFactory::CreateSpawnEvnt(this);
     Tower::initTowers(this);
+    Hero* r_hero = new Hero(this, Side::Radiant, "ShadowFiend");
+    Hero* d_hero = new Hero(this, Side::Dire, "ShadowFiend");
+    addSprite(r_hero);
+    addSprite(d_hero);
+    RadiantHeros.push_back(r_hero);
+    DireHeros.push_back(d_hero);
 }
 
 cppSimulatorImp::~cppSimulatorImp()
@@ -78,4 +85,33 @@ std::vector<std::pair<Sprite*, double>> cppSimulatorImp::get_nearby_enemy(Sprite
     };
     std::sort(ret.begin(), ret.end(), sort_fn);
     return ret;
+}
+
+std::vector<std::pair<Sprite*, double>> cppSimulatorImp::get_nearby_ally(Sprite * sprite)
+{
+    std::vector<std::pair<Sprite*, double>> ret;
+    for (Sprite* s : Sprites) {
+        if (s->get_side() == sprite->get_side()
+            && s != sprite) {
+            double d = Sprite::S2Sdistance(*s, *sprite);
+            if (d < sprite->get_SightRange()) {
+                ret.push_back(std::make_pair(s, d));
+            }
+        }
+    }
+    auto sort_fn = [](const std::pair<Sprite*, double>& l, const std::pair<Sprite*, double>&r)->bool {
+        return l.second < r.second;
+    };
+    std::sort(ret.begin(), ret.end(), sort_fn);
+    return ret;
+}
+
+PyObject* cppSimulatorImp::get_state_tup(std::string side, int idx)
+{
+    if (side == "Radiant") {
+        return RadiantHeros[idx]->get_state_tup();
+    }
+    else {
+        return DireHeros[idx]->get_state_tup();
+    }
 }

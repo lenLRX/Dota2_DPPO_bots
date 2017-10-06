@@ -2,11 +2,14 @@
 #define __SIMULATORIMP_H__
 
 #include "simulator.h"
-#include "Sprite.h"
 #include "Event.h"
 #include <queue>
 #include <list>
 #include <vector>
+
+//forward decl
+class Hero;
+class Sprite;
 
 class cppSimulatorImp
 {
@@ -23,12 +26,16 @@ public:
     inline std::priority_queue<Event>& get_queue() { return queue; }
     void loop();
     std::vector<std::pair<Sprite*, double>> get_nearby_enemy(Sprite* s);
+    std::vector<std::pair<Sprite*, double>> get_nearby_ally(Sprite* s);
+    PyObject* get_state_tup(std::string side, int idx);
 private:
     cppSimulatorObject* self;
     double tick_time;
     double tick_per_second;
     double delta_tick;
     PyObject* canvas;
+    std::vector<Hero*> RadiantHeros;
+    std::vector<Hero*> DireHeros;
     std::list<Sprite*> Sprites;
     std::list<Sprite*> allSprites;
     std::priority_queue<Event> queue;
