@@ -1,6 +1,7 @@
 #include "simulatorImp.h"
 #include "Config.h"
 #include "Event.h"
+#include "Tower.h"
 
 #include <algorithm>
 
@@ -11,6 +12,7 @@ cppSimulatorImp::cppSimulatorImp(cppSimulatorObject* obj, PyObject* canvas)
     Py_INCREF(self);
     Py_XINCREF(canvas);
     EventFactory::CreateSpawnEvnt(this);
+    Tower::initTowers(this);
 }
 
 cppSimulatorImp::~cppSimulatorImp()

@@ -33,7 +33,10 @@ public:
     Sprite() :LastAttackTime(-1),
         exp(0), _isDead(false), b_move(false), canvas(NULL), v_handle(NULL) {}
 
-    virtual ~Sprite(){}
+    virtual ~Sprite(){
+        remove_visual_ent();
+        Py_XDECREF(v_handle);
+    }
 
     inline void _update_para() {
         double AttackPerSecond = AttackSpeed * 0.01 / BaseAttackTime;
@@ -57,6 +60,7 @@ public:
     void move();
     bool damadged(double dmg);
     void dead();
+    void remove_visual_ent();
 
     static double S2Sdistance(const Sprite& s1,const Sprite& s2);
 

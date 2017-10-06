@@ -14,7 +14,7 @@ public:
     time(time),fn(fn){}
     inline void activate() {fn();}
     inline bool operator < (const Event& other) const {
-        return time < other.time;
+        return !(time < other.time);
     }
     inline double get_time() const {
         return time;

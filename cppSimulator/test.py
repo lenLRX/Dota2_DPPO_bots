@@ -10,7 +10,7 @@ sim = cppSimulator(canvas)
 def tk_main_loop():
     print(sim.get_time())
     sim.loop()
-    master.after(10, tk_main_loop)
+    master.after(1, tk_main_loop)
 
 master.after(1,tk_main_loop)
 master.mainloop()

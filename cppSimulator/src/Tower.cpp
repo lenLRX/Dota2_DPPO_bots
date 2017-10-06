@@ -1,35 +1,33 @@
-#include "Creep.h"
+#include "Tower.h"
 #include "simulatorImp.h"
-
-#include <string>
+#include <unordered_map>
 
 //TODO use json
-static std::unordered_map<std::string,std::unordered_map<std::string,double> > CreepData;
+static std::unordered_map<std::string, std::unordered_map<std::string, double> > TowerData;
 
-static int init_CreepData = [&]()->int {
-    CreepData["MeleeCreep"] = {
-        {"HP",550},
-        {"MP",0},
-        {"MovementSpeed",325},
-        {"Armor", 2},
-        {"Attack", 21},
-        {"AttackRange",100},
-        {"SightRange", 750},
-        {"Bounty", 36},
-        {"bountyEXP", 40},
-        {"BaseAttackTime", 1},
-        {"AttackSpeed", 100}
+static int init_TowerData = [&]()->int {
+    TowerData["Tier1Tower"] = {
+        { "HP",1400 },
+        { "MP",0 },
+        { "MovementSpeed",0 },
+        { "Armor", 14 },
+        { "Attack", 120 },
+        { "AttackRange",700 },
+        { "SightRange", 1900 },
+        { "Bounty", 36 },
+        { "bountyEXP", 0 },
+        { "BaseAttackTime", 1 },
+        { "AttackSpeed", 100 }
     };
     return 0;
 }();
 
-
-
-Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
+Tower::Tower(cppSimulatorImp* _Engine,
+    Side _side, std::string type_name, pos_tup init_loc)
 {
     Engine = _Engine;
     side = _side;
-    const auto& data = CreepData[type_name];
+    const auto& data = TowerData[type_name];
     SETATTR(data, HP);
     SETATTR(data, MP);
     SETATTR(data, MovementSpeed);
@@ -44,15 +42,11 @@ Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
 
     _update_para();
 
-    viz_radius = 2;
+    viz_radius = 5;
     if (side == Side::Radiant) {
-        init_loc = pos_tup(-4899, -4397);
-        dest = pos_tup(4165, 3681);
         color = Config::Radiant_Colors;
     }
     else {
-        init_loc = pos_tup(4165, 3681);
-        dest = pos_tup(-4899, -4397);
         color = Config::Dire_Colors;
     }
 
@@ -75,11 +69,11 @@ Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
     }
 }
 
-Creep::~Creep()
+Tower::~Tower()
 {
 }
 
-void Creep::step()
+void Tower::step()
 {
     if (isDead())
         return;
@@ -91,26 +85,19 @@ void Creep::step()
         if (nearby_enemy.front().second < AttackRange) {
             attack(target);
         }
-        else {
-            set_move(target->get_location());
-        }
-    }
-    else {
-        set_move(dest);
     }
 }
 
-void Creep::draw()
+void Tower::draw()
 {
-    if (v_handle != NULL) {
-        auto p = pos_in_wnd();
-        Py_XDECREF(PyObject_CallMethod(canvas,
-            "coords",
-            "(Odddd)",
-            v_handle,
-            std::get<0>(p) - viz_radius,
-            std::get<1>(p) + viz_radius,
-            std::get<0>(p) + viz_radius,
-            std::get<1>(p) - viz_radius));
-    }
+}
+
+void Tower::initTowers(cppSimulatorImp* Engine)
+{
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", { -1661,-1505 }));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", { -6254, 1823 }));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", { 4922, -6122 }));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", { 1032, 359 }));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", { -4706, 6022 }));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", { 6242, -1610 }));
 }

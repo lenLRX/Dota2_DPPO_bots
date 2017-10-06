@@ -19,6 +19,9 @@ bool Sprite::isAttacking()
 
 void Sprite::move()
 {
+    if (isDead())
+        return;
+
     if (!b_move)
         return;
 
@@ -81,18 +84,27 @@ bool Sprite::damadged(double dmg)
 void Sprite::dead()
 {
     _isDead = true;
-    if (NULL != v_handle) {
-        PyObject* delete_fn = PyObject_GetAttrString(canvas, "delete");
-        PyObject* args = Py_BuildValue("(O)", v_handle);
-        Py_XDECREF(PyObject_Call(delete_fn, args, NULL));
-        Py_DECREF(v_handle);
-        v_handle = NULL;
-    }
+    remove_visual_ent();
     for (Sprite* s : Engine->get_sprites()) {
         if (s->side != side && S2Sdistance(*s, *this) <= 1300.0) {
             s->exp += bountyEXP;
             printf("%p get exp\n", s);
         }
+    }
+}
+
+void Sprite::remove_visual_ent()
+{
+    if (NULL != v_handle) {
+        PyObject* delete_fn = PyObject_GetAttrString(canvas, "delete");
+        PyObject* args = Py_BuildValue("(O)", v_handle);
+        PyObject* kwargs = Py_BuildValue("{}");
+        Py_XDECREF(PyObject_Call(delete_fn, args, kwargs));
+        Py_DECREF(kwargs);
+        Py_DECREF(args);
+        Py_DECREF(delete_fn);
+        Py_DECREF(v_handle);
+        v_handle = NULL;
     }
 }
 
