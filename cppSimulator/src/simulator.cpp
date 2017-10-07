@@ -24,6 +24,10 @@ cppSimulator_init(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
     if (!PyArg_ParseTuple(args, "|O",&obj_canvas)) {
         return -1;
     }
+    if (obj_canvas == Py_None) {
+        obj_canvas = NULL;
+        Py_DECREF(Py_None);
+    }
     self->pImp = new cppSimulatorImp(self, obj_canvas);
     return 0;
 }

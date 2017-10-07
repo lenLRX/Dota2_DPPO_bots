@@ -406,3 +406,10 @@ if __name__ == '__main__':
         g = start_cppSimulator()
         g.send(None)
         visualize(g, num_iter / params.num_epoch)
+    elif args.action == "cppSimulator":
+        g = start_cppSimulator()
+        g.send(None)
+        g.send(None)
+        g.send((num_iter / params.num_epoch, None))
+        while True:
+            g.send(None)
