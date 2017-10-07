@@ -172,18 +172,20 @@ class trainer(object):
         return ret
 
     def step(self, state_tuple_in):
+        #_start_time = time.time()
         self.w += 1
         self.flag = True
 
         self.state, self.reward, self.done = state_tuple_in
         raw_reward = self.reward
-        #_start_time = time.time()
 
         self.shared_obs_stats.observes(self.state)
         self.state = self.shared_obs_stats.normalize(self.state)
         
+        #nn_start_time = time.time()
         mu, sigma_sq, v = self.model(self.state)
         eps = torch.randn(mu.size())
+        #print(time.time() - nn_start_time)
 
         if np.random.rand() < 0.05:
             self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(-1,2)
@@ -208,7 +210,7 @@ class trainer(object):
         
         #print("%d: action = %f %f value=%f reward = %f"%(
         #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),raw_reward),sigma_sq.sqrt())
-        
+        #print("total time",time.time() - _start_time)
         return self.action_out
 
 
