@@ -319,7 +319,7 @@ class Params():
     def __init__(self):
         self.batch_size = 200
         self.lr = 3e-4
-        self.gamma = 0.5
+        self.gamma = 0.995
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
