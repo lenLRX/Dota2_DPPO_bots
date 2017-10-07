@@ -99,6 +99,7 @@ void Hero::draw()
             std::get<0>(p) + viz_radius,
             std::get<1>(p) - viz_radius));
     }
+    
 }
 
 void Hero::set_move_order(pos_tup order)
@@ -111,8 +112,7 @@ PyObject* Hero::get_state_tup()
     PyObject* self_input = Py_BuildValue("[dd]",
         std::get<0>(location) / Config::map_div,
         std::get<1>(location) / Config::map_div);
-    if (PyErr_Occurred())
-        printf("%d\n", __LINE__);
+
     auto nearby_ally = Engine->get_nearby_ally(this);
     Py_ssize_t ally_input_size = static_cast<Py_ssize_t>(nearby_ally.size());
     PyObject* ally_input = NULL;
@@ -127,19 +127,19 @@ PyObject* Hero::get_state_tup()
     else {
         ally_input = Py_BuildValue("[[dd]]", 0.0, 0.0);
     }
-    if (PyErr_Occurred())
-        printf("%d\n", __LINE__);
     
     PyObject* state = Py_BuildValue("{s:O,s:O}", "self_input", self_input, "ally_input", ally_input);
-    if (PyErr_Occurred())
-        printf("%d\n", __LINE__);
+
+    Py_DECREF(self_input);
+    Py_DECREF(ally_input);
+
+
     double reward = (exp - last_exp) + (HP - last_HP) * 0.1;
 
     last_exp = exp;
     last_HP = HP;
 
     PyObject* ret = Py_BuildValue("(OdO)", state, reward, _isDead ? Py_True : Py_False);
-    if (PyErr_Occurred())
-        printf("%d\n", __LINE__);
+
     return ret;
 }
