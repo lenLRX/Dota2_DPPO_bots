@@ -10,8 +10,6 @@ cppSimulatorImp::cppSimulatorImp(cppSimulatorObject* obj, PyObject* canvas)
     :self(obj), tick_time(0.0), tick_per_second(Config::tick_per_second), 
     delta_tick(1.0 / Config::tick_per_second), canvas(canvas)
 {
-    Py_INCREF(self);
-    Py_XINCREF(canvas);
     EventFactory::CreateSpawnEvnt(this);
     Tower::initTowers(this);
     Hero* r_hero = new Hero(this, Side::Radiant, "ShadowFiend");
@@ -27,8 +25,6 @@ cppSimulatorImp::~cppSimulatorImp()
     for (auto p : allSprites) {
         delete p;
     }
-    Py_DECREF(self);
-    Py_XDECREF(canvas);
 }
 
 double cppSimulatorImp::get_time()
