@@ -1,8 +1,17 @@
 cmake_minimum_required (VERSION 2.6)
 project(cppSimulator)
 
-set(PYTHON_LIBRARY "C:\\Users\\abceq\\Anaconda3\\libs")
-set(PYTHON_INCLUDE_DIR "C:\\Users\\abceq\\Anaconda3\\include")
+
+if (WIN32)
+    set(PYTHON_LIBRARY "C:\\Users\\abceq\\Anaconda3\\libs")
+    set(PYTHON_INCLUDE_DIR "C:\\Users\\abceq\\Anaconda3\\include")
+endif (WIN32)
+
+if (LINUX)
+    set(PYTHON_LIBRARY "/root/anaconda3/lib")
+    set(PYTHON_INCLUDE_DIR "/root/anaconda3/include/python3.6m")
+endif(LINUX)
+
 FIND_PACKAGE(PythonLibs)
 include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARY})
@@ -17,6 +26,10 @@ add_library(cppSimulator SHARED ${SRCS} ${HEADERS})
 if (WIN32)
     set(LIB_SUFFIX ".pyd")
 endif (WIN32)
+
+if (LINUX)
+    set(LIB_SUFFIX ".so")
+endif(LINUX)
 
 set_target_properties(cppSimulator
     PROPERTIES 
