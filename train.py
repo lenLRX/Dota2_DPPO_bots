@@ -239,7 +239,7 @@ class trainer(object):
                 self.cum_done = 0
 
                 _start_time = time.time()
-                while time.time() - _start_time < 5:
+                while time.time() - _start_time < 0.5:
                     if self.flag:
                         _start_time = time.time()
                         self.flag = False
