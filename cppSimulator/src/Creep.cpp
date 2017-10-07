@@ -67,7 +67,7 @@ Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
             std::get<1>(p) + viz_radius,
             std::get<0>(p) + viz_radius,
             std::get<1>(p) - viz_radius);
-        PyObject* kwargs = Py_BuildValue("{s:s}", "fill", color);
+        PyObject* kwargs = Py_BuildValue("{s:s}", "fill", color.c_str());
         v_handle = PyObject_Call(create_rectangle, args, kwargs);
         Py_DECREF(kwargs);
         Py_DECREF(args);

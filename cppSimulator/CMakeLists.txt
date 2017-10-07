@@ -1,20 +1,22 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project(cppSimulator)
+
+set(CMAKE_CXX_STANDARD 11)
 
 
 if (WIN32)
-    set(PYTHON_LIBRARY "C:\\Users\\abceq\\Anaconda3\\libs")
-    set(PYTHON_INCLUDE_DIR "C:\\Users\\abceq\\Anaconda3\\include")
+    set(PYTHON_LIBRARIES "C:\\Users\\abceq\\Anaconda3\\libs")
+    set(PYTHON_INCLUDE_DIRS "C:\\Users\\abceq\\Anaconda3\\include")
 endif (WIN32)
 
-if (LINUX)
-    set(PYTHON_LIBRARY "/root/anaconda3/lib")
-    set(PYTHON_INCLUDE_DIR "/root/anaconda3/include/python3.6m")
-endif(LINUX)
+if (UNIX)
+    set(PYTHON_LIBRARIES "/root/anaconda3/lib")
+    set(PYTHON_INCLUDE_DIRS "/root/anaconda3/include/python3.6m")
+endif(UNIX)
 
-FIND_PACKAGE(PythonLibs)
+#FIND_PACKAGE(PythonLibs)
 include_directories(${PYTHON_INCLUDE_DIRS})
-link_directories(${PYTHON_LIBRARY})
+link_directories(${PYTHON_LIBRARIES})
 
 include_directories(include)
 
@@ -27,18 +29,19 @@ if (WIN32)
     set(LIB_SUFFIX ".pyd")
 endif (WIN32)
 
-if (LINUX)
+if (UNIX)
     set(LIB_SUFFIX ".so")
-endif(LINUX)
+endif(UNIX)
 
 set_target_properties(cppSimulator
     PROPERTIES 
+    PREFIX ""
     SUFFIX ${LIB_SUFFIX}
-    LIBRARY_OUTPUT_DIRECTORY .
+    LIBRARY_OUTPUT_DIRECTORY ..
 )
 
-add_custom_command(TARGET cppSimulator POST_BUILD 
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "$<TARGET_FILE_DIR:cppSimulator>/cppSimulator${LIB_SUFFIX}"
-    "${CMAKE_SOURCE_DIR}/cppSimulator${LIB_SUFFIX}"              
-)
+#add_custom_command(TARGET cppSimulator POST_BUILD 
+#    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#    "$<TARGET_FILE_DIR:cppSimulator>/cppSimulator${LIB_SUFFIX}"
+#    "${CMAKE_SOURCE_DIR}/cppSimulator${LIB_SUFFIX}"              
+#)

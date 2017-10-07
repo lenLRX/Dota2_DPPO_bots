@@ -115,10 +115,10 @@ void cppSimulatorImp::set_move_order(PyObject * args, PyObject * kwds)
         printf("Parse Arg error");
     }
     if (side == "Radiant") {
-        RadiantHeros[idx]->set_move_order({ x,y });
+        RadiantHeros[idx]->set_move_order(pos_tup( x,y ));
     }
     else {
-        DireHeros[idx]->set_move_order({ x,y });
+        DireHeros[idx]->set_move_order(pos_tup( x,y ));
     }
 }
 

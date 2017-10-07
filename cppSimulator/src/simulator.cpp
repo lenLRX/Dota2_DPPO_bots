@@ -52,7 +52,7 @@ cppSimulator_set_move_order(cppSimulatorObject* self, PyObject *args, PyObject *
 static PyObject*
 cppSimulator_get_state_tup(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
     char* side = NULL;
-    int idx = NULL;
+    int idx = 0;
     if (!PyArg_ParseTuple(args, "si", &side, &idx)) {
         Py_INCREF(Py_None);
         return Py_None;

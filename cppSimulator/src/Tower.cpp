@@ -61,7 +61,7 @@ Tower::Tower(cppSimulatorImp* _Engine,
             std::get<1>(p) + viz_radius,
             std::get<0>(p) + viz_radius,
             std::get<1>(p) - viz_radius);
-        PyObject* kwargs = Py_BuildValue("{s:s}", "fill", color);
+        PyObject* kwargs = Py_BuildValue("{s:s}", "fill", color.c_str());
         v_handle = PyObject_Call(create_rectangle, args, kwargs);
         Py_DECREF(kwargs);
         Py_DECREF(args);
@@ -94,10 +94,10 @@ void Tower::draw()
 
 void Tower::initTowers(cppSimulatorImp* Engine)
 {
-    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", { -1661,-1505 }));
-    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", { -6254, 1823 }));
-    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", { 4922, -6122 }));
-    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", { 1032, 359 }));
-    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", { -4706, 6022 }));
-    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", { 6242, -1610 }));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup( -1661,-1505 )));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup( -6254, 1823 )));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup( 4922, -6122 )));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup( 1032, 359 )));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup( -4706, 6022 )));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup( 6242, -1610 )));
 }
