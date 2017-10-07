@@ -29,6 +29,8 @@ cppSimulator_init(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
         Py_DECREF(Py_None);
     }
     self->pImp = new cppSimulatorImp(self, obj_canvas);
+    Py_XDECREF(args);
+    Py_XDECREF(kwds);
     return 0;
 }
 
@@ -49,6 +51,8 @@ cppSimulator_loop(cppSimulatorObject* self) {
 static PyObject*
 cppSimulator_set_move_order(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
     self->pImp->set_move_order(args, kwds);
+    Py_XDECREF(args);
+    Py_XDECREF(kwds);
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -61,6 +65,8 @@ cppSimulator_get_state_tup(cppSimulatorObject* self, PyObject *args, PyObject *k
         Py_INCREF(Py_None);
         return Py_None;
     }
+    Py_XDECREF(args);
+    Py_XDECREF(kwds);
     return self->pImp->get_state_tup(side, idx);
 }
 
