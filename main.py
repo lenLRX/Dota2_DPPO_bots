@@ -19,6 +19,7 @@ import torch.optim as optim
 import torch.multiprocessing as mp
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 
 import numpy as np
 
@@ -263,13 +264,21 @@ def start_cppSimulator():
         dire_agent = dispatch_table["Dire"]
         rad_agent = dispatch_table["Radiant"]
 
+        shared_model = dire_agent.shared_model
+
         d_tup = _engine.get_state_tup("Dire", 0)
         r_tup = _engine.get_state_tup("Radiant", 0)
 
         last_dire_location = hero_location_by_tup(d_tup)
         last_rad_location = hero_location_by_tup(r_tup)
 
+        r_total_reward = 0.0
+        d_total_reward = 0.0
+
         #discount_factor -= 0.001
+
+        dire_agent.pre_train()
+        rad_agent.pre_train()
 
         if discount_factor < 0.0:
             discount_factor = 0.0
@@ -287,6 +296,9 @@ def start_cppSimulator():
 
             d_tup = _engine.get_state_tup("Dire", 0)
             r_tup = _engine.get_state_tup("Radiant", 0)
+
+            r_total_reward += r_tup[1]
+            d_total_reward += d_tup[1]
 
             d_tup = (d_tup[0],
                 d_tup[1] + reward(last_dire_location,
@@ -311,9 +323,24 @@ def start_cppSimulator():
 
             if d_tup[2] or r_tup[2]:
                 break
-        
-        rad_agent.waitTraningFinish()
-        dire_agent.waitTraningFinish()
+        print("total reward %f %f"%(r_total_reward, d_total_reward))
+        rad_agent.fill_memory()
+        dire_agent.fill_memory()
+
+        for it in range(Params().num_epoch):
+            rad_agent.train()
+            dire_agent.train()
+
+            num_iter = num_iter + 1
+
+            for n,p in shared_model.named_parameters():
+                p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
+            optimizer.step()
+            shared_grad_buffers.reset()
+            print('update')
+            if num_iter % 100 == 0:
+                torch.save(shared_model.state_dict(),"./model/" + str(num_iter))
+
 
 class Params():
     def __init__(self):
@@ -382,9 +409,6 @@ if __name__ == '__main__':
     _thread.start_new_thread(chief,
     (params,CommonConV,atomic_counter,
     shared_model,shared_grad_buffers,optimizer,num_iter))
-
-    _thread.start_new_thread(rad_trainer.loop,())
-    _thread.start_new_thread(dire_trainer.loop,())
 
     if args.action == "start_server":
         start_env()

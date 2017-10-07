@@ -171,10 +171,19 @@ class trainer(object):
         #self.get_action_ConV.release()
         return ret
 
+    def pre_train(self):
+        self.states = []
+        self.actions = []
+        self.rewards = []
+        self.values = []
+        self.returns = []
+        self.advantages = []
+        self.av_reward = 0
+        self.cum_reward = 0
+        self.cum_done = 0
+
     def step(self, state_tuple_in):
         #_start_time = time.time()
-        self.w += 1
-        self.flag = True
 
         self.state, self.reward, self.done = state_tuple_in
         raw_reward = self.reward
@@ -213,6 +222,66 @@ class trainer(object):
         #print("total time",time.time() - _start_time)
         return self.action_out
 
+    def fill_memory(self):
+        R = torch.zeros(1, 1)
+        self.values.append(Variable(R))
+        R = Variable(R)
+        A = Variable(torch.zeros(1, 1))
+        for i in reversed(range(len(self.rewards))):
+            try:
+                td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
+                A = td + self.params.gamma*self.params.gae_param*A
+                self.advantages.insert(0, A)
+                R = A + self.values[i]
+                self.returns.insert(0, R)
+            except:
+                print("error at %d"%i)
+                with open("./debug.out", "w+") as dbgout:
+                    for r in self.rewards:
+                        dbgout.write("%d  %s\n"%(i,str(r)))
+                    dbgout.write("\n\n\n\n")
+                    for v in self.values:
+                        dbgout.write("%d  %s\n"%(i,str(v)))
+        # store usefull info:
+        self.memory.push([self.states, self.actions, self.returns, self.advantages])
+    
+    def train(self):
+        model_old = Model(self.params.num_inputs, self.params.num_outputs)
+        model_old.load_state_dict(self.model.state_dict())
+        # load new model
+        self.model.load_state_dict(self.shared_model.state_dict())
+        self.model.zero_grad()
+        # new mini_batch
+        batch_states, batch_actions, batch_returns, batch_advantages = self.memory.sample(self.params.batch_size)
+        # old probas
+        mu_old, sigma_sq_old, v_pred_old = model_old(detach_state(batch_states))
+        probs_old = normal(batch_actions, mu_old, sigma_sq_old)
+        # new probas
+        mu, sigma_sq, v_pred = self.model(batch_states)
+        probs = normal(batch_actions, mu, sigma_sq)
+        # ratio
+        ratio = probs/(1e-10+probs_old)
+        # clip loss
+        surr1 = ratio * torch.cat([batch_advantages]*self.params.num_outputs,1) # surrogate from conservative policy iteration
+        surr2 = ratio.clamp(1-self.params.clip, 1 + self.params.clip) * torch.cat([batch_advantages]*self.params.num_outputs,1)
+        loss_clip = -torch.mean(torch.min(surr1, surr2))
+        # value loss
+        vfloss1 = (v_pred - batch_returns)**2
+        v_pred_clipped = v_pred_old + (v_pred - v_pred_old).clamp(-self.params.clip, self.params.clip)
+        vfloss2 = (v_pred_clipped - batch_returns)
+        loss_value = 0.5*torch.mean(torch.max(vfloss1, vfloss2))
+        # entropy
+        loss_ent = -self.params.ent_coeff*torch.mean(probs*torch.log(probs+1e-5))
+        # total
+        total_loss = (loss_clip + loss_value + loss_ent)
+        print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_returns,0))
+        # before step, update old_model:
+        model_old.load_state_dict(self.model.state_dict())
+        # prepare for step
+        total_loss.backward(retain_variables=True)
+        #ensure_shared_grads(model, shared_model)
+        #shared_model.cum_grads()
+        self.shared_grad_buffers.add_gradient(self.model)
 
     def loop(self):
         while True:
