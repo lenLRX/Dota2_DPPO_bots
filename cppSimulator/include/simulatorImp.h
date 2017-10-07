@@ -19,7 +19,7 @@ public:
     ~cppSimulatorImp();
     double get_time();
     inline void tick_tick() { tick_time += delta_tick; }
-    inline void addSprite(Sprite* s) { Sprites.push_back(s); }
+    inline void addSprite(Sprite* s) { Sprites.push_back(s); allSprites.push_back(s); }
     inline PyObject* get_canvas() const { return canvas; }
     inline const std::list<Sprite*>& get_sprites() { return Sprites; }
     inline double get_deltatick() const { return delta_tick; }
