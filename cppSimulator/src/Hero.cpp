@@ -81,10 +81,29 @@ Hero::~Hero()
 
 void Hero::step()
 {
+    auto p = pos_tup(std::get<0>(move_order) + std::get<0>(location),
+        std::get<1>(move_order) + std::get<1>(location));
+    set_move(p);
 }
 
 void Hero::draw()
 {
+    if (v_handle != NULL) {
+        auto p = pos_in_wnd();
+        Py_XDECREF(PyObject_CallMethod(canvas,
+            "coords",
+            "(Odddd)",
+            v_handle,
+            std::get<0>(p) - viz_radius,
+            std::get<1>(p) + viz_radius,
+            std::get<0>(p) + viz_radius,
+            std::get<1>(p) - viz_radius));
+    }
+}
+
+void Hero::set_move_order(pos_tup order)
+{
+    move_order = order;
 }
 
 PyObject* Hero::get_state_tup()

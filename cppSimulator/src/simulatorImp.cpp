@@ -106,6 +106,22 @@ std::vector<std::pair<Sprite*, double>> cppSimulatorImp::get_nearby_ally(Sprite 
     return ret;
 }
 
+void cppSimulatorImp::set_move_order(PyObject * args, PyObject * kwds)
+{
+    char* side = NULL;
+    int idx = 0;
+    double x, y;
+    if (!PyArg_ParseTuple(args, "sidd", &side, &idx, &x, &y)) {
+        printf("Parse Arg error");
+    }
+    if (side == "Radiant") {
+        RadiantHeros[idx]->set_move_order({ x,y });
+    }
+    else {
+        DireHeros[idx]->set_move_order({ x,y });
+    }
+}
+
 PyObject* cppSimulatorImp::get_state_tup(std::string side, int idx)
 {
     if (side == "Radiant") {

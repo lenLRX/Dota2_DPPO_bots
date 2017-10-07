@@ -15,6 +15,7 @@ public:
     ~Hero();
     virtual void step();
     virtual void draw();
+    void set_move_order(pos_tup order);
     PyObject* get_state_tup();
 private:
     pos_tup init_loc;

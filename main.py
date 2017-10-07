@@ -5,6 +5,8 @@ import time
 import threading
 import _thread
 
+from cppSimulator.cppSimulator import *
+
 #import ptvsd
 #ptvsd.enable_attach("dota2_bot", address = ('0.0.0.0', 3421))
 
@@ -222,6 +224,96 @@ def start_simulator2():
         rad_agent.waitTraningFinish()
         dire_agent.waitTraningFinish()
 
+def start_cppSimulator():
+    time.sleep(0.5)
+
+    yield
+
+    num_iter, canvas = yield
+
+    count = num_iter
+
+    def dist2mid(pos):
+        return math.hypot(pos[0],pos[1])
+
+    def dotproduct(pd_act, act, a):
+        dp = float(pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a
+        if dp != 0:
+            return dp / math.hypot(act[0],act[1])# normalize
+        else:
+            return dp
+    
+    def hero_location_by_tup(t):
+        return t[0]["self_input"]
+            
+
+    def reward(last, now, a):
+        _d = dist2mid(now)
+        _ld = dist2mid(last)
+        return ((_ld - _d) * 0.001 - 0.00001 * _d) * a
+
+    discount_factor = 1.0
+
+    while True:
+        _engine = cppSimulator(canvas)
+        count += 1
+        print("%d simulated game starts!"%count)
+        dire_act = np.asarray([0.0,0.0])
+        rad_act = np.asarray([0.0,0.0])
+        dire_agent = dispatch_table["Dire"]
+        rad_agent = dispatch_table["Radiant"]
+
+        d_tup = _engine.get_state_tup("Dire", 0)
+        r_tup = _engine.get_state_tup("Radiant", 0)
+
+        last_dire_location = hero_location_by_tup(d_tup)
+        last_rad_location = hero_location_by_tup(r_tup)
+
+        #discount_factor -= 0.001
+
+        if discount_factor < 0.0:
+            discount_factor = 0.0
+
+        while _engine.get_time() < 100:
+            d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
+            r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
+            _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
+            _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
+
+            _engine.loop()
+            if canvas != None:
+                #_engine.draw()
+                canvas.update_idletasks()
+
+            d_tup = _engine.get_state_tup("Dire", 0)
+            r_tup = _engine.get_state_tup("Radiant", 0)
+
+            d_tup = (d_tup[0],
+                d_tup[1] + reward(last_dire_location,
+                hero_location_by_tup(d_tup),discount_factor),
+                d_tup[2])
+            
+            r_tup = (r_tup[0],
+                r_tup[1] + reward(last_rad_location,
+                hero_location_by_tup(r_tup), discount_factor),
+                r_tup[2])
+
+            dire_act = dire_agent.step(d_tup)
+            rad_act = rad_agent.step(r_tup)
+
+            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            
+            last_dire_location = hero_location_by_tup(d_tup)
+            last_rad_location = hero_location_by_tup(r_tup)
+
+            yield
+
+            if d_tup[2] or r_tup[2]:
+                break
+        
+        rad_agent.waitTraningFinish()
+        dire_agent.waitTraningFinish()
 
 class Params():
     def __init__(self):
@@ -310,3 +402,7 @@ if __name__ == '__main__':
         g.send((num_iter / params.num_epoch, None))
         while True:
             g.send(None)
+    elif args.action == "cppSimulator_viz":
+        g = start_cppSimulator()
+        g.send(None)
+        visualize(g, num_iter / params.num_epoch)

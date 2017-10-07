@@ -43,6 +43,13 @@ cppSimulator_loop(cppSimulatorObject* self) {
 }
 
 static PyObject*
+cppSimulator_set_move_order(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
+    self->pImp->set_move_order(args, kwds);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject*
 cppSimulator_get_state_tup(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
     char* side = NULL;
     int idx = NULL;
@@ -60,8 +67,12 @@ static PyMethodDef cppSimulator_methods[] = {
     { "loop", (PyCFunction)cppSimulator_loop, METH_NOARGS,
     "mainloop of simulator"
     },
-    { "get_state_tup", (PyCFunction)cppSimulator_get_state_tup, METH_VARARGS|METH_KEYWORDS,
+    { "get_state_tup", (PyCFunction)cppSimulator_get_state_tup, METH_VARARGS | METH_KEYWORDS,
     "get (state, reward, done) by side and idx"
+    }
+    ,
+    { "set_move_order", (PyCFunction)cppSimulator_set_move_order, METH_VARARGS | METH_KEYWORDS,
+    "set move order side,idx,x,y"
     },
     { NULL }  /* Sentinel */
 };
