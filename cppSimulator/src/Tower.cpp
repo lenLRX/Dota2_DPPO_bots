@@ -7,7 +7,7 @@ static std::unordered_map<std::string, std::unordered_map<std::string, double> >
 
 static int init_TowerData = [&]()->int {
     TowerData["Tier1Tower"] = {
-        { "HP",1400 },
+        { "HP",14000000 },
         { "MP",0 },
         { "MovementSpeed",0 },
         { "Armor", 14 },
