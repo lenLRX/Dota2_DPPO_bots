@@ -227,10 +227,13 @@ class trainer(object):
         return self.action_out
 
     def fill_memory(self):
+        print("going to fill mem")
         R = torch.zeros(1, 1)
+        print("going to fill mem 1")
         self.values.append(Variable(R))
         R = Variable(R)
         A = Variable(torch.zeros(1, 1))
+        print("going to fill mem 2")
         for i in reversed(range(len(self.rewards))):
             try:
                 td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]

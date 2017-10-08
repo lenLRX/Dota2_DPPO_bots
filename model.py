@@ -120,10 +120,7 @@ class Shared_obs_stats():
 
 class _s_Shared_obs_stats():
     def __init__(self, num_inputs):
-        self.n = torch.zeros(num_inputs).share_memory_()
-        self.mean = torch.zeros(num_inputs).share_memory_()
-        self.mean_diff = torch.zeros(num_inputs).share_memory_()
-        self.var = torch.zeros(num_inputs).share_memory_()
+        pass
 
     def observes(self, obs):
         # observation mean var updates
