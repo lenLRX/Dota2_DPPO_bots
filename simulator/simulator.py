@@ -115,7 +115,7 @@ class DotaSimulator(object):
 
         state = {
             "self_input":self.self_input,
-            "ally_input":[[0,0,0,0,0,0,0]]
+            "ally_input":[[0,0]]
         }
 
         reward = self.reward()

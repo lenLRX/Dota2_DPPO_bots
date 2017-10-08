@@ -141,5 +141,7 @@ PyObject* Hero::get_state_tup()
 
     PyObject* ret = Py_BuildValue("(OdO)", state, reward, _isDead ? Py_True : Py_False);
 
+    Py_DECREF(state);
+
     return ret;
 }
