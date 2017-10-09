@@ -75,7 +75,6 @@ bool Sprite::damadged(double dmg)
     }
     HP -= dmg;
     if (HP <= 0.0) {
-        printf("I'm dead!\n");
         dead();
     }
     return true;
@@ -88,7 +87,6 @@ void Sprite::dead()
     for (Sprite* s : Engine->get_sprites()) {
         if (s->side != side && S2Sdistance(*s, *this) <= 1300.0) {
             s->exp += bountyEXP;
-            printf("%p get exp\n", s);
         }
     }
 }
