@@ -14,6 +14,8 @@ cppSimulator_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     cppSimulatorObject *self;
     self = (cppSimulatorObject *)type->tp_alloc(type, 0);
+    Py_XDECREF(args);
+    Py_XDECREF(kwds);
     return (PyObject *)self;
 }
 

@@ -1,0 +1,1 @@
+python -u main.py cppSimulator|tee log.txt

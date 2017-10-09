@@ -1,0 +1,2 @@
+cd cppSimulator
+./build.sh
