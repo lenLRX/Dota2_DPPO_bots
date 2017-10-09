@@ -283,7 +283,7 @@ def start_cppSimulator():
         if discount_factor < 0.0:
             discount_factor = 0.0
 
-        while _engine.get_time() < 1000:
+        while _engine.get_time() < 200:
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
             _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
@@ -344,13 +344,13 @@ def start_cppSimulator():
 
 class Params():
     def __init__(self):
-        self.batch_size = 200
+        self.batch_size = 500
         self.lr = 3e-4
         self.gamma = 0.995
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
-        self.num_epoch = 10
+        self.num_epoch = 1
         self.num_steps = 20000
         self.exploration_size = 50#make it small
         self.num_processes = 4
