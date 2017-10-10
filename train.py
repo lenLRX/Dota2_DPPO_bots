@@ -189,12 +189,9 @@ class trainer(object):
         self.state, self.reward, self.done = state_tuple_in
         raw_reward = self.reward
 
-        try:
-            self.shared_obs_stats.observes(self.state)
-            self.state = self.shared_obs_stats.normalize(self.state)
-        except Exception:
-            print(state_tuple_in)
-            sys.exit(-1)
+        self.shared_obs_stats.observes(self.state)
+        self.state = self.shared_obs_stats.normalize(self.state)
+
         
         #nn_start_time = time.time()
         mu, sigma_sq, v = self.model(self.state)

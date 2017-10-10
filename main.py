@@ -309,9 +309,15 @@ def start_cppSimulator():
                 r_tup[1] + reward(last_rad_location,
                 hero_location_by_tup(r_tup), discount_factor),
                 r_tup[2])
-
-            dire_act = dire_agent.step(d_tup)
-            rad_act = rad_agent.step(r_tup)
+            
+            try:
+                dire_act = dire_agent.step(d_tup)
+                rad_act = rad_agent.step(r_tup)
+            except Exception as e:
+                print(repr(e),flush=True)
+                print("origin output ", d_tup , r_tup,flush=True)
+                print("get again",_engine.get_state_tup("Dire", 0),_engine.get_state_tup("Radiant", 0),flush=True)
+                sys.exit(-1)
 
             #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
             #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
