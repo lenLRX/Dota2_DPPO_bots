@@ -22,6 +22,8 @@ include_directories(include)
 
 file(GLOB HEADERS include/*.h)
 
+#add_definitions(-g)
+
 aux_source_directory(src SRCS)
 add_library(cppSimulator SHARED ${SRCS} ${HEADERS})
 
