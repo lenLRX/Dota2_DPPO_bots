@@ -42,7 +42,7 @@ void Sprite::move()
 
     if (isnan(a)) {
         printf("found nan\n");
-        fflush(stdout)
+        fflush(stdout);
         exit(-1);
     }
 
