@@ -33,11 +33,16 @@ void Sprite::move()
 
     double dx = std::get<0>(move_target) - std::get<0>(location);
     double dy = std::get<1>(move_target) - std::get<1>(location);
+    
+    if(dx == 0.0 && dy == 0.0){
+        return;
+    }
 
-    double a = atan2(dy, dx);
+    double a = std::atan2(dy, dx);
 
     if (isnan(a)) {
-        printf("found nan");
+        printf("found nan\n");
+        fflush(stdout)
         exit(-1);
     }
 
