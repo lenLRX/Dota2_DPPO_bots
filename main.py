@@ -297,6 +297,8 @@ def start_cppSimulator():
             d_tup = _engine.get_state_tup("Dire", 0)
             r_tup = _engine.get_state_tup("Radiant", 0)
 
+            print("origin output ", d_tup , r_tup,flush=True)
+
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
 
@@ -319,8 +321,8 @@ def start_cppSimulator():
                 print("get again",_engine.get_state_tup("Dire", 0),_engine.get_state_tup("Radiant", 0),flush=True)
                 sys.exit(-1)
 
-            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
             last_dire_location = hero_location_by_tup(d_tup)
             last_rad_location = hero_location_by_tup(r_tup)
@@ -411,10 +413,6 @@ if __name__ == '__main__':
 
     dispatch_table["Radiant"] = rad_trainer
     dispatch_table["Dire"] = dire_trainer
-
-    _thread.start_new_thread(chief,
-    (params,CommonConV,atomic_counter,
-    shared_model,shared_grad_buffers,optimizer,num_iter))
 
     if args.action == "start_server":
         start_env()
