@@ -113,15 +113,29 @@ PyObject* Hero::get_state_tup()
         std::get<0>(location) / Config::map_div,
         std::get<1>(location) / Config::map_div);
 
+    if (NULL == self_input) {
+        printf("self_input error!\n");
+        return NULL;
+    }
+
     auto nearby_ally = Engine->get_nearby_ally(this);
     Py_ssize_t ally_input_size = static_cast<Py_ssize_t>(nearby_ally.size());
     PyObject* ally_input = NULL;
     if (ally_input_size > 0) {
         ally_input = PyList_New(ally_input_size);
+        if (NULL == ally_input) {
+            printf("ally_input error!\n");
+            return NULL;
+        }
         for (Py_ssize_t i = 0; i < ally_input_size; ++i) {
-            PyList_SetItem(ally_input, i, Py_BuildValue("[dd]",
+            PyObject* obj = Py_BuildValue("[dd]",
                 std::get<0>(nearby_ally[i].first->get_location()) / Config::map_div,
-                std::get<1>(nearby_ally[i].first->get_location()) / Config::map_div));
+                std::get<1>(nearby_ally[i].first->get_location()) / Config::map_div);
+            if (NULL == obj) {
+                printf("ally obj error!\n");
+                return NULL;
+            }
+            PyList_SetItem(ally_input, i, obj);
         }
     }
     else {
