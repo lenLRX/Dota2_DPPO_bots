@@ -12,7 +12,7 @@ endif (WIN32)
 if (UNIX)
     set(PYTHON_LIBRARIES "/root/anaconda3/lib")
     set(PYTHON_INCLUDE_DIRS "/root/anaconda3/include/python3.6m")
-    link_libraries(python3)
+    link_libraries(python3 python3.6m)
 endif(UNIX)
 
 #FIND_PACKAGE(PythonLibs)
@@ -22,8 +22,6 @@ link_directories(${PYTHON_LIBRARIES})
 include_directories(include)
 
 file(GLOB HEADERS include/*.h)
-
-#add_definitions(-g)
 
 aux_source_directory(src SRCS)
 add_library(cppSimulator SHARED ${SRCS} ${HEADERS})
