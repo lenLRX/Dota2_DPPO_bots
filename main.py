@@ -211,8 +211,8 @@ def start_simulator2():
             dire_act = dire_agent.step(d_tup)
             rad_act = rad_agent.step(r_tup)
 
-            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
             last_dire_location = dire_hero.location
             last_rad_location = rad_hero.location
@@ -297,7 +297,7 @@ def start_cppSimulator():
             d_tup = _engine.get_state_tup("Dire", 0)
             r_tup = _engine.get_state_tup("Radiant", 0)
 
-            print("origin output ", d_tup , r_tup,flush=True)
+            #print("origin output ", d_tup , r_tup,flush=True)
 
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
@@ -321,8 +321,8 @@ def start_cppSimulator():
                 print("get again",_engine.get_state_tup("Dire", 0),_engine.get_state_tup("Radiant", 0),flush=True)
                 sys.exit(-1)
 
-            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
             last_dire_location = hero_location_by_tup(d_tup)
             last_rad_location = hero_location_by_tup(r_tup)
