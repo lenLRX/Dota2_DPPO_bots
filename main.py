@@ -5,6 +5,8 @@ import time
 import threading
 import _thread
 
+import objgraph
+
 from cppSimulator.cppSimulator import *
 
 #import ptvsd
@@ -256,6 +258,8 @@ def start_cppSimulator():
     discount_factor = 1.0
 
     while True:
+        objgraph.show_growth()
+        objgraph.show_refs([globals()], filename="./log/%d.png"%count)
         _engine = cppSimulator(canvas)
         count += 1
         print("%d simulated game starts!"%count)
