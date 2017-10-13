@@ -258,9 +258,9 @@ def start_cppSimulator():
     discount_factor = 1.0
 
     while True:
-        objgraph.show_growth()
-        objgraph.show_most_common_types(limit=10)
-        objgraph.show_refs([globals()], filename="./log/%d.png"%count)
+        #objgraph.show_growth()
+        #objgraph.show_most_common_types(limit=10)
+        #objgraph.show_refs([globals()], filename="./log/%d.png"%count)
         _engine = cppSimulator(canvas)
         count += 1
         print("%d simulated game starts!"%count)
@@ -341,6 +341,7 @@ def start_cppSimulator():
         dire_agent.fill_memory()
 
         for it in range(Params().num_epoch):
+            shared_grad_buffers = dire.shared_grad_buffers
             rad_agent.train()
             dire_agent.train()
 
@@ -352,13 +353,13 @@ def start_cppSimulator():
             shared_grad_buffers.reset()
             print('update')
             if num_iter % 100 == 0:
-                torch.save(shared_model.state_dict(),"./model/" + str(num_iter))
+                torch.save(shared_model.state_dict(),"./model/%d"%int(num_iter))
 
 
 class Params():
     def __init__(self):
         self.batch_size = 500
-        self.lr = 3e-4
+        self.lr = 3e-5
         self.gamma = 0.95
         self.gae_param = 0.95
         self.clip = 0.2
