@@ -259,6 +259,7 @@ def start_cppSimulator():
 
     while True:
         objgraph.show_growth()
+        objgraph.show_most_common_types(limit=10)
         objgraph.show_refs([globals()], filename="./log/%d.png"%count)
         _engine = cppSimulator(canvas)
         count += 1
