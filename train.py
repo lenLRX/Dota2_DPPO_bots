@@ -187,7 +187,6 @@ class trainer(object):
         #_start_time = time.time()
 
         self.state, self.reward, self.done = state_tuple_in
-        raw_reward = self.reward
 
         self.shared_obs_stats.observes(self.state)
         self.state = self.shared_obs_stats.normalize(self.state)
@@ -220,7 +219,7 @@ class trainer(object):
         self.has_last_action = True
         
         #print("%d: action = %f %f value=%f reward = %f"%(
-        #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),raw_reward),sigma_sq.sqrt())
+        #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),self.reward),sigma_sq.sqrt())
         #print("total time",time.time() - _start_time)
         return self.action_out
 

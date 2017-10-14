@@ -341,7 +341,7 @@ def start_cppSimulator():
         dire_agent.fill_memory()
 
         for it in range(Params().num_epoch):
-            shared_grad_buffers = dire.shared_grad_buffers
+            shared_grad_buffers = rad_agent.shared_grad_buffers
             rad_agent.train()
             dire_agent.train()
 
@@ -352,6 +352,7 @@ def start_cppSimulator():
             optimizer.step()
             shared_grad_buffers.reset()
             print('update')
+            print("log_std is :",shared_model.state_dict()['log_std'])
             if num_iter % 100 == 0:
                 torch.save(shared_model.state_dict(),"./model/%d"%int(num_iter))
 
