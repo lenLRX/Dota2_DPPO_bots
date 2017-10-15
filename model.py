@@ -18,6 +18,8 @@ class Model(nn.Module):
 
         self.p_cat_layer = nn.Linear(h_size_1 * 2,h_size_2)
 
+        self.lstm = nn.LSTM(h_size_2,h_size_2)
+
         self.p_fc = nn.Linear(h_size_2, h_size_2)
 
         self.v_fc = nn.Linear(h_size_2, h_size_2)
@@ -35,6 +37,10 @@ class Model(nn.Module):
                 p.data /= torch.sum(p.data**2,0).expand_as(p.data)'''
         # mode
         self.train()
+    
+    def init_lstm(self):
+        self.lstm_hidden = (Variable(torch.zeros(1,1,self.h_size_2)),
+                           Variable(torch.zeros(1,1,self.h_size_2)))
 
     def forward(self, inputs):
         # actor
@@ -65,8 +71,10 @@ class Model(nn.Module):
                 )
             )
         #print(cat_out)
+
+        lstm_out,self.lstm_hidden = self.lstm(cat_out,self.lstm_hidden)
         
-        x = F.tanh(self.p_fc(cat_out))
+        x = F.tanh(self.p_fc(lstm_out))
         mu = F.tanh(self.mu(x))
         #print(mu,torch.exp(self.log_std).unsqueeze(0))
         log_std = torch.exp(self.log_std).unsqueeze(0).expand_as(mu)

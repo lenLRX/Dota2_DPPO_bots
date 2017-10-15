@@ -35,7 +35,9 @@ class ReplayMemory(object):
         samples = zip(*random.sample(self.memory, batch_size))
         _out = []
         first = True
+        i = 0
         for _s in samples:
+            i += 1
             if first == True:
                 first = False
                 _out_dict = {}
@@ -46,8 +48,7 @@ class ReplayMemory(object):
                         if not k == "self_input":
                             _out_dict[k].append(_t[k])
                         else:
-                            if isinstance(_t[k],list):
-                                print(_s,k)
+                            #print(_s,k)
                             _out_dict[k].append(_t[k].view(
                                 -1,self.params.num_inputs[k]))
                 for k in _out_dict:
@@ -57,7 +58,7 @@ class ReplayMemory(object):
                     #print(_out_dict[k].size())
                 _out.append(_out_dict)
             else:
-                #print(_s)
+                #print(_s,i)
                 _out.append(torch.cat(_s,0))
                 #print(torch.cat(_s,0).size())
         return _out
@@ -109,7 +110,7 @@ class trainer(object):
         torch.manual_seed(self.params.seed)
         self.model = Model(self.params.num_inputs,self.params.num_outputs)
 
-        self.memory = ReplayMemory(params,10000)
+        self.memory = ReplayMemory(params,10000000)
 
         self.init_state = {"self_input":[0 for x in range(self.params.num_inputs["self_input"])],
                 "ally_input":[[0 for x in range(self.params.num_inputs["ally_input"])]]}
@@ -181,6 +182,7 @@ class trainer(object):
         self.av_reward = 0
         self.cum_reward = 0
         self.cum_done = 0
+        self.model.init_lstm()
 
     def step(self, state_tuple_in):
         #_start_time = time.time()
@@ -197,7 +199,7 @@ class trainer(object):
         #print(time.time() - nn_start_time)
 
         if np.random.rand() < 0.05:
-            self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(-1,2)
+            self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         
@@ -248,6 +250,7 @@ class trainer(object):
     def train(self):
         model_old = Model(self.params.num_inputs, self.params.num_outputs)
         model_old.load_state_dict(self.model.state_dict())
+        model_old.init_lstm()
         # load new model
         self.model.load_state_dict(self.shared_model.state_dict())
         self.model.zero_grad()

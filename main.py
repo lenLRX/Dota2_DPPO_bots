@@ -317,14 +317,9 @@ def start_cppSimulator():
                 hero_location_by_tup(r_tup), discount_factor),
                 r_tup[2])
             
-            try:
-                dire_act = dire_agent.step(d_tup)
-                rad_act = rad_agent.step(r_tup)
-            except Exception as e:
-                print(repr(e),flush=True)
-                print("origin output ", d_tup , r_tup,flush=True)
-                print("get again",_engine.get_state_tup("Dire", 0),_engine.get_state_tup("Radiant", 0),flush=True)
-                sys.exit(-1)
+        
+            dire_act = dire_agent.step(d_tup)
+            rad_act = rad_agent.step(r_tup)
 
             #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
             #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
@@ -355,7 +350,7 @@ def start_cppSimulator():
                 
                 
 
-                torch.save(shared_model.state_dict(),"./model/%d"%int(num_iter))
+            torch.save(shared_model.state_dict(),"./model/%d"%int(count))
             print('update')
             print("log_std is :",shared_model.state_dict()['log_std'])
             shared_model.state_dict()['log_std'] -= 0.01
@@ -400,6 +395,7 @@ if __name__ == '__main__':
 
     if args.model != None:
         shared_model.load_state_dict(torch.load(args.model))
+        print("loaded %s"%args.model)
     
     if args.i != None:
         num_iter = int(args.i)
