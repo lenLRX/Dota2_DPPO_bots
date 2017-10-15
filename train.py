@@ -172,7 +172,6 @@ class trainer(object):
         return ret
 
     def pre_train(self):
-        self.memory.clear()
         self.states = []
         self.actions = []
         self.rewards = []

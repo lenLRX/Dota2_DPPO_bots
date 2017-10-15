@@ -340,32 +340,38 @@ def start_cppSimulator():
         rad_agent.fill_memory()
         dire_agent.fill_memory()
 
-        for it in range(Params().num_epoch):
-            shared_grad_buffers = rad_agent.shared_grad_buffers
-            rad_agent.train()
-            dire_agent.train()
+        if count % 10 == 0 and count > 0:
+            for it in range(Params().num_epoch):
+                shared_grad_buffers = rad_agent.shared_grad_buffers
+                rad_agent.train()
+                dire_agent.train()
 
-            num_iter = num_iter + 1
+                num_iter = num_iter + 1
 
-            for n,p in shared_model.named_parameters():
-                p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-            optimizer.step()
-            shared_grad_buffers.reset()
+                for n,p in shared_model.named_parameters():
+                    p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
+                optimizer.step()
+                shared_grad_buffers.reset()
+                
+                
+
+                torch.save(shared_model.state_dict(),"./model/%d"%int(num_iter))
             print('update')
             print("log_std is :",shared_model.state_dict()['log_std'])
-            if num_iter % 100 == 0:
-                torch.save(shared_model.state_dict(),"./model/%d"%int(num_iter))
+            shared_model.state_dict()['log_std'] -= 0.01
+            rad_agent.memory.clear()
+            dire_agent.memory.clear()
 
 
 class Params():
     def __init__(self):
-        self.batch_size = 500
+        self.batch_size = 2000
         self.lr = 3e-5
         self.gamma = 0.95
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
-        self.num_epoch = 1
+        self.num_epoch = 20
         self.num_steps = 20000
         self.exploration_size = 50#make it small
         self.num_processes = 4
