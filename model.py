@@ -8,8 +8,8 @@ import torch.multiprocessing as mp
 class Model(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
-        self.h_size_1 = 100
-        self.h_size_2 = 100
+        self.h_size_1 = 20
+        self.h_size_2 = 20
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2
         self.num_inputs = num_inputs
@@ -42,7 +42,9 @@ class Model(nn.Module):
         self.lstm_hidden = (Variable(torch.zeros(1,1,self.h_size_2)),
                            Variable(torch.zeros(1,1,self.h_size_2)))
 
-    def forward(self, inputs):
+    def forward(self, inputs, hidden = None):
+        if hidden != None:
+            self.lstm_hidden = hidden
         # actor
         self_input = inputs["self_input"]
         self_input_out = F.tanh(self.p_self_input(self_input)).view(-1,self.h_size_1)

@@ -5,6 +5,7 @@ import random
 import math
 import time
 import threading
+import code
 
 import torch
 import torch.nn.functional as F
@@ -58,8 +59,10 @@ class ReplayMemory(object):
                     #print(_out_dict[k].size())
                 _out.append(_out_dict)
             else:
-                #print(_s,i)
-                _out.append(torch.cat(_s,0))
+                if i == 5:
+                    _out.append((torch.cat(_h,0).detach() for _h in zip(*_s)))
+                else:
+                    _out.append(torch.cat(_s,0))
                 #print(torch.cat(_s,0).size())
         return _out
 
@@ -101,6 +104,7 @@ def detach_state(state):
             new_state[k] = state[k].detach()
     
     return new_state
+
 
 
 class trainer(object):
@@ -174,6 +178,7 @@ class trainer(object):
 
     def pre_train(self):
         self.states = []
+        self.hidden_state = []
         self.actions = []
         self.rewards = []
         self.values = []
@@ -212,6 +217,8 @@ class trainer(object):
 
         if self.has_last_action:
             self.states.append(self.state)
+            self.hidden_state.append(self.model.lstm_hidden)
+            #print(self.hidden_state)
             self.actions.append(self.last_action)
             self.values.append(v)
             self.rewards.append(self.reward)
@@ -245,7 +252,8 @@ class trainer(object):
                     for v in self.values:
                         dbgout.write("%d  %s\n"%(i,str(v)))
         # store usefull info:
-        self.memory.push([self.states, self.actions, self.returns, self.advantages])
+        #print(self.hidden_state)
+        self.memory.push([self.states, self.actions, self.returns, self.advantages, self.hidden_state])
     
     def train(self):
         model_old = Model(self.params.num_inputs, self.params.num_outputs)
@@ -255,9 +263,9 @@ class trainer(object):
         self.model.load_state_dict(self.shared_model.state_dict())
         self.model.zero_grad()
         # new mini_batch
-        batch_states, batch_actions, batch_returns, batch_advantages = self.memory.sample(self.params.batch_size)
+        batch_states, batch_actions, batch_returns, batch_advantages, batch_hidden_state = self.memory.sample(self.params.batch_size)
         # old probas
-        mu_old, sigma_sq_old, v_pred_old = model_old(detach_state(batch_states))
+        mu_old, sigma_sq_old, v_pred_old = model_old(detach_state(batch_states),batch_hidden_state)
         probs_old = normal(batch_actions, mu_old, sigma_sq_old)
         # new probas
         mu, sigma_sq, v_pred = self.model(batch_states)
