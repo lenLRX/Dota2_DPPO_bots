@@ -330,7 +330,7 @@ def start_cppSimulator():
         rad_agent.fill_memory()
         dire_agent.fill_memory()
 
-        if True or count % 10 == 0 and count > 0:
+        if count % 10 == 0 and count > 0:
             for it in range(Params().num_epoch):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
                 start_t = time.time()
