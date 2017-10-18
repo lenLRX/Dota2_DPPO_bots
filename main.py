@@ -5,8 +5,6 @@ import time
 import threading
 import _thread
 
-import objgraph
-
 from cppSimulator.cppSimulator import *
 
 #import ptvsd
@@ -258,9 +256,6 @@ def start_cppSimulator():
     discount_factor = 1.0
 
     while True:
-        #objgraph.show_growth()
-        #objgraph.show_most_common_types(limit=10)
-        #objgraph.show_refs([globals()], filename="./log/%d.png"%count)
         _engine = cppSimulator(canvas)
         count += 1
         print("%d simulated game starts!"%count)
@@ -338,8 +333,11 @@ def start_cppSimulator():
         if True or count % 10 == 0 and count > 0:
             for it in range(Params().num_epoch):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
+                start_t = time.time()
                 rad_agent.train()
                 dire_agent.train()
+                t1 = time.time()
+                print("trianing x2 : %fs"%(t1 - start_t))
 
                 num_iter = num_iter + 1
 
@@ -347,6 +345,7 @@ def start_cppSimulator():
                     p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
                 optimizer.step()
                 shared_grad_buffers.reset()
+                print("opt time: %fs"%(time.time() - t1))
                 
                 
 
@@ -361,7 +360,7 @@ def start_cppSimulator():
 class Params():
     def __init__(self):
         self.batch_size = 2000
-        self.lr = 3e-5
+        self.lr = 1e-3
         self.gamma = 0.95
         self.gae_param = 0.95
         self.clip = 0.2
