@@ -114,6 +114,7 @@ class trainer(object):
         self.params = params
         torch.manual_seed(self.params.seed)
         self.model = Model(self.params.num_inputs,self.params.num_outputs)
+        self.model.load_state_dict(shared_model.state_dict())
 
         self.memory = ReplayMemory(params,10000000)
 
