@@ -5,7 +5,7 @@ Using PPO with clip loss (from https://arxiv.org/pdf/1707.06347.pdf).
 work in progress
 
 #req
-pytorch cmake
+python3.6 pytorch cmake
 
 #install
 use cmake-gui and visual studio to build on windows

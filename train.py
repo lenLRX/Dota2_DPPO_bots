@@ -13,7 +13,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torch.multiprocessing as mp
 
-from model import Model,_s_Shared_obs_stats
+from model import Model,Shared_obs_stats,_s_Shared_obs_stats
 
 class ReplayMemory(object):
     def __init__(self, params, capacity):
@@ -108,7 +108,8 @@ def detach_state(state):
 
 
 class trainer(object):
-    def __init__(self,params, shared_model, shared_grad_buffers, shared_obs_stats, atomicInt, ChiefConV):
+    def __init__(self,params, shared_model, shared_grad_buffers,
+        shared_obs_stats = None, atomicInt = None, ChiefConV = None):
         self.atomicInt = atomicInt
         self.params = params
         torch.manual_seed(self.params.seed)
@@ -124,7 +125,7 @@ class trainer(object):
         self.done = False
         self.episode_length = 0
         self.shared_model = shared_model
-        self.shared_obs_stats = shared_obs_stats
+        self.shared_obs_stats = Shared_obs_stats(params.num_inputs)
         self.shared_grad_buffers = shared_grad_buffers
 
         self.get_action_ConV = threading.Condition()
@@ -285,7 +286,7 @@ class trainer(object):
         loss_ent = -self.params.ent_coeff*torch.mean(probs*torch.log(probs+1e-5))
         # total
         total_loss = (loss_clip + loss_value + loss_ent)
-        print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_returns,0))
+        #print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_returns,0))
         # before step, update old_model:
         model_old.load_state_dict(self.model.state_dict())
         # prepare for step

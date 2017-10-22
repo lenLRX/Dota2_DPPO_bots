@@ -1,1 +1,1 @@
-python -u main.py cppSimulator|tee log.txt
+python -u main.py mp_sim|tee log.txt

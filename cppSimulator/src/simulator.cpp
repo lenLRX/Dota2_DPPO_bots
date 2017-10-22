@@ -4,7 +4,7 @@
 static void
 cppSimulator_dealloc(cppSimulatorObject* self)
 {
-    printf("going to delete pImp\n");
+    //printf("going to delete pImp\n");
     delete self->pImp;
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -21,7 +21,7 @@ cppSimulator_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 static int
 cppSimulator_init(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
-    printf("initing simulator\n");
+    //printf("initing simulator\n");
     PyObject* obj_canvas = NULL;
     if (!PyArg_ParseTuple(args, "|O",&obj_canvas)) {
         return -1;

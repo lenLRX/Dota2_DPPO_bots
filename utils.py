@@ -1,6 +1,8 @@
 import torch
 import torch.multiprocessing as mp
 import threading
+import time
+import math
 
 class AtomicInteger:
     def __init__(self):
@@ -56,3 +58,39 @@ class Counter:
         # used by chief
         with self.lock:
             self.val.value = 0
+
+def dist2mid(pos):
+    return math.hypot(pos[0],pos[1])
+
+def dotproduct(pd_act, act, a):
+    dp = float(pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a
+    if dp != 0:
+        return dp / math.hypot(act[0],act[1])# normalize
+    else:
+        return dp
+    
+def hero_location_by_tup(t):
+    return t[0]["self_input"]
+            
+
+def reward(last, now, a):
+    _d = dist2mid(now)
+    _ld = dist2mid(last)
+    return ((_ld - _d) * 0.01 - 0.0001 * _d) * a
+
+class Params():
+    def __init__(self):
+        self.batch_size = 2000
+        self.lr = 1e-3
+        self.gamma = 0.95
+        self.gae_param = 0.95
+        self.clip = 0.2
+        self.ent_coeff = 0.1
+        self.num_epoch = 1
+        self.num_steps = 20000
+        self.exploration_size = 50#make it small
+        self.update_treshold = 2 - 1
+        self.max_episode_length = 100
+        self.seed = int(time.time())
+        self.num_inputs = {"self_input":2,"ally_input":2}
+        self.num_outputs = 2
