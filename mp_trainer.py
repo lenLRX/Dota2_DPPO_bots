@@ -49,12 +49,12 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
             p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
         optimizer.step()
         shared_grad_buffers.reset()
-        with condition:
-            print("optimized %d"%num)
-            torch.save(shared_model.state_dict(),"./model/%d"%int(num))
-            print("log_std is :",shared_model.state_dict()['log_std'])
-            shared_model.state_dict()['log_std'] -= 0.001
-            condition.notify_all()
+
+        print("optimized %d"%num)
+        torch.save(shared_model.state_dict(),"./model/%d"%int(num))
+        print("log_std is :",shared_model.state_dict()['log_std'])
+        shared_model.state_dict()['log_std'] -= 0.001
+        barrier.wait()
 
 def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
     params = Params()
@@ -149,5 +149,4 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
         barrier.wait()
         #training finished and wait for optimizer
-        with condition:
-            condition.wait()
+        barrier.wait()
