@@ -53,7 +53,6 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         print("optimized %d"%num)
         torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         print("log_std is :",shared_model.state_dict()['log_std'])
-        shared_model.state_dict()['log_std'] -= 0.001
         barrier.wait()
 
 def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
@@ -88,14 +87,20 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
         if discount_factor < 0.0:
             discount_factor = 0.0
+        
+        tick = 0
 
         while _engine.get_time() < 120:
+            tick += 1
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
             _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
             _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
             _engine.loop()
+            if tick %5 != 0:
+                continue#for faster training
+            
             if canvas != None:
                 #_engine.draw()
                 canvas.update_idletasks()
