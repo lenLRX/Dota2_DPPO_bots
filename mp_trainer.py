@@ -52,7 +52,6 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
 
         print("optimized %d"%num)
         torch.save(shared_model.state_dict(),"./model/%d"%int(num))
-        print("log_std is :",shared_model.state_dict()['log_std'])
         barrier.wait()
 
 def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
@@ -100,7 +99,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             _engine.loop()
             if tick %5 != 0:
                 continue#for faster training
-            
+
             if canvas != None:
                 #_engine.draw()
                 canvas.update_idletasks()
