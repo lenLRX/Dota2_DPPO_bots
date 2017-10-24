@@ -139,7 +139,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         rad_agent.fill_memory()
         dire_agent.fill_memory()
 
-        if count > 0 and count % 10:
+        if count > 0 and count % 10 == 0:
             avg_loss = 0.0
             for it in range(Params().num_epoch):
                 start_t = time.time()
