@@ -286,7 +286,8 @@ class trainer(object):
         # entropy
         loss_ent = -self.params.ent_coeff*torch.mean(probs*torch.log(probs+1e-5))
         #advantage loss
-        loss_adv = (log_std_old - batch_advantages.clamp(-10,10)).abs()
+        adv_log_std = log_std_old.view(-1,self.params.num_outputs)
+        loss_adv = (adv_log_std - batch_advantages.clamp(-10,10).expand_as(adv_log_std)).abs().mean(0).mean(0)
         # total
         total_loss = (loss_clip + loss_value + loss_ent + loss_adv)
         #print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_returns,0))
