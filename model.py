@@ -5,9 +5,12 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.multiprocessing as mp
 
+from utils import *
+
 class Model(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
+        self.params = Params()
         self.h_size_1 = 20
         self.h_size_2 = 20
         h_size_1 = self.h_size_1
@@ -78,9 +81,10 @@ class Model(nn.Module):
         
         x = F.tanh(self.p_fc(lstm_out))
         mu = F.tanh(self.mu(x))
-        #I wish the output is [-inf,0]
+        #log_std should in [0,10]
+        #when error is great , log_std is great, log_std_out is great,great randomness
         log_std = self.log_std(x)
-        log_std_out = torch.exp(-F.relu(log_std))
+        log_std_out = torch.exp(F.relu(log_std) - self.params.log_std_bound)
         # critic
         x = F.tanh(self.v_fc(cat_out))
         v = self.v(x)

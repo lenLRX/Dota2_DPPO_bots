@@ -94,3 +94,4 @@ class Params():
         self.seed = int(time.time())
         self.num_inputs = {"self_input":3,"ally_input":2}
         self.num_outputs = 2
+        self.log_std_bound = 10
