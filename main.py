@@ -25,7 +25,6 @@ import numpy as np
 
 from model import Model, Shared_grad_buffers, Shared_obs_stats
 from train import trainer
-from test import test
 from chief import chief
 from utils import *
 from simulator.simulator import *

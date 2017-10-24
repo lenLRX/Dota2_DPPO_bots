@@ -79,11 +79,12 @@ class Model(nn.Module):
         x = F.tanh(self.p_fc(lstm_out))
         mu = F.tanh(self.mu(x))
         #I wish the output is [-inf,0]
-        log_std = torch.exp(-F.relu(self.log_std(x)))
+        log_std = self.log_std(x)
+        log_std_out = torch.exp(-F.relu(log_std))
         # critic
         x = F.tanh(self.v_fc(cat_out))
         v = self.v(x)
-        return mu, log_std, v
+        return mu, log_std_out, v, log_std
 
 class Shared_grad_buffers():
     def __init__(self, model):
