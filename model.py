@@ -78,7 +78,8 @@ class Model(nn.Module):
         
         x = F.tanh(self.p_fc(lstm_out))
         mu = F.tanh(self.mu(x))
-        log_std = torch.exp(self.log_std(x))
+        #I wish the output is [-inf,0]
+        log_std = torch.exp(-F.relu(self.log_std(x)))
         # critic
         x = F.tanh(self.v_fc(cat_out))
         v = self.v(x)

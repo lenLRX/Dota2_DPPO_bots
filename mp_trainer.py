@@ -140,14 +140,17 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         dire_agent.fill_memory()
 
         if count > 0:
+            avg_loss = 0.0
             for it in range(Params().num_epoch):
                 start_t = time.time()
-                rad_agent.train()
-                dire_agent.train()
+                avg_loss += rad_agent.train()
+                avg_loss += dire_agent.train()
                 t1 = time.time()
                 if id == 0:
                     print("trianing x2 : %fs"%(t1 - start_t))
-                
+            
+            if id == 0:
+                print("avg_loss %f"%avg_loss)
             rad_agent.memory.clear()
             dire_agent.memory.clear()
 

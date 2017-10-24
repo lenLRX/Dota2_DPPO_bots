@@ -295,6 +295,7 @@ class trainer(object):
         #ensure_shared_grads(model, shared_model)
         #shared_model.cum_grads()
         self.shared_grad_buffers.add_gradient(self.model)
+        return total_loss.data[0]
 
     def loop(self):
         while True:
