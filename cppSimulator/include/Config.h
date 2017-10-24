@@ -4,8 +4,8 @@
 #include <tuple>
 
 enum class Side {
-    Radiant,
-    Dire
+    Radiant = 0,
+    Dire = 1
 };
 
 typedef std::tuple<double, double> pos_tup;

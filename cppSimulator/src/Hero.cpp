@@ -109,9 +109,10 @@ void Hero::set_move_order(pos_tup order)
 
 PyObject* Hero::get_state_tup()
 {
-    PyObject* self_input = Py_BuildValue("[dd]",
+    PyObject* self_input = Py_BuildValue("[ddd]",
         std::get<0>(location) / Config::map_div,
-        std::get<1>(location) / Config::map_div);
+        std::get<1>(location) / Config::map_div,
+        side);
 
     if (NULL == self_input) {
         printf("self_input error!\n");

@@ -92,5 +92,5 @@ class Params():
         self.update_treshold = 2 - 1
         self.max_episode_length = 100
         self.seed = int(time.time())
-        self.num_inputs = {"self_input":2,"ally_input":2}
+        self.num_inputs = {"self_input":3,"ally_input":2}
         self.num_outputs = 2
