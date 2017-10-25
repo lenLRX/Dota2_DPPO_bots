@@ -76,13 +76,13 @@ def hero_location_by_tup(t):
 def reward(last, now, a):
     _d = dist2mid(now)
     _ld = dist2mid(last)
-    return ((_ld - _d) * 0.01 - 0.0001 * _d) * a
+    return ((_ld - _d) * 0.01) * a
 
 class Params():
     def __init__(self):
         self.batch_size = 2000
         self.lr = 1e-3
-        self.gamma = 0.6
+        self.gamma = 0.1
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
