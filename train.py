@@ -299,8 +299,8 @@ class trainer(object):
         # total
         inverse_loss, forward_loss = self.ICM_loss(_actions, batch_state1s, batch_inverses, batch_forwards)
         self.reset_ICM()
-        print(inverse_loss, forward_loss)
-        total_loss = (loss_clip + loss_value + loss_ent + inverse_loss + forward_loss)
+        #print("inverse_loss, forward_loss",inverse_loss, forward_loss)
+        total_loss = (loss_clip + loss_value + loss_ent + 0.005 * inverse_loss + 0.01 * forward_loss)
         #print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_returns,0))
         # before step, update old_model:
         model_old.load_state_dict(self.model.state_dict())
@@ -309,4 +309,4 @@ class trainer(object):
         #ensure_shared_grads(model, shared_model)
         #shared_model.cum_grads()
         self.shared_grad_buffers.add_gradient(self.model)
-        return total_loss.data[0]
+        return str(total_loss)

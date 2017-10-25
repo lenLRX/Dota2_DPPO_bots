@@ -111,18 +111,8 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
+            
 
-            d_tup = (d_tup[0],
-                d_tup[1] + reward(last_dire_location,
-                hero_location_by_tup(d_tup),discount_factor),
-                d_tup[2])
-            
-            r_tup = (r_tup[0],
-                r_tup[1] + reward(last_rad_location,
-                hero_location_by_tup(r_tup), discount_factor),
-                r_tup[2])
-            
-        
             dire_act = dire_agent.step(d_tup)
             rad_act = rad_agent.step(r_tup)
 
@@ -140,7 +130,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         dire_agent.fill_memory()
 
         if count > 0:
-            avg_loss = 0.0
+            avg_loss = ""
             for it in range(Params().num_epoch):
                 start_t = time.time()
                 avg_loss += rad_agent.train()
@@ -150,7 +140,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
                     print("trianing x2 : %fs"%(t1 - start_t))
             
             if id == 0:
-                print("avg_loss %f"%avg_loss)
+                print("loss %s"%avg_loss)
             rad_agent.memory.clear()
             dire_agent.memory.clear()
 
