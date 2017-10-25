@@ -31,7 +31,9 @@ class Model(nn.Module):
 
         self.v = nn.Linear(h_size_2,1)
 
-        self.inverse_dynamic = nn.Linear(h_size_1 * 2,num_outputs)
+        self.icm_hidden = nn.Linear(h_size_2, h_size_2)
+
+        self.inverse_dynamic = nn.Linear(h_size_2, num_outputs)
 
         for name, p in self.named_parameters():
             # init parameters
@@ -48,49 +50,54 @@ class Model(nn.Module):
         self.lstm_hidden = (Variable(torch.zeros(1,1,self.h_size_2)),
                            Variable(torch.zeros(1,1,self.h_size_2)))
 
-    def forward(self, inputs, hidden = None):
+    def forward(self, icm, inputs, hidden = None):
         if hidden != None:
             self.lstm_hidden = hidden
-        # actor
-        self_input = inputs["self_input"]
-        self_input_out = F.tanh(self.p_self_input(self_input)).view(-1,self.h_size_1)
+        
+        if icm != True:
+            # actor
+            self_input = inputs["self_input"]
+            self_input_out = F.tanh(self.p_self_input(self_input)).view(-1,self.h_size_1)
 
-        ally_creep_inputs = inputs["ally_input"]
-        #print(ally_creep_inputs)
-        avg_creep = None
+            ally_creep_inputs = inputs["ally_input"]
+            #print(ally_creep_inputs)
+            avg_creep = None
 
-        #print("training")
-        _temp = []
-        for item in ally_creep_inputs:
-            if isinstance(item,list):
-                item = item[0]
-            _out1 = F.tanh(
-                        self.p_ally_creep_input(item)).view(-1,self.h_size_1)
-            _temp.append(
-                    torch.mean(_out1,0).view(-1,self.h_size_1))
-        avg_creep = torch.cat(_temp,0)
-        #print(self_input_out.size(),avg_creep.size())
+            #print("training")
+            _temp = []
+            for item in ally_creep_inputs:
+                if isinstance(item,list):
+                    item = item[0]
+                _out1 = F.tanh(
+                            self.p_ally_creep_input(item)).view(-1,self.h_size_1)
+                _temp.append(
+                        torch.mean(_out1,0).view(-1,self.h_size_1))
+            avg_creep = torch.cat(_temp,0)
+            #print(self_input_out.size(),avg_creep.size())
 
-        cat_out = F.tanh(
-            self.p_cat_layer(
-                torch.cat(
-                    (self_input_out,avg_creep),1
+            cat_out = F.tanh(
+                self.p_cat_layer(
+                    torch.cat(
+                        (self_input_out,avg_creep),1
+                        )
                     )
                 )
-            )
-        #print(cat_out)
+            #print(cat_out)
 
-        lstm_out,self.lstm_hidden = self.lstm(cat_out,self.lstm_hidden)
-        
-        x = F.tanh(self.p_fc(lstm_out))
-        mu = F.tanh(self.mu(x))
+            lstm_out,self.lstm_hidden = self.lstm(cat_out,self.lstm_hidden)
+            
+            x = F.tanh(self.p_fc(lstm_out))
+            mu = F.tanh(self.mu(x))
 
-        # critic
-        x = F.tanh(self.v_fc(lstm_out))
-        v = self.v(x)
+            # critic
+            x = F.tanh(self.v_fc(lstm_out))
+            v = self.v(x)
 
-        prev_act = self.inverse_dynamic()
-        return mu, v, lstm_out
+            prev_act = self.inverse_dynamic()
+            return mu, v, lstm_out,self.lstm_hidden
+
+        else:
+            s_t, s_t1, a_t = inputs
 
 class Shared_grad_buffers():
     def __init__(self, model):
