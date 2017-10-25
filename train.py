@@ -294,7 +294,7 @@ class trainer(object):
         # total
         #total_loss = (loss_clip + loss_value + loss_ent + loss_adv)
         total_loss = (loss_clip + loss_value + loss_ent)
-        print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_advantages,0))
+        #print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_advantages,0))
         # before step, update old_model:
         model_old.load_state_dict(self.model.state_dict())
         # prepare for step

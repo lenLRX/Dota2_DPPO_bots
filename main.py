@@ -117,7 +117,7 @@ def start_cppSimulator():
 
     count = num_iter
 
-    discount_factor = 1.0
+    discount_factor = 100.0
 
     while True:
         _engine = cppSimulator(canvas)
