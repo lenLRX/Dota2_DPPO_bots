@@ -28,8 +28,11 @@ class Model(nn.Module):
         self.v_fc = nn.Linear(h_size_2, h_size_2)
 
         self.mu = nn.Linear(h_size_2, num_outputs)
-        self.log_std = nn.Linear(h_size_2, num_outputs)
+
         self.v = nn.Linear(h_size_2,1)
+
+        self.inverse_dynamic = nn.Linear(h_size_1 * 2,num_outputs)
+
         for name, p in self.named_parameters():
             # init parameters
             if 'bias' in name:
@@ -81,14 +84,13 @@ class Model(nn.Module):
         
         x = F.tanh(self.p_fc(lstm_out))
         mu = F.tanh(self.mu(x))
-        #log_std should in [0,10]
-        #when error is great , log_std is great, log_std_out is great,great randomness
-        log_std = self.log_std(x)
-        log_std_out = torch.exp(F.relu(log_std) - self.params.log_std_bound)
+
         # critic
-        x = F.tanh(self.v_fc(cat_out))
+        x = F.tanh(self.v_fc(lstm_out))
         v = self.v(x)
-        return mu, log_std_out, v, log_std
+
+        prev_act = self.inverse_dynamic()
+        return mu, v, lstm_out
 
 class Shared_grad_buffers():
     def __init__(self, model):
