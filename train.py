@@ -150,6 +150,7 @@ class trainer(object):
         self.reset_ICM()
     
     def reset_ICM(self):
+        self.raw_actions = []
         self.inverses = []
         self.forwards = []
         self.sts = []
@@ -201,6 +202,8 @@ class trainer(object):
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         
+        self.raw_action = mu
+        
 
         self.action_out = self.action.data.squeeze().numpy()
         self.action_spin_flag = True
@@ -214,6 +217,7 @@ class trainer(object):
             self.hidden_state.append(self.model.lstm_hidden)
             #print(self.hidden_state)
             self.actions.append(self.last_action)
+            self.raw_actions.append(self.last_raw_action)
             self.values.append(v)
             
 
@@ -231,6 +235,7 @@ class trainer(object):
 
         
         self.last_action = self.action
+        self.last_raw_action = self.raw_action
         self.last_st = lstm_out
         self.has_last_action = True
         
@@ -264,7 +269,7 @@ class trainer(object):
         self.memory.push([self.states, self.actions, self.returns, 
             self.advantages, self.hidden_state,
             #for ICM
-            self.actions, self.state1s,
+            self.raw_actions, self.state1s,
             self.inverses, self.forwards])
     
     def train(self):
