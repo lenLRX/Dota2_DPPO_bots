@@ -147,7 +147,7 @@ def start_cppSimulator():
         if discount_factor < 0.0:
             discount_factor = 0.0
 
-        while _engine.get_time() < 200:
+        while _engine.get_time() < 120:
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
             _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
@@ -194,8 +194,8 @@ def start_cppSimulator():
         rad_agent.fill_memory()
         dire_agent.fill_memory()
 
-        if count % 10 == 0 and count > 0:
-            for it in range(Params().num_epoch):
+        if count > 0:
+            for it in range(1):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
                 start_t = time.time()
                 rad_agent.train()
@@ -215,8 +215,6 @@ def start_cppSimulator():
 
             torch.save(shared_model.state_dict(),"./model/%d"%int(count))
             print('update')
-            print("log_std is :",shared_model.state_dict()['log_std'])
-            shared_model.state_dict()['log_std'] -= 0.01
             rad_agent.memory.clear()
             dire_agent.memory.clear()
 
