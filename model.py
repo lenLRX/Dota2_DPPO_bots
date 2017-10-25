@@ -29,11 +29,15 @@ class Model(nn.Module):
 
         self.mu = nn.Linear(h_size_2, num_outputs)
 
+        self.log_std = nn.Parameter(torch.zeros(num_outputs))
+
         self.v = nn.Linear(h_size_2,1)
 
         self.icm_hidden = nn.Linear(h_size_2, h_size_2)
 
-        self.inverse_dynamic = nn.Linear(h_size_2, num_outputs)
+        self.inverse_dynamic = nn.Linear(h_size_2 * 2, num_outputs)
+
+        self.forward_model =  nn.Linear(h_size_2 + num_outputs, h_size_2)
 
         for name, p in self.named_parameters():
             # init parameters
@@ -89,15 +93,26 @@ class Model(nn.Module):
             x = F.tanh(self.p_fc(lstm_out))
             mu = F.tanh(self.mu(x))
 
+            log_std = torch.exp(self.log_std).unsqueeze(0).expand_as(mu)
             # critic
             x = F.tanh(self.v_fc(lstm_out))
             v = self.v(x)
 
-            prev_act = self.inverse_dynamic()
-            return mu, v, lstm_out,self.lstm_hidden
+            return mu, log_std, v, lstm_out, self.lstm_hidden
 
         else:
             s_t, s_t1, a_t = inputs
+
+            s_t_out = F.tanh(self.icm_hidden(s_t))
+            s_t1_out = F.tanh(self.icm_hidden(s_t1))
+
+            inverse_cat = torch.cat((s_t_out, s_t1_out), 2)
+            forward_cat = torch.cat((s_t_out, a_t), 2)
+
+            inverse_out = F.tanh(self.inverse_dynamic(inverse_cat))
+            forward_out = F.tanh(self.forward_model(forward_cat))
+
+            return s_t1_out, inverse_out, forward_out
 
 class Shared_grad_buffers():
     def __init__(self, model):

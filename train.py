@@ -61,8 +61,10 @@ class ReplayMemory(object):
             else:
                 if i == 5:
                     _out.append((torch.cat(_h,0).detach() for _h in zip(*_s)))
-                else:
+                elif i < 5:
                     _out.append(torch.cat(_s,0))
+                else:
+                    _out.append(_s)
                 #print(torch.cat(_s,0).size())
         return _out
 
@@ -144,39 +146,26 @@ class trainer(object):
         self.has_last_action = False
 
         self.reward_normalizer = _s_Shared_obs_stats(1)
+
+        self.reset_ICM()
     
-    def notifyTrainingFinish(self):
-        while not self.is_training:
-            time.sleep(1)
-        self.is_training = False
-        print("notify training finish")
+    def reset_ICM(self):
+        self.inverses = []
+        self.forwards = []
+        self.sts = []
+        self.st1s = []
+        self.state1s = []
     
-    def waitTraningFinish(self):
-        print("waiting training finish")
-        self.is_training = True
-        while self.is_training:
-            time.sleep(1)
-        print("waiting training finish done")
-    
-    def set_state(self,st):
-        raise NotImplementedError()
-        #self.get_state_Conv.acquire()
-        self.state_tuple_in = (st["state"],float(st["reward"]),st["done"] == "true")
-        #self.get_state_Conv.notify()
-        #self.get_state_Conv.release()
-        self.flag = True
+    def ICM_loss(self,batch_actions, batch_state1s, batch_inverses, batch_forwards):
+        inverse_loss = 0.0
+        forward_loss = 0.0
+        for i in range(len(batch_actions)):
+            inverse_err = batch_inverses[i] - batch_actions[i]
+            inverse_loss = inverse_loss + 0.5 * (inverse_err.pow(2)).sum(2)
+            forward_err = batch_forwards[i] - batch_state1s[i]
+            forward_loss = forward_loss + 0.5 * (forward_err.pow(2)).sum(2)
         
-    
-    def get_action(self):
-        raise NotImplementedError()
-        #self.get_action_ConV.acquire()
-        time.sleep(0.5)
-        
-        ret = self.action_out
-        self.action_spin_flag = False
-        #self.get_action_ConV.notify()
-        #self.get_action_ConV.release()
-        return ret
+        return inverse_loss, forward_loss
 
     def pre_train(self):
         self.states = []
@@ -186,6 +175,7 @@ class trainer(object):
         self.values = []
         self.returns = []
         self.advantages = []
+        
         self.av_reward = 0
         self.cum_reward = 0
         self.cum_done = 0
@@ -201,15 +191,15 @@ class trainer(object):
 
         
         #nn_start_time = time.time()
-        mu, sigma_sq, v, _ = self.model(self.state)
+        mu, sigma_sq, v, lstm_out, lstm_hidden = self.model(False, self.state)
+        
         eps = torch.randn(mu.size())
         #print(time.time() - nn_start_time)
 
         if np.random.rand() < 0.05:
             self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
         else:
-            #self.action = (mu + sigma_sq.sqrt()*Variable(eps))
-            self.action = mu
+            self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         
 
         self.action_out = self.action.data.squeeze().numpy()
@@ -218,15 +208,30 @@ class trainer(object):
 
         self.cum_reward += self.reward
 
+        
         if self.has_last_action:
             self.states.append(self.state)
             self.hidden_state.append(self.model.lstm_hidden)
             #print(self.hidden_state)
             self.actions.append(self.last_action)
             self.values.append(v)
+            
+
+            vec_st1, inverse, forward = self.model(True,(
+                    self.last_st,
+                    lstm_out,
+                    self.last_action))
+
+            reward_intrinsic = ((vec_st1 - forward).pow(2)).sum(1) * 0.5
+            self.reward += float(reward_intrinsic.data.numpy()[0][0])
             self.rewards.append(self.reward)
+            self.state1s.append(vec_st1)
+            self.inverses.append(inverse)
+            self.forwards.append(forward)
+
         
         self.last_action = self.action
+        self.last_st = lstm_out
         self.has_last_action = True
         
         #print("%d: action = %f %f value=%f reward = %f"%(
@@ -256,7 +261,11 @@ class trainer(object):
                         dbgout.write("%d  %s\n"%(i,str(v)))
         # store usefull info:
         #print(self.hidden_state)
-        self.memory.push([self.states, self.actions, self.returns, self.advantages, self.hidden_state])
+        self.memory.push([self.states, self.actions, self.returns, 
+            self.advantages, self.hidden_state,
+            #for ICM
+            self.actions, self.state1s,
+            self.inverses, self.forwards])
     
     def train(self):
         model_old = Model(self.params.num_inputs, self.params.num_outputs)
@@ -266,12 +275,13 @@ class trainer(object):
         self.model.load_state_dict(self.shared_model.state_dict())
         self.model.zero_grad()
         # new mini_batch
-        batch_states, batch_actions, batch_returns, batch_advantages, batch_hidden_state = self.memory.sample(self.params.batch_size)
+        batch_states, batch_actions, batch_returns, batch_advantages, batch_hidden_state,\
+            _actions, batch_state1s, batch_inverses, batch_forwards = self.memory.sample(self.params.batch_size)
         # old probas
-        mu_old, sigma_sq_old, v_pred_old, log_std_old = model_old(detach_state(batch_states),batch_hidden_state)
+        mu_old, sigma_sq_old, v_pred_old, _, _ = model_old(False,detach_state(batch_states),batch_hidden_state)
         probs_old = normal(batch_actions, mu_old, sigma_sq_old)
         # new probas
-        mu, sigma_sq, v_pred, _ = self.model(batch_states)
+        mu, sigma_sq, v_pred, _, _ = self.model(False, batch_states)
         probs = normal(batch_actions, mu, sigma_sq)
         # ratio
         ratio = probs/(1e-10+probs_old)
@@ -286,14 +296,11 @@ class trainer(object):
         loss_value = 0.5*torch.mean(torch.max(vfloss1, vfloss2))
         # entropy
         loss_ent = -self.params.ent_coeff*torch.mean(probs*torch.log(probs+1e-5))
-        #advantage loss
-        adv_log_std = log_std_old.view(-1,self.params.num_outputs)
-        loss_adv = (adv_log_std 
-            - batch_advantages.clamp(-self.params.log_std_bound, self.params.log_std_bound).
-            expand_as(adv_log_std)).abs().mean(0).mean(0)
         # total
-        #total_loss = (loss_clip + loss_value + loss_ent + loss_adv)
-        total_loss = (loss_clip + loss_value + loss_ent)
+        inverse_loss, forward_loss = self.ICM_loss(_actions, batch_state1s, batch_inverses, batch_forwards)
+        self.reset_ICM()
+        print(inverse_loss, forward_loss)
+        total_loss = (loss_clip + loss_value + loss_ent + inverse_loss + forward_loss)
         #print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_returns,0))
         # before step, update old_model:
         model_old.load_state_dict(self.model.state_dict())
