@@ -208,8 +208,7 @@ class trainer(object):
         if np.random.rand() < 0.05:
             self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
         else:
-            #self.action = (mu + sigma_sq.sqrt()*Variable(eps))
-            self.action = mu
+            self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         
 
         self.action_out = self.action.data.squeeze().numpy()
@@ -292,8 +291,8 @@ class trainer(object):
             - batch_advantages.clamp(-self.params.log_std_bound, self.params.log_std_bound).
             expand_as(adv_log_std)).abs().mean(0).mean(0)
         # total
-        #total_loss = (loss_clip + loss_value + loss_ent + loss_adv)
-        total_loss = (loss_clip + loss_value + loss_ent)
+        total_loss = (loss_clip + loss_value + loss_ent + loss_adv)
+        #total_loss = (loss_clip + loss_value + loss_ent)
         #print("training  loss = %f"%(total_loss.data[0]),torch.mean(batch_advantages,0))
         # before step, update old_model:
         model_old.load_state_dict(self.model.state_dict())
