@@ -148,23 +148,7 @@ PyObject* Hero::get_state_tup()
     Py_DECREF(self_input);
     Py_DECREF(ally_input);
 
-    double bound_punish = 0.0;
-
-    if (std::get<0>(location) == Config::bound_length) {
-        bound_punish = 1;
-    }
-    if (std::get<1>(location) == Config::bound_length) {
-        bound_punish = 1;
-    }
-    if (std::get<0>(location) == -Config::bound_length) {
-        bound_punish = 1;
-    }
-    if (std::get<1>(location) == -Config::bound_length) {
-        bound_punish = 1;
-    }
-
-
-    double reward = (exp - last_exp) * 0.1 + (HP - last_HP) * 0.1 - bound_punish;
+    double reward = (exp - last_exp) * 0.1 + (HP - last_HP) * 0.1;
 
     last_exp = exp;
     last_HP = HP;
