@@ -147,13 +147,18 @@ def start_cppSimulator():
         if discount_factor < 0.0:
             discount_factor = 0.0
 
+        tick = 0
+
         while _engine.get_time() < 120:
+            tick += 1
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
             _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
             _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
             _engine.loop()
+            if tick %5 != 0:
+                continue#for faster training
             if canvas != None:
                 #_engine.draw()
                 canvas.update_idletasks()
