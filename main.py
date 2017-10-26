@@ -149,7 +149,7 @@ def start_cppSimulator():
 
         tick = 0
 
-        while _engine.get_time() < 1200:
+        while _engine.get_time() < 200:
             tick += 1
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
