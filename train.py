@@ -226,7 +226,7 @@ class trainer(object):
                     lstm_out,
                     self.last_action))
 
-            reward_intrinsic = ((vec_st1 - forward).pow(2)).sum(1) * 0.5
+            reward_intrinsic = ((vec_st1 - forward).pow(2)).sum(2) * 0.5
             self.reward += float(reward_intrinsic.data.numpy()[0][0])
             self.rewards.append(self.reward)
             self.state1s.append(vec_st1)
