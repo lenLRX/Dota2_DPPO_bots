@@ -51,9 +51,9 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         shared_grad_buffers.reset()
 
         print("optimized %d"%num)
-        torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         print("log_std:",shared_model.state_dict()["log_std"])
         shared_model.state_dict()["log_std"] = torch.clamp(shared_model.state_dict()["log_std"], max=0)
+        torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         barrier.wait()
 
 def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):

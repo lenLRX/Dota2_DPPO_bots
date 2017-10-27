@@ -109,9 +109,10 @@ void Hero::set_move_order(pos_tup order)
 
 PyObject* Hero::get_state_tup()
 {
+    int sign = side == Side::Radiant ? 1 : -1 ;
     PyObject* self_input = Py_BuildValue("[ddd]",
-        std::get<0>(location) / Config::map_div,
-        std::get<1>(location) / Config::map_div,
+        sign * std::get<0>(location) / Config::map_div,
+        sign * std::get<1>(location) / Config::map_div,
         side);
 
     if (NULL == self_input) {
@@ -130,8 +131,8 @@ PyObject* Hero::get_state_tup()
         }
         for (Py_ssize_t i = 0; i < ally_input_size; ++i) {
             PyObject* obj = Py_BuildValue("[dd]",
-                std::get<0>(nearby_ally[i].first->get_location()) / Config::map_div,
-                std::get<1>(nearby_ally[i].first->get_location()) / Config::map_div);
+                sign * std::get<0>(nearby_ally[i].first->get_location()) / Config::map_div,
+                sign * std::get<1>(nearby_ally[i].first->get_location()) / Config::map_div);
             if (NULL == obj) {
                 printf("ally obj error!\n");
                 return NULL;
