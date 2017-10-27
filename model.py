@@ -11,8 +11,8 @@ class Model(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
         self.params = Params()
-        self.h_size_1 = 20
-        self.h_size_2 = 20
+        self.h_size_1 = 10
+        self.h_size_2 = 10
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2
         self.num_inputs = num_inputs
@@ -61,7 +61,7 @@ class Model(nn.Module):
         if icm != True:
             # actor
             self_input = inputs["self_input"]
-            self_input_out = F.tanh(self.p_self_input(self_input)).view(-1,self.h_size_1)
+            self_input_out = F.relu(self.p_self_input(self_input)).view(-1,self.h_size_1)
 
             ally_creep_inputs = inputs["ally_input"]
             #print(ally_creep_inputs)
@@ -72,14 +72,14 @@ class Model(nn.Module):
             for item in ally_creep_inputs:
                 if isinstance(item,list):
                     item = item[0]
-                _out1 = F.tanh(
+                _out1 = F.relu(
                             self.p_ally_creep_input(item)).view(-1,self.h_size_1)
                 _temp.append(
                         torch.mean(_out1,0).view(-1,self.h_size_1))
             avg_creep = torch.cat(_temp,0)
             #print(self_input_out.size(),avg_creep.size())
 
-            cat_out = F.tanh(
+            cat_out = F.relu(
                 self.p_cat_layer(
                     torch.cat(
                         (self_input_out,avg_creep),1
@@ -90,7 +90,7 @@ class Model(nn.Module):
 
             lstm_out,self.lstm_hidden = self.lstm(cat_out,self.lstm_hidden)
             
-            x = F.tanh(self.p_fc(lstm_out))
+            x = F.relu(self.p_fc(lstm_out))
             mu = F.tanh(self.mu(x))
 
             log_std = torch.exp(self.log_std).unsqueeze(0).expand_as(mu)
@@ -103,14 +103,14 @@ class Model(nn.Module):
         else:
             s_t, s_t1, a_t = inputs
 
-            s_t_out = F.tanh(self.icm_hidden(s_t))
-            s_t1_out = F.tanh(self.icm_hidden(s_t1))
+            s_t_out = F.relu(self.icm_hidden(s_t))
+            s_t1_out = F.relu(self.icm_hidden(s_t1))
 
             inverse_cat = torch.cat((s_t_out, s_t1_out), 2)
             forward_cat = torch.cat((s_t_out, a_t), 2)
 
-            inverse_out = F.tanh(self.inverse_dynamic(inverse_cat))
-            forward_out = F.tanh(self.forward_model(forward_cat))
+            inverse_out = F.relu(self.inverse_dynamic(inverse_cat))
+            forward_out = F.relu(self.forward_model(forward_cat))
 
             return s_t1_out, inverse_out, forward_out
 

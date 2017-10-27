@@ -200,8 +200,8 @@ class trainer(object):
         if np.random.rand() < 0.05:
             self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
         else:
-            #self.action = (mu + sigma_sq.sqrt()*Variable(eps))
-            self.action = mu
+            self.action = (mu + sigma_sq.sqrt()*Variable(eps))
+            #self.action = mu
         
         self.raw_action = self.action
         
@@ -307,7 +307,7 @@ class trainer(object):
         self.reset_ICM()
         #print("inverse_loss, forward_loss",inverse_loss, forward_loss)
         total_loss = (loss_clip + loss_value + loss_ent + 0.005 * inverse_loss + 0.01 * forward_loss)
-        print("training  loss = ", total_loss, torch.mean(batch_returns,0))
+        #print("training  loss = ", total_loss, torch.mean(batch_returns,0))
         # before step, update old_model:
         model_old.load_state_dict(self.model.state_dict())
         # prepare for step
