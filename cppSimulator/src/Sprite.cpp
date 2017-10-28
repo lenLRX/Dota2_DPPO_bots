@@ -90,8 +90,14 @@ void Sprite::dead()
     _isDead = true;
     remove_visual_ent();
     for (Sprite* s : Engine->get_sprites()) {
-        if (s->side != side && S2Sdistance(*s, *this) <= 1300.0) {
-            s->exp += bountyEXP;
+        if (s->side != side) {
+            double dis = S2Sdistance(*s, *this);
+            if (dis <= 1300.0) {
+                s->exp += bountyEXP;
+            }
+            else {
+                s->exp += bountyEXP / (dis - 1300 + 1);
+            }
         }
     }
 }
