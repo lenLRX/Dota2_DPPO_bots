@@ -40,7 +40,7 @@ void Sprite::move()
 
     double a = std::atan2(dy, dx);
 
-    if (isnan(a)) {
+    if (std::isnan(a)) {
         printf("found nan\n");
         fflush(stdout);
         exit(-1);
