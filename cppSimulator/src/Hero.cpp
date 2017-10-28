@@ -104,7 +104,9 @@ void Hero::draw()
 
 void Hero::set_move_order(pos_tup order)
 {
-    move_order = order;
+    int sign = side == Side::Radiant ? 1 : -1;
+    move_order = pos_tup(sign * std::get<0>(order) / Config::map_div,
+        sign * std::get<1>(order) / Config::map_div);
 }
 
 PyObject* Hero::get_state_tup()
