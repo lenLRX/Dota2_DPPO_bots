@@ -287,6 +287,7 @@ class trainer(object):
         mu_old, sigma_sq_old, v_pred_old, _, _ = model_old(False,detach_state(batch_states),batch_hidden_state)
         probs_old = normal(batch_actions, mu_old, sigma_sq_old)
         # new probas
+        self.model.init_lstm()
         mu, sigma_sq, v_pred, _, _ = self.model(False, batch_states)
         probs = normal(batch_actions, mu, sigma_sq)
         # ratio
