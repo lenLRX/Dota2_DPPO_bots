@@ -319,17 +319,3 @@ class trainer(object):
         #shared_model.cum_grads()
         self.shared_grad_buffers.add_gradient(self.model)
         return str(total_loss)
-
-    def train2(self):
-        batch_states, batch_actions, batch_returns, batch_advantages, batch_hidden_state,\
-            _actions, batch_state1s, batch_inverses, batch_forwards = self.memory.sample(self.params.batch_size)
-        self.model.load_state_dict(self.shared_model.state_dict())
-        self.model.zero_grad()
-        self.model.init_lstm()
-        mu, sigma_sq, v_pred, _, _ = self.model(False, detach_state(batch_states),batch_hidden_state)
-        print(mu)
-        loss = (batch_actions - mu) ** 2
-        loss = torch.mean(loss.view(-1))
-        loss.backward(retain_variables=True)
-        self.shared_grad_buffers.add_gradient(self.model)
-        return str(total_loss)

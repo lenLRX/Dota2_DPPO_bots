@@ -167,15 +167,19 @@ def start_cppSimulator():
             d_tup = _engine.get_state_tup("Dire", 0)
             r_tup = _engine.get_state_tup("Radiant", 0)
 
-            #print("origin output ", d_tup , r_tup,flush=True)
-
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
+            #print("origin output ", d_tup , r_tup,flush=True)
+            p_dire_act = _engine.predefined_step("Dire",0)
+            p_rad_act = _engine.predefined_step("Radiant",0)
+
+            r_tup = (r_tup[0],r_tup[1] + dotproduct(p_rad_act,rad_act,1),r_tup[2])
+            d_tup = (d_tup[0],d_tup[1] + dotproduct(p_dire_act,dire_act,1),d_tup[2])
+
+            print("origin output ", d_tup , r_tup,flush=True)
             
-            dire_act = _engine.predefined_step("Dire",0)
-            rad_act = _engine.predefined_step("Radiant",0)
-            dire_act = dire_agent.step(d_tup,dire_act)
-            rad_act = rad_agent.step(r_tup,rad_act)
+            dire_act = dire_agent.step(d_tup)
+            rad_act = rad_agent.step(r_tup)
 
             print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
                 %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
@@ -195,8 +199,8 @@ def start_cppSimulator():
             for it in range(1):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
                 start_t = time.time()
-                rad_agent.train2()
-                dire_agent.train2()
+                rad_agent.train()
+                dire_agent.train()
                 t1 = time.time()
                 print("trianing x2 : %fs"%(t1 - start_t))
 
