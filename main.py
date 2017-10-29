@@ -149,10 +149,11 @@ def start_cppSimulator():
 
         tick = 0
 
-        while _engine.get_time() < 2000:
+        while _engine.get_time() < 200:
             tick += 1
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
+            
             _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
             _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
@@ -170,9 +171,11 @@ def start_cppSimulator():
 
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
-               
-            dire_act = dire_agent.step(d_tup)
-            rad_act = rad_agent.step(r_tup)
+            
+            dire_act = _engine.predefined_step("Dire",0)
+            rad_act = _engine.predefined_step("Radiant",0)
+            dire_act = dire_agent.step(d_tup,dire_act)
+            rad_act = rad_agent.step(r_tup,rad_act)
 
             print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
                 %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
@@ -192,8 +195,8 @@ def start_cppSimulator():
             for it in range(1):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
                 start_t = time.time()
-                rad_agent.train()
-                dire_agent.train()
+                rad_agent.train2()
+                dire_agent.train2()
                 t1 = time.time()
                 print("trianing x2 : %fs"%(t1 - start_t))
 

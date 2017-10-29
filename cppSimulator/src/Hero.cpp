@@ -166,6 +166,7 @@ PyObject* Hero::get_state_tup()
 
 PyObject* Hero::predefined_step()
 {
+    int sign = side == Side::Radiant ? 1 : -1;
     auto nearby_ally = Engine->get_nearby_ally(this);
     pos_tup ret;
     if (nearby_ally.size() > 0 &&
@@ -187,6 +188,9 @@ PyObject* Hero::predefined_step()
     
     double dx = std::get<0>(ret) - std::get<0>(location);
     double dy = std::get<1>(ret) - std::get<1>(location);
+
+    dx *= sign;
+    dy *= sign;
 
     double a = std::atan2(dy, dx);
     PyObject* obj = Py_BuildValue("[dd]", std::cos(a), std::sin(a));

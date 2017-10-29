@@ -182,7 +182,7 @@ class trainer(object):
         self.cum_done = 0
         self.model.init_lstm()
 
-    def step(self, state_tuple_in):
+    def step(self, state_tuple_in,act_in = None):
         #_start_time = time.time()
 
         self.state, self.reward, self.done = state_tuple_in
@@ -197,11 +197,11 @@ class trainer(object):
         eps = torch.randn(mu.size())
         #print(time.time() - nn_start_time)
 
-        if np.random.rand() < 0.05:
-            self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
+        if act_in != None:
+            self.action = Variable(torch.FloatTensor(act_in)).view(1,1,2)
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
-            #self.action = mu
+        #self.action = mu
         
         self.raw_action = self.action
         
@@ -317,5 +317,19 @@ class trainer(object):
         total_loss.backward(retain_variables=True)
         #ensure_shared_grads(model, shared_model)
         #shared_model.cum_grads()
+        self.shared_grad_buffers.add_gradient(self.model)
+        return str(total_loss)
+
+    def train2(self):
+        batch_states, batch_actions, batch_returns, batch_advantages, batch_hidden_state,\
+            _actions, batch_state1s, batch_inverses, batch_forwards = self.memory.sample(self.params.batch_size)
+        self.model.load_state_dict(self.shared_model.state_dict())
+        self.model.zero_grad()
+        self.model.init_lstm()
+        mu, sigma_sq, v_pred, _, _ = self.model(False, detach_state(batch_states),batch_hidden_state)
+        print(mu)
+        loss = (batch_actions - mu) ** 2
+        loss = torch.mean(loss.view(-1))
+        loss.backward(retain_variables=True)
         self.shared_grad_buffers.add_gradient(self.model)
         return str(total_loss)
