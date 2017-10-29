@@ -149,7 +149,7 @@ def start_cppSimulator():
 
         tick = 0
 
-        while _engine.get_time() < 2000:
+        while _engine.get_time() < 200:
             tick += 1
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
@@ -174,8 +174,8 @@ def start_cppSimulator():
             dire_act = dire_agent.step(d_tup)
             rad_act = rad_agent.step(r_tup)
 
-            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
             last_dire_location = hero_location_by_tup(d_tup)
             last_rad_location = hero_location_by_tup(r_tup)
@@ -198,11 +198,17 @@ def start_cppSimulator():
                 print("trianing x2 : %fs"%(t1 - start_t))
 
                 num_iter = num_iter + 1
+                optimizer.zero_grad()
 
                 for n,p in shared_model.named_parameters():
                     p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-                optimizer.step()
+                    if n == "log_std":
+                        print(n,p._grad)
+                    p.data -= 1E-3 * p.grad.data
+                
+                #optimizer.step()
                 shared_grad_buffers.reset()
+                print("log_std:",shared_model.state_dict()["log_std"])
                 print("opt time: %fs"%(time.time() - t1))
                 
                 

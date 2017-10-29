@@ -81,7 +81,7 @@ def reward(last, now, a):
 class Params():
     def __init__(self):
         self.batch_size = 2000
-        self.lr = 1e-3
+        self.lr = 1e-4
         self.gamma = 0.95
         self.gae_param = 0.95
         self.clip = 0.2

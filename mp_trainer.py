@@ -47,7 +47,10 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         barrier.wait()
         for n,p in shared_model.named_parameters():
             p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-        optimizer.step()
+            if n == "log_std":
+                print(n,p._grad)
+            p.data -= 1E-3 * p.grad.data
+        #optimizer.step()
         shared_grad_buffers.reset()
 
         print("optimized %d"%num)
@@ -91,7 +94,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         
         tick = 0
 
-        while _engine.get_time() < 2000:
+        while _engine.get_time() < 500:
             tick += 1
             d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
             r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
