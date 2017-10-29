@@ -2,6 +2,7 @@
 #include "Creep.h"
 #include "simulatorImp.h"
 #include <unordered_map>
+#include <cmath>
 
 //TODO use json
 static std::unordered_map<std::string, std::unordered_map<std::string, double> > HeroData;
