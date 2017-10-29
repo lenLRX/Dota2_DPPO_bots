@@ -152,7 +152,7 @@ PyObject* Hero::get_state_tup()
     Py_DECREF(self_input);
     Py_DECREF(ally_input);
 
-    double reward = (exp - last_exp) * 0.1 + (HP - last_HP) * 0.1;
+    double reward = (exp - last_exp) + (HP - last_HP);
 
     last_exp = exp;
     last_HP = HP;
