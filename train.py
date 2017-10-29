@@ -229,7 +229,7 @@ class trainer(object):
 
             reward_intrinsic = ((vec_st1 - forward).pow(2)).sum(2) * 0.5
             reward_intrinsic = float(reward_intrinsic.data.numpy()[0][0]) * 0.1
-            print(reward_intrinsic)
+            #print(reward_intrinsic)
             self.reward += reward_intrinsic
             self.rewards.append(self.reward)
             self.state1s.append(vec_st1)
