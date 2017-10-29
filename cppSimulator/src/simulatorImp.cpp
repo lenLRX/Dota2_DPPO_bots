@@ -127,3 +127,13 @@ PyObject* cppSimulatorImp::get_state_tup(std::string side, int idx)
         return DireHeros[idx]->get_state_tup();
     }
 }
+
+PyObject* cppSimulatorImp::predefined_step(std::string side, int idx) 
+{
+    if (side == "Radiant") {
+        return RadiantHeros[idx]->predefined_step();
+    }
+    else {
+        return DireHeros[idx]->predefined_step();
+    }
+}

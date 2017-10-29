@@ -17,6 +17,7 @@ public:
     virtual void draw();
     void set_move_order(pos_tup order);
     PyObject* get_state_tup();
+    PyObject* predefined_step();
 private:
     pos_tup init_loc;
     pos_tup move_order;

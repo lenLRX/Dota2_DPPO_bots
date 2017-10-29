@@ -72,6 +72,19 @@ cppSimulator_get_state_tup(cppSimulatorObject* self, PyObject *args, PyObject *k
     return self->pImp->get_state_tup(side, idx);
 }
 
+static PyObject*
+cppSimulator_predefined_step(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
+    char* side = NULL;
+    int idx = 0;
+    if (!PyArg_ParseTuple(args, "si", &side, &idx)) {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    //Py_XDECREF(args);
+    //Py_XDECREF(kwds);
+    return self->pImp->predefined_step(side, idx);
+}
+
 static PyMethodDef cppSimulator_methods[] = {
     { "get_time", (PyCFunction)cppSimulator_get_time, METH_NOARGS,
     "get time of simulator"
@@ -81,6 +94,9 @@ static PyMethodDef cppSimulator_methods[] = {
     },
     { "get_state_tup", (PyCFunction)cppSimulator_get_state_tup, METH_VARARGS | METH_KEYWORDS,
     "get (state, reward, done) by side and idx"
+    },
+    { "predefined_step", (PyCFunction)cppSimulator_predefined_step, METH_VARARGS | METH_KEYWORDS,
+    "get predefined_step by side and idx"
     }
     ,
     { "set_move_order", (PyCFunction)cppSimulator_set_move_order, METH_VARARGS | METH_KEYWORDS,

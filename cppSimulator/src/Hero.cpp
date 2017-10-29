@@ -1,5 +1,5 @@
 #include "Hero.h"
-
+#include "Creep.h"
 #include "simulatorImp.h"
 #include <unordered_map>
 
@@ -162,4 +162,33 @@ PyObject* Hero::get_state_tup()
     Py_DECREF(state);
 
     return ret;
+}
+
+PyObject* Hero::predefined_step()
+{
+    auto nearby_ally = Engine->get_nearby_ally(this);
+    pos_tup ret;
+    if (nearby_ally.size() > 0 &&
+        dynamic_cast<Creep*>(nearby_ally[0].first))
+    {
+        ret = nearby_ally[0].first->get_location();
+        if (side == Side::Radiant) {
+            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) - 200,
+                std::get<1>(nearby_ally[0].first->get_location()) - 200);
+        }
+        else {
+            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) + 200,
+                std::get<1>(nearby_ally[0].first->get_location()) + 200);
+        }
+    }
+    else {
+        ret = pos_tup(0, 0);
+    }
+    
+    double dx = std::get<0>(ret) - std::get<0>(location);
+    double dy = std::get<1>(ret) - std::get<1>(location);
+
+    double a = std::atan2(dy, dx);
+    PyObject* obj = Py_BuildValue("[dd]", std::cos(a), std::sin(a));
+    return obj;
 }
