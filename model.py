@@ -93,7 +93,7 @@ class Model(nn.Module):
             x = F.relu(self.p_fc(lstm_out))
             mu = F.tanh(self.mu(x))
 
-            log_std = torch.exp(self.log_std).unsqueeze(0).expand_as(mu)
+            log_std = torch.exp(self.log_std - 10).unsqueeze(0).expand_as(mu)
             # critic
             x = F.relu(self.v_fc(lstm_out))
             v = self.v(x)
