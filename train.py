@@ -249,25 +249,22 @@ class trainer(object):
         return self.action_out
 
     def fill_memory(self):
-        R = torch.zeros(1, 1)
-        self.values.append(Variable(R))
-        R = Variable(R)
-        A = Variable(torch.zeros(1, 1))
+        self.values.append(Variable(torch.zeros(1, 1)))
+        self.returns = [None for x in range(len(self.rewards))]
+        self.advantages = [None for x in range(len(self.rewards))]
         for i in reversed(range(len(self.rewards))):
-            try:
-                td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
-                A = td + self.params.gamma*self.params.gae_param*A
-                self.advantages.insert(0, A)
+            R = Variable(torch.zeros(1, 1))
+            A = Variable(torch.zeros(1, 1))
+            dis = 1
+            for j in reversed(range(0,i)):
+                gamma = 1.0 / math.sqrt(float(dis))
+                td = self.rewards[i] + gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
+                A = td + gamma*self.params.gae_param*A
                 R = A + self.values[i]
-                self.returns.insert(0, R)
-            except:
-                print("error at %d"%i)
-                with open("./debug.out", "w+") as dbgout:
-                    for r in self.rewards:
-                        dbgout.write("%d  %s\n"%(i,str(r)))
-                    dbgout.write("\n\n\n\n")
-                    for v in self.values:
-                        dbgout.write("%d  %s\n"%(i,str(v)))
+                dis += 1
+            self.returns[i] = R
+            self.advantages[i] = A
+
         # store usefull info:
         #print(self.hidden_state)
         self.memory.push([self.states, self.actions, self.returns, 
