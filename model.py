@@ -104,7 +104,7 @@ class Model(nn.Module):
             x = F.relu(self.v_fc(lstm_out))
             v = self.v(x)
 
-            return mu, log_std, v, lstm_out, self.lstm_hidden
+            return mu/mu.norm(), log_std, v, lstm_out, self.lstm_hidden
 
         else:
             s_t, s_t1, a_t = inputs

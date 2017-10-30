@@ -83,7 +83,7 @@ class Params():
         self.batch_size = 200000
         self.game_duriation = 500
         self.tick_per_action = 10
-        self.lr = 1e-4
+        self.lr = 1e-3
         self.gamma = 0.999
         self.gae_param = 0.95
         self.clip = 0.2

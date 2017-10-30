@@ -95,9 +95,9 @@ void Sprite::dead()
             if (dis <= 1300.0) {
                 s->exp += bountyEXP;
             }
-            //else {
-            //    s->exp += bountyEXP / (dis - 1300 + 1);
-            //}
+            else {
+                s->exp += bountyEXP / (dis - 1300 + 1);
+            }
         }
     }
 }
