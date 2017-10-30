@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.multiprocessing as mp
+import torch.nn.init as init
 
 from utils import *
 
@@ -17,28 +18,29 @@ class Model(nn.Module):
         h_size_2 = self.h_size_2
         self.num_inputs = num_inputs
         self.p_self_input = nn.Linear(num_inputs["self_input"],h_size_1)
+        self.init_layer(self.p_self_input)
         self.p_ally_creep_input = nn.Linear(num_inputs["ally_input"],h_size_1)
-
+        self.init_layer(self.p_ally_creep_input)
         self.p_cat_layer = nn.Linear(h_size_1 * 2,h_size_2)
-
+        self.init_layer(self.p_cat_layer)
         self.lstm = nn.LSTM(h_size_2,h_size_2)
 
         self.p_fc = nn.Linear(h_size_2, h_size_2)
-
+        self.init_layer(self.p_fc)
         self.v_fc = nn.Linear(h_size_2, h_size_2)
-
+        self.init_layer(self.v_fc)
         self.mu = nn.Linear(h_size_2, num_outputs)
-
+        self.init_layer(self.mu)
         self.log_std = nn.Parameter(torch.zeros(num_outputs))
 
         self.v = nn.Linear(h_size_2,1)
-
+        self.init_layer(self.v)
         self.icm_hidden = nn.Linear(h_size_2, h_size_2)
-
+        self.init_layer(self.icm_hidden)
         self.inverse_dynamic = nn.Linear(h_size_2 * 2, num_outputs)
-
+        self.init_layer(self.inverse_dynamic)
         self.forward_model =  nn.Linear(h_size_2 + num_outputs, h_size_2)
-
+        self.init_layer(self.forward_model)
         for name, p in self.named_parameters():
             # init parameters
             if 'bias' in name:
@@ -50,6 +52,10 @@ class Model(nn.Module):
         # mode
         self.train()
     
+    def init_layer(self,layer):
+        init.xavier_uniform(layer.weight, gain=np.sqrt(2))
+        init.constant(layer.bias, 0.1)
+
     def init_lstm(self):
         self.lstm_hidden = (Variable(torch.zeros(1,1,self.h_size_2)),
                            Variable(torch.zeros(1,1,self.h_size_2)))

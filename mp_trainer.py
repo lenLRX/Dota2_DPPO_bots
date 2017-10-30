@@ -49,7 +49,7 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
             p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
             if n == "log_std":
                 print(n,p._grad)
-            p.data -= 1E-3 * p.grad.data
+            p.data -= param.lr * p.grad.data
         #optimizer.step()
         shared_grad_buffers.reset()
 
@@ -94,13 +94,13 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         
         tick = 0
 
-        while _engine.get_time() < 2000:
+        while _engine.get_time() < param.game_duriation:
             tick += 1
             _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
             _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
             _engine.loop()
-            if tick % 10 != 0:
+            if tick % param.tick_per_action != 0:
                 continue#for faster training
 
             if canvas != None:
