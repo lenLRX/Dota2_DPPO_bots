@@ -113,7 +113,7 @@ void Hero::set_move_order(pos_tup order)
 PyObject* Hero::get_state_tup()
 {
     int sign = side == Side::Radiant ? 1 : -1 ;
-    PyObject* self_input = Py_BuildValue("[ddd]",
+    PyObject* self_input = Py_BuildValue("[ddi]",
         sign * std::get<0>(location) / Config::map_div,
         sign * std::get<1>(location) / Config::map_div,
         side);

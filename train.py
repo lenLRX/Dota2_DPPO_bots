@@ -197,11 +197,9 @@ class trainer(object):
         eps = torch.randn(mu.size())
         #print(time.time() - nn_start_time)
 
-        if np.random.rand() < 0.05:
-            self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
-        else:
-            self.action = (mu + sigma_sq.sqrt()*Variable(eps))
-            #self.action = mu
+
+        self.action = (mu + sigma_sq.sqrt()*Variable(eps))
+        #self.action = mu
         
         self.raw_action = self.action
         
