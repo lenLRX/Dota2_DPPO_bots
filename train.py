@@ -198,9 +198,9 @@ class trainer(object):
         #print(time.time() - nn_start_time)
 
 
-        self.action = (mu + sigma_sq.sqrt()*Variable(eps))
-        #print(mu)
-        #self.action = mu
+        self.action = (mu/mu.norm() + sigma_sq.sqrt()*Variable(eps))
+        #print("norm",mu,mu.norm(),mu/mu.norm())
+        #self.action = mu/mu.norm()
         
         self.raw_action = self.action
         
