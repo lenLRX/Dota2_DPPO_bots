@@ -184,7 +184,7 @@ def start_cppSimulator():
 
             yield
 
-            if d_tup[2] or r_tup[2]:
+            if d_tup[2] and r_tup[2]:
                 break
         print("total reward %f %f"%(r_total_reward, d_total_reward))
         rad_agent.fill_memory()

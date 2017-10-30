@@ -96,7 +96,7 @@ void Sprite::dead()
                 s->exp += bountyEXP;
             }
             else {
-                s->exp += bountyEXP / (dis - 1300 + 1);
+                s->exp += bountyEXP * (dis - 1300 + 1) / Config::map_div * 0.1;
             }
         }
     }

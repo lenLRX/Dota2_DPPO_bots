@@ -125,7 +125,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             last_dire_location = hero_location_by_tup(d_tup)
             last_rad_location = hero_location_by_tup(r_tup)
 
-            if d_tup[2] or r_tup[2]:
+            if d_tup[2] and r_tup[2]:
                 break
         if id == 0:
             print("total reward %f %f"%(r_total_reward, d_total_reward))

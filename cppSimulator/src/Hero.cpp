@@ -17,7 +17,7 @@ static int init_HeroData = [&]()->int {
         { "AttackRange",500 },
         { "SightRange", 1800 },
         { "Bounty", 200 },
-        { "bountyEXP", 200 },
+        { "bountyEXP", 0 },
         { "BaseAttackTime", 1.7 },
         { "AttackSpeed", 120 }
     };
