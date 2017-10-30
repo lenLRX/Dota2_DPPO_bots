@@ -199,6 +199,7 @@ class trainer(object):
 
 
         self.action = (mu + sigma_sq.sqrt()*Variable(eps))
+        #print(mu)
         #self.action = mu
         
         self.raw_action = self.action
