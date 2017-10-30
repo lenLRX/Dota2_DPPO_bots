@@ -41,7 +41,7 @@ void Sprite::move()
     double a = std::atan2(dy, dx);
 
     if (std::isnan(a)) {
-        printf("found nan\n");
+        printf("found nan dx = %lf dy = %lf\n",dx,dy);
         fflush(stdout);
         exit(-1);
     }

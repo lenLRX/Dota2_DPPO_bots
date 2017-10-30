@@ -91,7 +91,7 @@ def ensure_shared_grads(model, shared_model):
 def normal(x, mu, std):
     a = (-1*(x-mu).pow(2)/(2*std)).exp()
     b = 1/(2*std*np.pi).sqrt()
-    return (a*b).log()
+    return a*b
 
 def detach_state(state):
     new_state = {}
