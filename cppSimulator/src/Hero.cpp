@@ -113,45 +113,35 @@ void Hero::set_move_order(pos_tup order)
 PyObject* Hero::get_state_tup()
 {
     int sign = side == Side::Radiant ? 1 : -1 ;
-    PyObject* self_input = Py_BuildValue("[ddi]",
-        sign * std::get<0>(location) / Config::map_div,
-        sign * std::get<1>(location) / Config::map_div,
-        side);
-
-    if (NULL == self_input) {
-        printf("self_input error!\n");
-        return NULL;
-    }
+    
 
     //auto nearby_ally = Engine->get_nearby_ally(this);
     auto nearby_ally = Engine->get_nearby_enemy(this);
-    Py_ssize_t ally_input_size = static_cast<Py_ssize_t>(nearby_ally.size());
-    PyObject* ally_input = NULL;
-    if (ally_input_size > 0) {
-        ally_input = PyList_New(ally_input_size);
-        if (NULL == ally_input) {
-            printf("ally_input error!\n");
-            return NULL;
-        }
-        for (Py_ssize_t i = 0; i < ally_input_size; ++i) {
-            PyObject* obj = Py_BuildValue("[dd]",
-                sign * (std::get<0>(nearby_ally[i].first->get_location()) - std::get<0>(location)) / Config::map_div,
-                sign * (std::get<1>(nearby_ally[i].first->get_location()) - std::get<1>(location)) / Config::map_div);
-            if (NULL == obj) {
-                printf("ally obj error!\n");
-                return NULL;
-            }
-            PyList_SetItem(ally_input, i, obj);
-        }
+    size_t ally_input_size = nearby_ally.size();
+    double ally_x = 0.0;
+    double ally_y = 0.0;
+    for (size_t i = 0; i < ally_input_size; ++i) {
+        ally_x += sign * (std::get<0>(nearby_ally[i].first->get_location()) - std::get<0>(location)) / Config::map_div;
+        ally_y += sign * (std::get<1>(nearby_ally[i].first->get_location()) - std::get<1>(location)) / Config::map_div;
     }
-    else {
-        ally_input = Py_BuildValue("[[dd]]", 0.0, 0.0);
-    }
-    
-    PyObject* state = Py_BuildValue("{s:O,s:O}", "self_input", self_input, "ally_input", ally_input);
 
-    Py_DECREF(self_input);
-    Py_DECREF(ally_input);
+    if (0 != ally_input_size) {
+        ally_x /= (double)ally_input_size;
+        ally_y /= (double)ally_input_size;
+    }
+
+    PyObject* state = Py_BuildValue("[ddiddd]",
+        sign * std::get<0>(location) / Config::map_div,
+        sign * std::get<1>(location) / Config::map_div,
+        side,
+        ally_x,
+        ally_y,
+        (double)ally_input_size);
+
+    if (NULL == state) {
+        printf("self_input error!\n");
+        return NULL;
+    }
 
     double reward = (exp - last_exp) + (HP - last_HP) * 0.1;
 

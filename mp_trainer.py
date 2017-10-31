@@ -47,15 +47,11 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         barrier.wait()
         for n,p in shared_model.named_parameters():
             p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-            if n == "log_std":
-                print(n,p._grad)
             p.data -= param.lr * p.grad.data
         #optimizer.step()
         shared_grad_buffers.reset()
 
         print("optimized %d"%num)
-        print("log_std:",shared_model.state_dict()["log_std"])
-        shared_model.state_dict()["log_std"] = torch.clamp(shared_model.state_dict()["log_std"], max=0)
         torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         barrier.wait()
 
@@ -99,13 +95,14 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
         while _engine.get_time() < param.game_duriation:
             tick += 1
+            d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
+            r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
             _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
             _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
             _engine.loop()
             if tick % param.tick_per_action != 0:
                 continue#for faster training
-
             if canvas != None:
                 #_engine.draw()
                 canvas.update_idletasks()
@@ -117,15 +114,17 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
-            
+
             #r_tup = (r_tup[0],r_tup[1] + dotproduct(p_rad_act,rad_act,1),r_tup[2])
             #d_tup = (d_tup[0],d_tup[1] + dotproduct(p_dire_act,dire_act,1),d_tup[2])
-            
-            dire_act = dire_agent.step(d_tup)
-            rad_act = rad_agent.step(r_tup)
+               
+            dire_act = get_action(dire_agent.step(d_tup))
+            rad_act = get_action(rad_agent.step(r_tup))
 
-            p_dire_act = _engine.predefined_step("Dire",0)
-            p_rad_act = _engine.predefined_step("Radiant",0)
+            #p_dire_act = _engine.predefined_step("Dire",0)
+            #p_rad_act = _engine.predefined_step("Radiant",0)
+
+            #print(d_tup,r_tup)
 
             #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
             #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
@@ -133,8 +132,6 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             last_dire_location = hero_location_by_tup(d_tup)
             last_rad_location = hero_location_by_tup(r_tup)
 
-            if d_tup[2] or r_tup[2]:
-                break
         if id == 0:
             print("total reward %f %f"%(r_total_reward, d_total_reward))
         rad_agent.fill_memory()

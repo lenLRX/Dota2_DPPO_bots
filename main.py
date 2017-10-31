@@ -23,7 +23,7 @@ from torch.autograd import Variable
 
 import numpy as np
 
-from model import Model, Shared_grad_buffers, Shared_obs_stats
+from model import Model, Shared_grad_buffers
 from train import trainer
 from chief import chief
 from utils import *
@@ -177,16 +177,16 @@ def start_cppSimulator():
             #r_tup = (r_tup[0],r_tup[1] + dotproduct(p_rad_act,rad_act,1),r_tup[2])
             #d_tup = (d_tup[0],d_tup[1] + dotproduct(p_dire_act,dire_act,1),d_tup[2])
                
-            dire_act = dire_agent.step(d_tup)
-            rad_act = rad_agent.step(r_tup)
+            dire_act = get_action(dire_agent.step(d_tup))
+            rad_act = get_action(rad_agent.step(r_tup))
 
-            p_dire_act = _engine.predefined_step("Dire",0)
-            p_rad_act = _engine.predefined_step("Radiant",0)
+            #p_dire_act = _engine.predefined_step("Dire",0)
+            #p_rad_act = _engine.predefined_step("Radiant",0)
 
-            print(d_tup,r_tup)
+            #print(d_tup,r_tup)
 
-            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
             last_dire_location = hero_location_by_tup(d_tup)
             last_rad_location = hero_location_by_tup(r_tup)
@@ -213,13 +213,10 @@ def start_cppSimulator():
 
                 for n,p in shared_model.named_parameters():
                     p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-                    if n == "log_std":
-                        print(n,p._grad)
                     p.data -= param.lr * p.grad.data
                 
                 #optimizer.step()
                 shared_grad_buffers.reset()
-                print("log_std:",shared_model.state_dict()["log_std"])
                 print("opt time: %fs"%(time.time() - t1))
                 
                 
@@ -263,9 +260,6 @@ if __name__ == '__main__':
 
     shared_model.share_memory()
     shared_grad_buffers = Shared_grad_buffers(shared_model)
-    #shared_grad_buffers.share_memory()
-    shared_obs_stats = Shared_obs_stats(params.num_inputs)
-    #shared_obs_stats.share_memory()
     optimizer = optim.Adam(shared_model.parameters(), lr=params.lr)
     test_n = torch.Tensor([0])
     test_n.share_memory_()
@@ -274,11 +268,11 @@ if __name__ == '__main__':
     CommonConV = threading.Barrier(3)
 
     rad_trainer = trainer(params,
-    shared_model,shared_grad_buffers,shared_obs_stats,
+    shared_model,shared_grad_buffers,None,
     atomic_counter,CommonConV)
 
     dire_trainer = trainer(params,
-    shared_model,shared_grad_buffers,shared_obs_stats,
+    shared_model,shared_grad_buffers,None,
     atomic_counter,CommonConV)
 
     dispatch_table["Radiant"] = rad_trainer

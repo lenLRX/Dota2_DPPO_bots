@@ -13,7 +13,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torch.multiprocessing as mp
 
-from model import Model,Shared_obs_stats,_s_Shared_obs_stats
+from model import Model
 
 class ReplayMemory(object):
     def __init__(self, params, capacity):
@@ -36,36 +36,8 @@ class ReplayMemory(object):
         samples = zip(*random.sample(self.memory, batch_size))
         _out = []
         first = True
-        i = 0
         for _s in samples:
-            i += 1
-            if first == True:
-                first = False
-                _out_dict = {}
-                for k in self.params.num_inputs:
-                    _out_dict[k] = []
-                for _t in _s:
-                    for k in _t:
-                        if not k == "self_input":
-                            _out_dict[k].append(_t[k])
-                        else:
-                            #print(_s,k)
-                            _out_dict[k].append(_t[k].view(
-                                -1,self.params.num_inputs[k]))
-                for k in _out_dict:
-                    if not isinstance(_out_dict[k][0],list):
-                        #dont cat list
-                        _out_dict[k] = torch.cat(_out_dict[k],0)
-                    #print(_out_dict[k].size())
-                _out.append(_out_dict)
-            else:
-                if i == 5:
-                    _out.append((torch.cat(_h,0).detach() for _h in zip(*_s)))
-                elif i < 5:
-                    _out.append(torch.cat(_s,0))
-                else:
-                    _out.append(_s)
-                #print(torch.cat(_s,0).size())
+            _out.append(torch.cat(_s,0))
         return _out
 
     '''
@@ -128,7 +100,6 @@ class trainer(object):
         self.done = False
         self.episode_length = 0
         self.shared_model = shared_model
-        self.shared_obs_stats = Shared_obs_stats(params.num_inputs)
         self.shared_grad_buffers = shared_grad_buffers
 
         self.get_action_ConV = threading.Condition()
@@ -145,32 +116,8 @@ class trainer(object):
 
         self.has_last_action = False
 
-        self.reward_normalizer = _s_Shared_obs_stats(1)
-
-        self.reset_ICM()
-    
-    def reset_ICM(self):
-        self.raw_actions = []
-        self.inverses = []
-        self.forwards = []
-        self.sts = []
-        self.st1s = []
-        self.state1s = []
-    
-    def ICM_loss(self,batch_actions, batch_state1s, batch_inverses, batch_forwards):
-        inverse_loss = 0.0
-        forward_loss = 0.0
-        for i in range(len(batch_actions)):
-            inverse_err = batch_inverses[i] - batch_actions[i]
-            inverse_loss = inverse_loss + 0.5 * (inverse_err.pow(2)).sum(2)
-            forward_err = batch_forwards[i] - batch_state1s[i]
-            forward_loss = forward_loss + 0.5 * (forward_err.pow(2)).sum(2)
-        
-        return inverse_loss, forward_loss
-
     def pre_train(self):
         self.states = []
-        self.hidden_state = []
         self.actions = []
         self.rewards = []
         self.values = []
@@ -180,137 +127,96 @@ class trainer(object):
         self.av_reward = 0
         self.cum_reward = 0
         self.cum_done = 0
-        self.model.init_lstm()
 
     def step(self, state_tuple_in):
         #_start_time = time.time()
 
         self.state, self.reward, self.done = state_tuple_in
 
-        self.shared_obs_stats.observes(self.state)
-        self.state = self.shared_obs_stats.normalize(self.state)
+        self.state = Variable(torch.FloatTensor(self.state)).view(1,1,-1)
 
-        
-        #nn_start_time = time.time()
-        mu, sigma_sq, v, lstm_out, lstm_hidden = self.model(False, self.state)
-        
-        eps = torch.randn(mu.size())
-        #print(time.time() - nn_start_time)
+        s_action, v = self.model(self.state)
+        #print(s_action)
 
+        '''
         if np.random.rand() < 0.05:
             self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
-        #print("norm",mu,mu.norm(),mu/mu.norm())
-        #self.action = mu/mu.norm()
-        
-        self.raw_action = self.action
-        
+        '''
 
-        self.action_out = self.action.data.squeeze().numpy()
-        self.action_spin_flag = True
-        #print(time.time() - _start_time)
+        #self.action = np.argmax(s_action.data.numpy()[0])
+        #print(s_action)
+        self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
 
         self.cum_reward += self.reward
 
         
         if self.has_last_action:
             self.states.append(self.state)
-            self.hidden_state.append(self.model.lstm_hidden)
-            #print(self.hidden_state)
+
             self.actions.append(self.last_action)
-            self.raw_actions.append(self.last_raw_action)
             self.values.append(v)
-            
 
-            vec_st1, inverse, forward = self.model(True,(
-                    self.last_st,
-                    lstm_out,
-                    self.last_action))
-
-            reward_intrinsic = ((vec_st1 - forward).pow(2)).sum(2) * 0.5
-            reward_intrinsic = float(reward_intrinsic.data.numpy()[0][0]) * 0.1
-            #print(reward_intrinsic)
-            self.reward += reward_intrinsic
             self.rewards.append(self.reward)
-            self.state1s.append(vec_st1)
-            self.inverses.append(inverse)
-            self.forwards.append(forward)
 
         
-        self.last_action = self.action
-        self.last_raw_action = self.raw_action
-        self.last_st = lstm_out
+        self.last_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
+        self.last_action.data[0][self.action] = 1
         self.has_last_action = True
+
         
         #print("%d: action = %f %f value=%f reward = %f"%(
         #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),self.reward),sigma_sq.sqrt())
         #print("total time",time.time() - _start_time)
-        return self.action_out
+        return self.action
 
     def fill_memory(self):
-        self.values.append(Variable(torch.zeros(1, 1)))
-        self.returns = [None for x in range(len(self.rewards))]
-        self.advantages = [None for x in range(len(self.rewards))]
+        R = torch.zeros(1, 1)
+        self.values.append(Variable(R))
+        R = Variable(R)
+        A = Variable(torch.zeros(1, 1))
         for i in reversed(range(len(self.rewards))):
-            R = Variable(torch.zeros(1, 1))
-            A = Variable(torch.zeros(1, 1))
-            dis = 1
-            for j in reversed(range(0,i)):
-                gamma = 1.0 / math.sqrt(float(dis))
-                td = self.rewards[i] + gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
-                A = td + gamma*self.params.gae_param*A
+            try:
+                td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
+                A = td + self.params.gamma*self.params.gae_param*A
+                self.advantages.insert(0, A)
                 R = A + self.values[i]
-                dis += 1
-            self.returns[i] = R
-            self.advantages[i] = A
+                self.returns.insert(0, R)
+            except:
+                print("error at %d"%i)
+                with open("./debug.out", "w+") as dbgout:
+                    for r in self.rewards:
+                        dbgout.write("%d  %s\n"%(i,str(r)))
+                    dbgout.write("\n\n\n\n")
+                    for v in self.values:
+                        dbgout.write("%d  %s\n"%(i,str(v)))
 
         # store usefull info:
-        #print(self.hidden_state)
+        #print(type(self.actions))
         self.memory.push([self.states, self.actions, self.returns, 
-            self.advantages, self.hidden_state,
-            #for ICM
-            self.raw_actions, self.state1s,
-            self.inverses, self.forwards])
+            self.advantages])
+        #raise "stop"
     
     def train(self):
-        model_old = Model(self.params.num_inputs, self.params.num_outputs)
-        model_old.load_state_dict(self.model.state_dict())
-        model_old.init_lstm()
-        # load new model
         self.model.load_state_dict(self.shared_model.state_dict())
         self.model.zero_grad()
+
         # new mini_batch
-        batch_states, batch_actions, batch_returns, batch_advantages, batch_hidden_state,\
-            _actions, batch_state1s, batch_inverses, batch_forwards = self.memory.sample(self.params.batch_size)
-        # old probas
-        mu_old, sigma_sq_old, v_pred_old, _, _ = model_old(False,detach_state(batch_states),batch_hidden_state)
-        probs_old = normal(batch_actions, mu_old, sigma_sq_old)
-        # new probas
-        self.model.init_lstm()
-        mu, sigma_sq, v_pred, _, _ = self.model(False, batch_states)
-        probs = normal(batch_actions, mu, sigma_sq)
-        # ratio
-        ratio = probs/(1e-10+probs_old)
-        # clip loss
-        surr1 = ratio * torch.cat([batch_advantages]*self.params.num_outputs,1) # surrogate from conservative policy iteration
-        surr2 = ratio.clamp(1-self.params.clip, 1 + self.params.clip) * torch.cat([batch_advantages]*self.params.num_outputs,1)
-        loss_clip = -torch.mean(torch.min(surr1, surr2))
-        # value loss
-        vfloss1 = (v_pred - batch_returns)**2
-        v_pred_clipped = v_pred_old + (v_pred - v_pred_old).clamp(-self.params.clip, self.params.clip)
-        vfloss2 = (v_pred_clipped - batch_returns)
-        loss_value = 0.5*torch.mean(torch.max(vfloss1, vfloss2))
-        # entropy
-        loss_ent = -self.params.ent_coeff*torch.mean(probs*torch.log(probs+1e-5))
-        # total
-        inverse_loss, forward_loss = self.ICM_loss(_actions, batch_state1s, batch_inverses, batch_forwards)
-        self.reset_ICM()
-        #print("inverse_loss, forward_loss",inverse_loss, forward_loss)
-        total_loss = (loss_clip + loss_value + loss_ent + 0.005 * inverse_loss + 0.01 * forward_loss)
-        #print("training  loss = ", total_loss, torch.mean(batch_returns,0))
-        # before step, update old_model:
-        model_old.load_state_dict(self.model.state_dict())
+        batch_states, batch_actions, batch_returns, batch_advantages = self.memory.sample(self.params.batch_size)
+
+        s_action, v = self.model(batch_states.detach())
+        #print(batch_advantages)
+
+        policy_loss = - torch.mean((batch_actions * s_action) * batch_advantages,1).view(-1)
+        policy_loss = torch.mean(policy_loss)
+        #print("policy_loss",policy_loss)
+        value_loss = - torch.mean(v * batch_advantages,1).view(-1)
+        value_loss = torch.mean(value_loss)
+        #print("value_loss",value_loss)
+
+        total_loss = policy_loss * 100 + value_loss
+        #print("training  loss = ", total_loss, torch.mea           n(batch_returns,0))
         # prepare for step
         total_loss.backward(retain_variables=True)
         #ensure_shared_grads(model, shared_model)
