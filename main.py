@@ -180,8 +180,8 @@ def start_cppSimulator():
             dire_act = get_action(dire_agent.step(d_tup))
             rad_act = get_action(rad_agent.step(r_tup))
 
-            #p_dire_act = _engine.predefined_step("Dire",0)
-            #p_rad_act = _engine.predefined_step("Radiant",0)
+            p_dire_act = _engine.predefined_step("Dire",0)
+            p_rad_act = _engine.predefined_step("Radiant",0)
 
             #print(d_tup,r_tup)
 
