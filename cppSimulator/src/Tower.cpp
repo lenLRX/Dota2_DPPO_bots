@@ -100,4 +100,26 @@ void Tower::initTowers(cppSimulatorImp* Engine)
     Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup( 1032, 359 )));
     Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup( -4706, 6022 )));
     Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup( 6242, -1610 )));
+    //TODO they are not T1 tower
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-6149, -852)));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-3562, -2803)));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-130, -6218)));
+
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-6571, -3431)));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-4670, -4100)));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-4002, -6069)));
+
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-5691, -4804)));
+    Engine->addSprite(new Tower(Engine, Side::Radiant, "Tier1Tower", pos_tup(-5410, -5208)));
+
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(11, 6013)));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(2528, 2128)));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(6189, 368)));
+
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(3566, 5786)));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(4253, 3748)));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(6294, 3016)));
+
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(4974, 4776)));
+    Engine->addSprite(new Tower(Engine, Side::Dire, "Tier1Tower", pos_tup(5309, 4427)));
 }

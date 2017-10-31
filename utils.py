@@ -65,7 +65,7 @@ def dist2mid(pos):
 def dotproduct(pd_act, act, a):
     dp = float(pd_act[0]*act[0] + pd_act[1]*act[1]) * 0.1 * a
     if dp != 0:
-        return dp / math.hypot(act[0],act[1])# normalize
+        return dp / math.hypot(act[0],act[1]) - 0.2# normalize
     else:
         return dp
     
@@ -81,9 +81,9 @@ def reward(last, now, a):
 class Params():
     def __init__(self):
         self.batch_size = 200000
-        self.game_duriation = 500
-        self.tick_per_action = 10
-        self.lr = 1e-4
+        self.game_duriation = 100
+        self.tick_per_action = 1
+        self.lr = 1e-3
         self.gamma = 0.999
         self.gae_param = 0.95
         self.clip = 0.2
