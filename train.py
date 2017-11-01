@@ -136,7 +136,7 @@ class trainer(object):
         self.state = Variable(torch.FloatTensor(self.state)).view(1,1,-1)
 
         s_action, v, log_action = self.model(self.state)
-        #print("value",v)
+        print("value",v)
 
         '''
         if np.random.rand() < 0.05:
@@ -214,8 +214,8 @@ class trainer(object):
         value_loss = torch.sum(value_loss)
         #print("value_loss",value_loss)
 
-        total_loss = policy_loss * 100 + value_loss
-        #print("training  loss = ", total_loss, torch.mea           n(batch_returns,0))
+        total_loss = policy_loss + 0.5 * value_loss
+        #print("training  loss = ", total_loss, torch.mean(batch_returns,0))
         # prepare for step
         total_loss.backward(retain_variables=True)
         #ensure_shared_grads(model, shared_model)
