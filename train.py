@@ -135,7 +135,7 @@ class trainer(object):
 
         self.state = Variable(torch.FloatTensor(self.state)).view(1,1,-1)
 
-        s_action, v = self.model(self.state)
+        s_action, v, log_action = self.model(self.state)
         #print("value",v)
 
         '''
@@ -155,14 +155,15 @@ class trainer(object):
         if self.has_last_action:
             self.states.append(self.state)
 
-            self.actions.append(self.last_action)
+            self.actions.append(self.last_log_action)
             self.values.append(v)
 
             self.rewards.append(self.reward)
 
         
-        self.last_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
-        self.last_action.data[0][self.action] = 1
+        self.last_log_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
+        self.last_log_action.data[0][self.action] = 1
+        self.last_log_action = self.last_log_action * log_action
         self.has_last_action = True
 
         
@@ -195,24 +196,22 @@ class trainer(object):
         # store usefull info:
         #print(type(self.actions))
         self.memory.push([self.states, self.actions, self.returns, 
-            self.advantages])
+            self.advantages, self.values])
         #raise "stop"
     
     def train(self):
-        self.model.load_state_dict(self.shared_model.state_dict())
         self.model.zero_grad()
 
         # new mini_batch
-        batch_states, batch_actions, batch_returns, batch_advantages = self.memory.sample(self.params.batch_size)
+        batch_states, batch_log_actions, batch_returns, batch_advantages, batch_values = self.memory.sample(self.params.batch_size)
 
-        s_action, v = self.model(batch_states.detach())
         #print(batch_advantages)
 
-        policy_loss = - torch.mean((batch_actions * s_action) * batch_advantages,1).view(-1)
-        policy_loss = torch.mean(policy_loss)
+        policy_loss = - torch.sum(batch_log_actions * batch_advantages,1).view(-1)
+        policy_loss = torch.sum(policy_loss)
         #print("policy_loss",policy_loss)
-        value_loss = - torch.mean(v * batch_advantages,1).view(-1)
-        value_loss = torch.mean(value_loss)
+        value_loss = torch.sum((batch_returns - batch_values) ** 2,1).view(-1)
+        value_loss = torch.sum(value_loss)
         #print("value_loss",value_loss)
 
         total_loss = policy_loss * 100 + value_loss

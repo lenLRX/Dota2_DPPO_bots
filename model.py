@@ -49,9 +49,10 @@ class Model(nn.Module):
         #pdb.set_trace()
         spatial_y_out = torch.transpose(spatial_y_out,0,1)
         softmax = nn.Softmax()
-        spatial_act_out = softmax((spatial_x_out * spatial_y_out).view(-1,self.spatial_res**2))
+        _sp = (spatial_x_out * spatial_y_out).view(-1,self.spatial_res**2)
+        spatial_act_out = softmax(_sp)
         v_out = self.v(p_input_out)
-        return spatial_act_out,v_out
+        return spatial_act_out,v_out, F.log_softmax(_sp)
 
 class Shared_grad_buffers():
     def __init__(self, model):
