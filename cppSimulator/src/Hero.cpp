@@ -114,9 +114,7 @@ PyObject* Hero::get_state_tup()
 {
     int sign = side == Side::Radiant ? 1 : -1 ;
     
-
-    //auto nearby_ally = Engine->get_nearby_ally(this);
-    auto nearby_ally = Engine->get_nearby_enemy(this);
+    auto nearby_ally = Engine->get_nearby_ally(this);
     size_t ally_input_size = nearby_ally.size();
     double ally_x = 0.0;
     double ally_y = 0.0;
@@ -130,13 +128,31 @@ PyObject* Hero::get_state_tup()
         ally_y /= (double)ally_input_size;
     }
 
-    PyObject* state = Py_BuildValue("[ddiddd]",
+    auto nearby_enemy = Engine->get_nearby_enemy(this);
+    size_t enemy_input_size = nearby_enemy.size();
+    double enemy_x = 0.0;
+    double enemy_y = 0.0;
+    for (size_t i = 0; i < enemy_input_size; ++i) {
+        enemy_x += sign * (std::get<0>(nearby_enemy[i].first->get_location()) - std::get<0>(location)) / Config::map_div;
+        enemy_y += sign * (std::get<1>(nearby_enemy[i].first->get_location()) - std::get<1>(location)) / Config::map_div;
+    }
+
+    if (0 != enemy_input_size) {
+        enemy_x /= (double)enemy_input_size;
+        enemy_y /= (double)enemy_input_size;
+    }
+
+    PyObject* state = Py_BuildValue("[ddidddddd]",
         sign * std::get<0>(location) / Config::map_div,
         sign * std::get<1>(location) / Config::map_div,
         side,
         ally_x,
         ally_y,
-        (double)ally_input_size);
+        (double)ally_input_size,
+        enemy_x,
+        enemy_y,
+        (double)enemy_input_size
+    );
 
     if (NULL == state) {
         printf("self_input error!\n");
