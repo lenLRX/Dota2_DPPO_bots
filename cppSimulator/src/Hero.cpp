@@ -173,6 +173,7 @@ PyObject* Hero::get_state_tup()
 
 PyObject* Hero::predefined_step()
 {
+    int sign = side == Side::Radiant ? 1 : -1;
     auto nearby_ally = Engine->get_nearby_ally(this);
     pos_tup ret;
     if (nearby_ally.size() > 0 &&
@@ -180,12 +181,12 @@ PyObject* Hero::predefined_step()
     {
         ret = nearby_ally[0].first->get_location();
         if (side == Side::Radiant) {
-            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) - 200,
-                std::get<1>(nearby_ally[0].first->get_location()) - 200);
+            ret = pos_tup(sign * std::get<0>(nearby_ally[0].first->get_location()) - 200,
+                sign * std::get<1>(nearby_ally[0].first->get_location()) - 200);
         }
         else {
-            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) + 200,
-                std::get<1>(nearby_ally[0].first->get_location()) + 200);
+            ret = pos_tup(sign * std::get<0>(nearby_ally[0].first->get_location()) + 200,
+                sign * std::get<1>(nearby_ally[0].first->get_location()) + 200);
         }
     }
     else {
