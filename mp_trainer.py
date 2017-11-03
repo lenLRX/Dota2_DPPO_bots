@@ -59,7 +59,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
     params = Params()
     canvas = None
     count = 0
-    discount_factor = 100.0
+    discount_factor = 1.0
     while True:
         count += 1
         _engine = cppSimulator(canvas)
@@ -80,7 +80,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         r_total_reward = 0.0
         d_total_reward = 0.0
 
-        #discount_factor -= 0.001
+        discount_factor -= 0.001
 
         dire_agent.pre_train()
         rad_agent.pre_train()
@@ -115,8 +115,8 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
 
-            r_tup = (r_tup[0],r_tup[1] + dotproduct(p_rad_act,rad_act,1),r_tup[2])
-            d_tup = (d_tup[0],d_tup[1] + dotproduct(p_dire_act,dire_act,1),d_tup[2])
+            r_tup = (r_tup[0],r_tup[1] + discount_factor * dotproduct(p_rad_act,rad_act,1),r_tup[2])
+            d_tup = (d_tup[0],d_tup[1] + discount_factor * dotproduct(p_dire_act,dire_act,1),d_tup[2])
                
             dire_act = get_action(dire_agent.step(d_tup))
             rad_act = get_action(rad_agent.step(r_tup))

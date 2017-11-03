@@ -2,6 +2,7 @@
 #include "simulatorImp.h"
 
 #include <string>
+#include <random>
 
 //TODO use json
 static std::unordered_map<std::string,std::unordered_map<std::string,double> > CreepData;
@@ -23,6 +24,8 @@ static int init_CreepData = [&]()->int {
     return 0;
 }();
 
+static std::default_random_engine rnd_gen;
+std::uniform_int_distribution<int> distribution(1, 10);
 
 
 Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
@@ -41,6 +44,9 @@ Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
     SETATTR(data, SightRange);
     SETATTR(data, Bounty);
     SETATTR(data, bountyEXP);
+
+    //random atk
+    Attack += (distribution(rnd_gen) - 5);
 
     _update_para();
 
