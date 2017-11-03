@@ -181,12 +181,12 @@ PyObject* Hero::predefined_step()
     {
         ret = nearby_ally[0].first->get_location();
         if (side == Side::Radiant) {
-            ret = pos_tup(sign * (std::get<0>(nearby_ally[0].first->get_location()) - 200),
-                sign * (std::get<1>(nearby_ally[0].first->get_location()) - 200));
+            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) - 200,
+                std::get<1>(nearby_ally[0].first->get_location()) - 200);
         }
         else {
-            ret = pos_tup(sign * (std::get<0>(nearby_ally[0].first->get_location()) + 200),
-                sign * (std::get<1>(nearby_ally[0].first->get_location()) + 200));
+            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) + 200,
+                std::get<1>(nearby_ally[0].first->get_location()) + 200);
         }
     }
     else {
@@ -195,6 +195,8 @@ PyObject* Hero::predefined_step()
     
     double dx = std::get<0>(ret) - std::get<0>(location);
     double dy = std::get<1>(ret) - std::get<1>(location);
+    dx *= sign;
+    dy *= sign;
 
     double a = std::atan2(dy, dx);
     PyObject* obj = Py_BuildValue("[dd]", std::cos(a), std::sin(a));
