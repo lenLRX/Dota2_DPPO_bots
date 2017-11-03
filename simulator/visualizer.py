@@ -24,7 +24,6 @@ def tk_main_loop(tup):
 def visualize(fn, num_iter):
     global canvas,_engine,master
     canvas.delete("all")
-    fn.send(None)
     fn.send((num_iter, canvas))
     master.after(1,tk_main_loop,(fn,num_iter))
     master.mainloop()

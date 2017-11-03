@@ -29,6 +29,7 @@ from chief import chief
 from utils import *
 from simulator.simulator import *
 from mp_trainer import mp_trainer
+from GameServer import start_env
 
 try:
     from simulator.visualizer import visualize
@@ -37,81 +38,10 @@ except Exception:
 finally:
     pass
 
-dispatch_table = {}
-
-
-class RequestHandler(BaseHTTPRequestHandler):
-
-    def __init__(self,req,client,server):
-        BaseHTTPRequestHandler.__init__(self,req,client,server)
-    
-    def log_message(self, format, *args):
-        #silent
-        return
-            
-    def do_GET(self):
-        
-        request_path = self.path
-        
-        print("\ndo_Get it should not happen\n")
-        
-        self.send_response(200)
-        
-    def do_POST(self):
-
-        _debug = False
-        
-        request_path = self.path
-        
-        request_headers = self.headers
-        content_length = request_headers.get_all('content-length')
-        length = int(content_length[0]) if content_length else 0
-        content = self.rfile.read(length)
-
-        if _debug:
-            print("\n----- Request Start ----->\n")
-            print(request_path)
-            print(request_headers)
-            print(content)
-            print("<----- Request End -----\n")
-        
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-        self.wfile.write(self.dispatch(content.decode("ascii")).encode("ascii"))
-
-    def get_target(self,msg):
-        obj = json.loads(msg)
-        return obj["state"]["side"] , obj
-
-    def dispatch(self,msg):
-        #print(msg)
-        target , json_obj = self.get_target(msg)
-        agent = dispatch_table[target]
-        st = json_obj
-        st["state"]["self_input"] = st["state"]["self_input"][-2:]
-        raw_act = agent.step((st["state"],float(st["reward"]),st["done"] == "true"))
-        return "%f %f"%(raw_act[0] * 1000,raw_act[1] * 1000)
-
-    do_PUT = do_POST
-    do_DELETE = do_GET
-
-def start_env():
-    port = 8080
-    print('Listening on localhost:%s' % port)
-    server = HTTPServer(('', port), RequestHandler)
-    server.serve_forever()
-
-def start_simulator(num_iter):
-    raise NotImplementedError
-
-def start_simulator2():
-    raise NotImplementedError
-
 def start_cppSimulator():
     time.sleep(0.5)
 
-    yield
+    params,shared_model,shared_grad_buffers = yield
 
     num_iter, canvas = yield
 
@@ -125,8 +55,8 @@ def start_cppSimulator():
         print("%d simulated game starts!"%count)
         dire_act = np.asarray([0.0,0.0])
         rad_act = np.asarray([0.0,0.0])
-        dire_agent = dispatch_table["Dire"]
-        rad_agent = dispatch_table["Radiant"]
+        dire_agent = trainer(params,shared_model,shared_grad_buffers)
+        rad_agent = trainer(params,shared_model,shared_grad_buffers)
 
         shared_model = dire_agent.shared_model
 
@@ -264,39 +194,12 @@ if __name__ == '__main__':
     test_n = torch.Tensor([0])
     test_n.share_memory_()
 
-    atomic_counter = AtomicInteger()
-    CommonConV = threading.Barrier(3)
-
-    rad_trainer = trainer(params,
-    shared_model,shared_grad_buffers,None,
-    atomic_counter,CommonConV)
-
-    dire_trainer = trainer(params,
-    shared_model,shared_grad_buffers,None,
-    atomic_counter,CommonConV)
-
-    dispatch_table["Radiant"] = rad_trainer
-    dispatch_table["Dire"] = dire_trainer
-
     if args.action == "start_server":
-        start_env()
-    elif args.action == "simulator":
-        start_simulator(num_iter / params.num_epoch)
-    elif args.action == "simulator2_viz":
-        g = start_simulator2()
-        g.send(None)
-        visualize(g, num_iter / params.num_epoch)
-        #print("argument error")
-    elif args.action == "simulator2":
-        g = start_simulator2()
-        g.send(None)
-        g.send(None)
-        g.send((num_iter / params.num_epoch, None))
-        while True:
-            g.send(None)
+        start_env(params,shared_model,shared_grad_buffers)
     elif args.action == "cppSimulator_viz":
         g = start_cppSimulator()
         g.send(None)
+        g.send((params,shared_model,shared_grad_buffers))
         visualize(g, num_iter / params.num_epoch)
     elif args.action == "cppSimulator":
         g = start_cppSimulator()
