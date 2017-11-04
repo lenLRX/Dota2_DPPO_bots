@@ -145,9 +145,9 @@ class trainer(object):
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         '''
 
-        self.action = np.argmax(s_action.data.numpy()[0])
+        #self.action = np.argmax(s_action.data.numpy()[0])
         #print(s_action)
-        #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
+        self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
 
         self.cum_reward += self.reward
 
