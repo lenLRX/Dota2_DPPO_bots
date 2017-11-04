@@ -64,10 +64,11 @@ def dist2mid(pos):
 
 def dotproduct(pd_act, act, a):
     dp = float(pd_act[0]*act[0] + pd_act[1]*act[1]) * a
+    bias = 0.2
     if dp != 0:
-        return dp / math.hypot(act[0],act[1]) - 0.2# normalize
+        return dp / math.hypot(act[0],act[1]) - bias# normalize
     else:
-        return dp
+        return dp - bias
     
 def hero_location_by_tup(t):
     return t[0][:2]
