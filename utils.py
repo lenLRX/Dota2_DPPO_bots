@@ -75,7 +75,7 @@ def hero_location_by_tup(t):
 
 def get_action(idx):
     x,y = (idx // param.num_outputs, idx % param.num_outputs)
-    return [float(x - 5), float(y - 5)]
+    return [float(x - param.num_outputs / 2), float(y - param.num_outputs / 2)]
             
 
 def reward(last, now, a):
@@ -88,7 +88,7 @@ class Params():
         self.batch_size = 200000
         self.game_duriation = 300
         self.tick_per_action = 5
-        self.lr = 1e-5
+        self.lr = 1e-3
         self.gamma = 0.0
         self.gae_param = 0.95
         self.clip = 0.2
@@ -100,7 +100,8 @@ class Params():
         self.max_episode_length = 100
         self.seed = int(time.time())
         self.num_inputs = {"self_input":3,"ally_input":6}
-        self.num_outputs = 11
+        self.num_outputs = 3
         self.log_std_bound = 1
+        self.use_lstm = True
 
 param = Params()

@@ -14,7 +14,7 @@ class Model(nn.Module):
         self.params = Params()
         self.h_size_1 = 50
         self.h_size_2 = 50
-        self.spatial_res = 11
+        self.spatial_res = self.params.num_outputs
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2
         self.total_input = num_inputs["self_input"] + num_inputs["ally_input"]
@@ -24,10 +24,14 @@ class Model(nn.Module):
         self.v = nn.Linear(h_size_2,1)
         self.init_layer(self.v)
 
+        if self.params.use_lstm:
+            self.lstm = nn.LSTM(h_size_2,h_size_2)
+
         self.spatial_x = nn.Linear(h_size_2, self.spatial_res)
         self.spatial_y = nn.Linear(h_size_2, self.spatial_res)
         self.init_layer(self.spatial_x)
         self.init_layer(self.spatial_y)
+        self.init_lstm()
 
         # mode
         self.train()
@@ -43,6 +47,8 @@ class Model(nn.Module):
     def forward(self,inputs):
 
         p_input_out = F.sigmoid(self.p_input(inputs)).view(-1,self.h_size_2)
+        if self.params.use_lstm:
+            p_input_out,self.lstm_hidden = self.lstm(p_input_out,self.lstm_hidden)
         spatial_x_out = F.sigmoid(self.spatial_x(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
         spatial_y_out = F.sigmoid(self.spatial_y(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
         #import pdb
