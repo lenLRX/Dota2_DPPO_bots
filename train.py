@@ -144,8 +144,10 @@ class trainer(object):
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         '''
-
-        self.action = np.argmax(s_action.data.numpy()[0])
+        if np.random.rand() < 0.1:
+            self.action = np.random.choice(self.params.num_outputs**2)
+        else:
+            self.action = np.argmax(s_action.data.numpy()[0])
         #print(s_action)
         #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
 
