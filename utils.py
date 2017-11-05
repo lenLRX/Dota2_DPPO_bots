@@ -87,9 +87,9 @@ class Params():
     def __init__(self):
         self.batch_size = 200000
         self.game_duriation = 300
-        self.tick_per_action = 1
+        self.tick_per_action = 5
         self.lr = 1e-5
-        self.gamma = 0.999
+        self.gamma = 0.0
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
