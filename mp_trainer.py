@@ -59,7 +59,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
     params = Params()
     canvas = None
     count = 0
-    discount_factor = 1.0
+    #discount_factor = 1.0
     while True:
         count += 1
         _engine = cppSimulator(canvas)

@@ -159,7 +159,7 @@ PyObject* Hero::get_state_tup()
         return NULL;
     }
 
-    double reward = (exp - last_exp) + (HP - last_HP) * 0.1;
+    double reward = (exp - last_exp)) * 0.1 + (HP - last_HP) * 0.1;
 
     last_exp = exp;
     last_HP = HP;
