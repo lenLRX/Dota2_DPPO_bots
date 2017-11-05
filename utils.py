@@ -75,7 +75,7 @@ def hero_location_by_tup(t):
 
 def get_action(idx):
     x,y = (idx // param.num_outputs, idx % param.num_outputs)
-    return [float(x - param.num_outputs / 2), float(y - param.num_outputs / 2)]
+    return [float(x - param.num_outputs // 2), float(y - param.num_outputs // 2)]
             
 
 def reward(last, now, a):
