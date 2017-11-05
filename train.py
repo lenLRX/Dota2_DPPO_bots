@@ -14,6 +14,7 @@ from torch.autograd import Variable
 import torch.multiprocessing as mp
 
 from model import Model
+from utils import *
 
 class ReplayMemory(object):
     def __init__(self, params, capacity):
@@ -79,7 +80,14 @@ def detach_state(state):
     
     return new_state
 
+p_acts = []
 
+for i in range(param.num_outputs ** 2):
+    _act = get_action(i)
+    if _act[0] != 0 and _act[1] != 0:
+        p_acts.append(math.atan2(*_act))
+    else:
+        p_acts.append(100000)
 
 class trainer(object):
     def __init__(self,params, shared_model, shared_grad_buffers,
@@ -144,11 +152,18 @@ class trainer(object):
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         '''
-        if np.random.rand() < 0.1:
+        if np.random.rand() < 0.2:
             if predefine is None:
                 self.action = np.random.choice(self.params.num_outputs**2)
             else:
                 a = math.atan2(*predefine)
+                _min = 10000
+                for i in range(param.num_outputs ** 2):
+                    _d = abs(p_acts[i] - a)
+                    if _d < _min:
+                        _min = _d
+                        self.action = i
+                #print(predefine,get_action(self.action))
                 #self.action = int(predefine[0])
         else:
             #self.action = np.argmax(s_action.data.numpy()[0])
