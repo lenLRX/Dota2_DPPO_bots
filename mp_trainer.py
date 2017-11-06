@@ -45,14 +45,15 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
     while True:
         num += 1
         barrier.wait()
-        for n,p in shared_model.named_parameters():
-            p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-            p.data -= param.lr * p.grad.data
-        #optimizer.step()
-        shared_grad_buffers.reset()
+        if num % 20 == 0:
+            for n,p in shared_model.named_parameters():
+                p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
+                p.data -= param.lr * p.grad.data
+            #optimizer.step()
+            shared_grad_buffers.reset()
 
-        print("optimized %d"%num)
-        torch.save(shared_model.state_dict(),"./model/%d"%int(num))
+            print("optimized %d"%num)
+            torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         barrier.wait()
 
 def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
