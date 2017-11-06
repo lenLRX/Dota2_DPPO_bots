@@ -136,7 +136,7 @@ class trainer(object):
         self.cum_reward = 0
         self.cum_done = 0
 
-    def step(self, state_tuple_in,predefine = None):
+    def step(self, state_tuple_in,predefine = None, c = 0.2):
         #_start_time = time.time()
 
         self.state, self.reward, self.done = state_tuple_in
@@ -152,7 +152,7 @@ class trainer(object):
         else:
             self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         '''
-        if np.random.rand() < 0.2:
+        if np.random.rand() < c:
             if predefine is None:
                 self.action = np.random.choice(self.params.num_outputs**2)
             else:
@@ -166,8 +166,8 @@ class trainer(object):
                 #print(predefine,get_action(self.action))
                 #self.action = int(predefine[0])
         else:
-            #self.action = np.argmax(s_action.data.numpy()[0])
-            self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
+            self.action = np.argmax(s_action.data.numpy()[0])
+            #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
         #print(s_action)
         #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
 
