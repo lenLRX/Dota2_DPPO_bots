@@ -4,6 +4,8 @@ import datetime
 import re
 
 import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -12,7 +14,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     i_file = "log.txt"
-    o_file = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
+    o_file = "./log/" + datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S") + "-reward.png"
 
     if args.i != None:
         i_file = args.i
@@ -24,7 +26,15 @@ if __name__ == "__main__":
         r_reward = []
         d_reward = []
         
-        reward_matcher = re.compile("total reward (*) (*)")
-        #reward_matcher
+        reward_matcher = re.compile("total reward (.*) (.*)")
+        for line in fp_log:
+            ret = reward_matcher.match(line)
+            if ret is not None:
+                ret = ret.groups()
+                r_reward.append(float(ret[0]))
+                d_reward.append(float(ret[1]))
 
+    plt.figure()
+    plt.plot(list(range(len(r_reward))),r_reward,d_reward)
+    plt.savefig(o_file)
 
