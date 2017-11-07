@@ -45,7 +45,7 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
     while True:
         num += 1
         barrier.wait()
-        if num % 20 == 0:
+        if num % 10 == 0:
             for n,p in shared_model.named_parameters():
                 p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
                 p.data -= param.lr * p.grad.data
