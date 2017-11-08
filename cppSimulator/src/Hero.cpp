@@ -9,7 +9,7 @@ static std::unordered_map<std::string, std::unordered_map<std::string, double> >
 
 static int init_HeroData = [&]()->int {
     HeroData["ShadowFiend"] = {
-        { "HP",200 },
+        { "HP",20000000 },
         { "MP",273 },
         { "MovementSpeed",315 },
         { "Armor", 0.86 },
