@@ -35,6 +35,7 @@ if __name__ == "__main__":
                 d_reward.append(float(ret[1]))
 
     plt.figure()
-    plt.plot(list(range(len(r_reward))),r_reward,d_reward)
+    plt.plot(list(range(len(r_reward))),r_reward)
+    plt.plot(list(range(len(r_reward))),d_reward)
     plt.savefig(o_file)
 
