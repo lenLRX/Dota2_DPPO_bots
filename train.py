@@ -166,8 +166,8 @@ class trainer(object):
                 #print(predefine,get_action(self.action))
                 #self.action = int(predefine[0])
         else:
-            self.action = np.argmax(s_action.data.numpy()[0])
-            #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
+            #self.action = np.argmax(s_action.data.numpy()[0])
+            self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
         #print(s_action)
         #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
 

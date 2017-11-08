@@ -27,10 +27,8 @@ class Model(nn.Module):
         if self.params.use_lstm:
             self.lstm = nn.LSTM(h_size_2,h_size_2)
 
-        self.spatial_x = nn.Linear(h_size_2, self.spatial_res)
-        self.spatial_y = nn.Linear(h_size_2, self.spatial_res)
-        self.init_layer(self.spatial_x)
-        self.init_layer(self.spatial_y)
+        self.spatial = nn.Linear(h_size_2, self.spatial_res ** 2)
+        self.init_layer(self.spatial)
         self.init_lstm()
 
         # mode
@@ -49,13 +47,12 @@ class Model(nn.Module):
         p_input_out = F.sigmoid(self.p_input(inputs)).view(-1,self.h_size_2)
         if self.params.use_lstm:
             p_input_out,self.lstm_hidden = self.lstm(p_input_out,self.lstm_hidden)
-        spatial_x_out = (self.spatial_x(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
-        spatial_y_out = (self.spatial_y(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
+        
+        spatial_out = self.spatial(p_input_out)
         #import pdb
         #pdb.set_trace()
-        spatial_y_out = torch.transpose(spatial_y_out,0,1)
         softmax = nn.Softmax()
-        _sp = (spatial_x_out * spatial_y_out).view(-1,self.spatial_res**2)
+        _sp = (spatial_out).view(-1,self.spatial_res**2)
         spatial_act_out = softmax(_sp)
         v_out = self.v(p_input_out)
         return spatial_act_out,v_out, F.log_softmax(_sp)
