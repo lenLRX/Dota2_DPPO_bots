@@ -204,8 +204,8 @@ if __name__ == '__main__':
     elif args.action == "cppSimulator":
         g = start_cppSimulator()
         g.send(None)
-        g.send(None)
-        g.send((num_iter / params.num_epoch, None))
+        g.send((params,shared_model,shared_grad_buffers))
+        g.send((0,None))
         while True:
             g.send(None)
     elif args.action == "mp_sim":
