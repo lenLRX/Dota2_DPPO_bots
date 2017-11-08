@@ -49,8 +49,8 @@ class Model(nn.Module):
         p_input_out = F.sigmoid(self.p_input(inputs)).view(-1,self.h_size_2)
         if self.params.use_lstm:
             p_input_out,self.lstm_hidden = self.lstm(p_input_out,self.lstm_hidden)
-        spatial_x_out = F.sigmoid(self.spatial_x(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
-        spatial_y_out = F.sigmoid(self.spatial_y(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
+        spatial_x_out = (self.spatial_x(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
+        spatial_y_out = (self.spatial_y(p_input_out)).view(-1,1,self.spatial_res).repeat(1,1,self.spatial_res).view(-1,self.spatial_res)
         #import pdb
         #pdb.set_trace()
         spatial_y_out = torch.transpose(spatial_y_out,0,1)
