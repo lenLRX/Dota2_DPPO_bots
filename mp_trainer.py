@@ -102,14 +102,16 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
             _engine.loop()
-            if tick % param.tick_per_action != 0:
+            d_tup = _engine.get_state_tup("Dire", 0)
+            r_tup = _engine.get_state_tup("Radiant", 0)
+
+            if tick % param.tick_per_action != 0 and not(d_tup[2] or r_tup[2]):
                 continue#for faster training
             if canvas != None:
                 #_engine.draw()
                 canvas.update_idletasks()
 
-            d_tup = _engine.get_state_tup("Dire", 0)
-            r_tup = _engine.get_state_tup("Radiant", 0)
+            
 
             #print("origin output ", d_tup , r_tup,flush=True)
 
