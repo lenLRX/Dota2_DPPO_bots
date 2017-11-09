@@ -86,8 +86,8 @@ def reward(last, now, a):
 class Params():
     def __init__(self):
         self.batch_size = 200000
-        self.game_duriation = 300
-        self.tick_per_action = 5
+        self.game_duriation = 150
+        self.tick_per_action = 2
         self.lr = 1e-5
         self.gamma = 0.99
         self.gae_param = 0.95
