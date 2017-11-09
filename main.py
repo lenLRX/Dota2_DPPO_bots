@@ -47,7 +47,7 @@ def start_cppSimulator():
 
     count = num_iter
 
-    discount_factor = 100.0
+    discount_factor = 1.0
 
     while True:
         _engine = cppSimulator(canvas)
@@ -90,14 +90,14 @@ def start_cppSimulator():
             _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
             _engine.loop()
-            if tick % param.tick_per_action != 0:
+            d_tup = _engine.get_state_tup("Dire", 0)
+            r_tup = _engine.get_state_tup("Radiant", 0)
+
+            if tick % param.tick_per_action != 0 and not(d_tup[2] or r_tup[2]):
                 continue#for faster training
             if canvas != None:
                 #_engine.draw()
                 canvas.update_idletasks()
-
-            d_tup = _engine.get_state_tup("Dire", 0)
-            r_tup = _engine.get_state_tup("Radiant", 0)
 
             #print("origin output ", d_tup , r_tup,flush=True)
 
@@ -107,8 +107,8 @@ def start_cppSimulator():
             #r_tup = (r_tup[0],r_tup[1] + dotproduct(p_rad_act,rad_act,1),r_tup[2])
             #d_tup = (d_tup[0],d_tup[1] + dotproduct(p_dire_act,dire_act,1),d_tup[2])
                
-            dire_act = get_action(dire_agent.step(d_tup,p_dire_act,0))
-            rad_act = get_action(rad_agent.step(r_tup,p_rad_act,0))
+            dire_act = get_action(dire_agent.step(d_tup,p_dire_act,1))
+            rad_act = get_action(rad_agent.step(r_tup,p_rad_act,1))
 
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)

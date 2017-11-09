@@ -174,19 +174,19 @@ PyObject* Hero::get_state_tup()
 PyObject* Hero::predefined_step()
 {
     int sign = side == Side::Radiant ? 1 : -1;
-    auto nearby_ally = Engine->get_nearby_ally(this);
+    auto nearby_ally = Engine->get_nearby_enemy(this, [](Sprite* s) -> bool {return dynamic_cast<Creep*>(s) != nullptr; });
     pos_tup ret;
-    if (nearby_ally.size() > 0 &&
-        dynamic_cast<Creep*>(nearby_ally[0].first))
+    int _dis = 700;
+    if (nearby_ally.size() > 0)
     {
         ret = nearby_ally[0].first->get_location();
         if (side == Side::Radiant) {
-            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) - 500,
-                std::get<1>(nearby_ally[0].first->get_location()) - 500);
+            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) - _dis,
+                std::get<1>(nearby_ally[0].first->get_location()) - _dis);
         }
         else {
-            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) + 500,
-                std::get<1>(nearby_ally[0].first->get_location()) + 500);
+            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) + _dis,
+                std::get<1>(nearby_ally[0].first->get_location()) + _dis);
         }
     }
     else {
