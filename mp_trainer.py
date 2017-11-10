@@ -81,7 +81,8 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         r_total_reward = 0.0
         d_total_reward = 0.0
 
-        discount_factor -= 0.002
+        discount_factor = np.random.random()
+        print(discount_factor)
 
         dire_agent.pre_train()
         rad_agent.pre_train()
