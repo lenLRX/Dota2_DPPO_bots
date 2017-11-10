@@ -57,7 +57,7 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         barrier.wait()
 
 def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
-    np.random.mtrand.RandomState(os.getpid())
+    randst = np.random.mtrand.RandomState(os.getpid())
     params = Params()
     canvas = None
     count = 0
@@ -82,7 +82,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         r_total_reward = 0.0
         d_total_reward = 0.0
 
-        discount_factor = np.random.random()
+        discount_factor = randst.rand()
         print(discount_factor)
 
         dire_agent.pre_train()
