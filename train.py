@@ -230,10 +230,10 @@ class trainer(object):
         #print(batch_advantages)
 
         policy_loss = - torch.sum(batch_log_actions * batch_advantages,1).view(-1)
-        policy_loss = torch.sum(policy_loss)
+        policy_loss = torch.mean(policy_loss)
         #print("policy_loss",policy_loss)
         value_loss = torch.sum((batch_returns - batch_values) ** 2,1).view(-1)
-        value_loss = torch.sum(value_loss)
+        value_loss = torch.mean(value_loss)
         #print("value_loss",value_loss)
 
         total_loss = policy_loss + 0.5 * value_loss

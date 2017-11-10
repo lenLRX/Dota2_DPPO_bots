@@ -88,7 +88,7 @@ class Params():
         self.batch_size = 200000
         self.game_duriation = 150
         self.tick_per_action = 2
-        self.lr = 1e-4
+        self.lr = 1e-3
         self.gamma = 0.99
         self.gae_param = 0.95
         self.clip = 0.2
@@ -102,6 +102,6 @@ class Params():
         self.num_inputs = {"self_input":3,"ally_input":6}
         self.num_outputs = 3
         self.log_std_bound = 1
-        self.use_lstm = True
+        self.use_lstm = False
 
 param = Params()
