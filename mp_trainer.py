@@ -57,6 +57,7 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         barrier.wait()
 
 def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
+    np.random.mtrand.RandomState(os.getpid())
     params = Params()
     canvas = None
     count = 0
