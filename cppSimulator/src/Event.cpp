@@ -19,6 +19,9 @@ static void spawn_fn(cppSimulatorImp* Engine) {
         Engine->addSprite(new Creep(Engine, Side::Radiant, "MeleeCreep"));
         Engine->addSprite(new Creep(Engine, Side::Dire, "MeleeCreep"));
     }
+
+    Engine->addSprite(new Creep(Engine, Side::Radiant, "RangedCreep"));
+    Engine->addSprite(new Creep(Engine, Side::Dire, "RangedCreep"));
     
     std::function<void()> fn = std::bind(spawn_fn, Engine);
     Engine->get_queue().push(Event(Engine->get_time() + 30, fn));
@@ -27,5 +30,5 @@ static void spawn_fn(cppSimulatorImp* Engine) {
 void EventFactory::CreateSpawnEvnt(cppSimulatorImp* Engine)
 {
     std::function<void()> fn = std::bind(spawn_fn, Engine);
-    Engine->get_queue().push(Event(Engine->get_time() + 30,fn));
+    Engine->get_queue().push(Event(Engine->get_time() + 90,fn));
 }

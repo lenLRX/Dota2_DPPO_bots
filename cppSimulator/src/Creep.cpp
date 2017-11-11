@@ -17,9 +17,23 @@ static int init_CreepData = [&]()->int {
         {"AttackRange",100},
         {"SightRange", 750},
         {"Bounty", 36},
-        {"bountyEXP", 40},
+        {"bountyEXP", 57},
         {"BaseAttackTime", 1},
         {"AttackSpeed", 100}
+    };
+
+    CreepData["RangedCreep"] = {
+        { "HP",300 },
+        { "MP",0 },
+        { "MovementSpeed",325 },
+        { "Armor", 0 },
+        { "Attack", 23.5 },
+        { "AttackRange",500 },
+        { "SightRange", 750 },
+        { "Bounty", 36 },
+        { "bountyEXP", 69 },
+        { "BaseAttackTime", 1 },
+        { "AttackSpeed", 100 }
     };
     return 0;
 }();

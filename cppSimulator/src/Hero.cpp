@@ -190,7 +190,7 @@ PyObject* Hero::predefined_step()
         }
     }
     else {
-        ret = pos_tup(0, 0);
+        ret = pos_tup(-482, -400);
     }
     
     double dx = std::get<0>(ret) - std::get<0>(location);

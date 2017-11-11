@@ -144,7 +144,7 @@ class trainer(object):
         self.state = Variable(torch.FloatTensor(self.state)).view(1,1,-1)
 
         s_action, v, log_action = self.model(self.state)
-        print("act",s_action,"value",v)
+        #print("act",s_action,"value",v)
 
         '''
         if np.random.rand() < 0.05:
@@ -228,8 +228,8 @@ class trainer(object):
         # new mini_batch
         batch_states, batch_log_actions, batch_returns, batch_advantages, batch_values = self.memory.sample(self.params.batch_size)
 
-        print("adv",torch.mean(batch_advantages))
-        print("batch_values",torch.mean(batch_values))
+        #print("adv",torch.mean(batch_advantages))
+        #print("batch_values",torch.mean(batch_values))
         #print("actions",batch_log_actions)
 
         policy_loss = -torch.sum(batch_log_actions * batch_advantages,1).view(-1)
