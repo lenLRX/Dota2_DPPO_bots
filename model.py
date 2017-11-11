@@ -54,7 +54,7 @@ class Model(nn.Module):
         softmax = nn.Softmax()
         _sp = (spatial_out).view(-1,self.spatial_res**2)
         spatial_act_out = softmax(_sp)
-        v_out = self.v(p_input_out)
+        v_out = self.v(F.sigmoid(p_input_out))
         return spatial_act_out,v_out, F.log_softmax(_sp)
 
 class Shared_grad_buffers():
