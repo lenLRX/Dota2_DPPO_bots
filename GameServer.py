@@ -109,7 +109,7 @@ def gen_model():
         act = np.asarray([0.0,0.0])
         agent = trainer(params,shared_model,shared_grad_buffers)
 
-        tup = yield (act[0] * 100,act[1] * 100)
+        tup = yield (act[0] * 500,act[1] * 500)
 
         total_reward = 0.0
 
@@ -119,7 +119,7 @@ def gen_model():
 
         while True:
             tick += 1
-            move_order = (act[0] * 100,act[1] * 100)
+            move_order = (act[0] * 500,act[1] * 500)
 
             tup = yield move_order
 
@@ -129,7 +129,7 @@ def gen_model():
 
             total_reward += tup[1]
 
-            act = get_action(agent.step(tup))
+            act = get_action(agent.step(tup,None,0.0))
 
 
             if tup[2]:
