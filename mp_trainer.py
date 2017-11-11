@@ -28,8 +28,11 @@ def mp_trainer(np, model, grad_buffer, optimizer, it_num = 0):
     processes = []
     processes.append(p_opt)
 
+    shared_score = torch.FloatTensor([0])
+    shared_score.share_memory_()
+
     for id in range(np):
-        p_trainer_args = (id,it_num,Barrier,optimizer,Condition,model,grad_buffer)
+        p_trainer_args = (id,it_num,Barrier,optimizer,Condition,model,grad_buffer,shared_score,np)
         p_trainer = mp.Process(target = trainer_process, args = p_trainer_args)
         p_trainer.start()
         processes.append(p_trainer)
@@ -45,10 +48,10 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
     while True:
         num += 1
         barrier.wait()
-        if num % 10 == 0:
+        if num % param.game_per_update == 0:
             for n,p in shared_model.named_parameters():
                 p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-                p.data -= param.lr * p.grad.data
+                p.data -= param.lr * p.grad.data / float(param.game_per_update)
             #optimizer.step()
             shared_grad_buffers.reset()
 
@@ -56,7 +59,7 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
             torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         barrier.wait()
 
-def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
+def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers,shared_score,num_process):
     randst = np.random.mtrand.RandomState(os.getpid())
     params = Params()
     canvas = None
@@ -83,7 +86,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         d_total_reward = 0.0
 
         discount_factor = randst.rand()
-        print(discount_factor)
+        print(id,discount_factor)
 
         dire_agent.pre_train()
         rad_agent.pre_train()
@@ -137,9 +140,13 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
             if d_tup[2] or r_tup[2]:
                 break
+        
+        shared_score[0] += (r_total_reward + d_total_reward) * 0.5
 
         if id == 0:
-            print("total reward %f %f"%(r_total_reward, d_total_reward))
+            shared_score[0] = shared_score[0] / num_process
+            print("total reward %f"%(shared_score[0]))
+            shared_score[0] = 0
         rad_agent.fill_memory()
         dire_agent.fill_memory()
 

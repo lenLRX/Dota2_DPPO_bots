@@ -23,19 +23,16 @@ if __name__ == "__main__":
         o_file = args.o
     
     with open(i_file) as fp_log:
-        r_reward = []
-        d_reward = []
+        reward = []
         
-        reward_matcher = re.compile("total reward (.*) (.*)")
+        reward_matcher = re.compile("total reward (.*)")
         for line in fp_log:
             ret = reward_matcher.match(line)
             if ret is not None:
                 ret = ret.groups()
-                r_reward.append(float(ret[0]))
-                d_reward.append(float(ret[1]))
+                reward.append(float(ret[0]))
 
     plt.figure()
-    plt.plot(list(range(len(r_reward))),r_reward)
-    plt.plot(list(range(len(r_reward))),d_reward)
+    plt.plot(list(range(len(reward))),reward)
     plt.savefig(o_file)
 
