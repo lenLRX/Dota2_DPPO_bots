@@ -238,7 +238,7 @@ class trainer(object):
         value_loss = torch.sum((batch_returns - batch_values) ** 2,1).view(-1)
         value_loss = torch.sum(value_loss)
         #print("value_loss",value_loss)
-        print("batch_return",torch.mean(batch_returns))
+        #print("batch_return",torch.mean(batch_returns))
 
         total_loss = policy_loss + 0.5 * value_loss
         #print("training  loss = ", total_loss, torch.mean(batch_returns,0))
