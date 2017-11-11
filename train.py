@@ -166,8 +166,8 @@ class trainer(object):
                 #print(predefine,get_action(self.action))
                 #self.action = int(predefine[0])
         else:
-            #self.action = np.argmax(s_action.data.numpy()[0])
-            self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
+            self.action = np.argmax(s_action.data.numpy()[0])
+            #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
         #print(s_action)
         #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
 
@@ -230,16 +230,16 @@ class trainer(object):
         #print(batch_advantages)
 
         policy_loss = - torch.sum(batch_log_actions * batch_advantages,1).view(-1)
-        policy_loss = torch.mean(policy_loss)
+        policy_loss = torch.sum(policy_loss)
         #print("policy_loss",policy_loss)
         value_loss = torch.sum((batch_returns - batch_values) ** 2,1).view(-1)
-        value_loss = torch.mean(value_loss)
+        value_loss = torch.sum(value_loss)
         #print("value_loss",value_loss)
 
         total_loss = policy_loss + 0.5 * value_loss
         #print("training  loss = ", total_loss, torch.mean(batch_returns,0))
         # prepare for step
-        total_loss.backward(retain_variables=True)
+        total_loss.backward()
         #ensure_shared_grads(model, shared_model)
         #shared_model.cum_grads()
         self.shared_grad_buffers.add_gradient(self.model)
