@@ -89,7 +89,7 @@ class Params():
         self.game_duriation = 200
         self.tick_per_action = 2
         self.game_per_update = 20
-        self.lr = 1e-3
+        self.lr = 1e-4
         self.gamma = 0.99
         self.gae_param = 0.95
         self.clip = 0.2
