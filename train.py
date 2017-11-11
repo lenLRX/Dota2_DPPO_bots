@@ -196,7 +196,7 @@ class trainer(object):
 
     def fill_memory(self):
         R = torch.zeros(1, 1)
-        self.values.append(Variable(R))
+        self.values.append(self.values[-1])
         R = Variable(R)
         A = Variable(torch.zeros(1, 1))
         for i in reversed(range(len(self.rewards))):
