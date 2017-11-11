@@ -51,7 +51,9 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         if num % param.game_per_update == 0:
             for n,p in shared_model.named_parameters():
                 p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-                p.data -= param.lr * p.grad.data / float(param.game_per_update)
+                delta = param.lr * p.grad.data / float(param.game_per_update)
+                print(n,delta,"_grad",p._grad)
+                p.data -= delta
             #optimizer.step()
             shared_grad_buffers.reset()
 
@@ -121,9 +123,11 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
 
-            r_tup = (r_tup[0],r_tup[1] + 0.1 * dotproduct(p_rad_act,rad_act,1),r_tup[2])
-            d_tup = (d_tup[0],d_tup[1] + 0.1 * dotproduct(p_dire_act,dire_act,1),d_tup[2])
+            r_tup = (r_tup[0],0*r_tup[1] + 0.1 * dotproduct(p_rad_act,rad_act,1),r_tup[2])
+            d_tup = (d_tup[0],0*d_tup[1] + 0.1 * dotproduct(p_dire_act,dire_act,1),d_tup[2])
 
+            print("game %d t=%f,r_act=%s,%s,r_reward=%f,d_act=%s %s,d_reward=%f"\
+                %(count, _engine.get_time(),str(rad_act),str(p_rad_act),r_tup[1],str(dire_act),str(p_dire_act),d_tup[1]))
             #r_tup = (r_tup[0],r_tup[1] - 0.01,r_tup[2])
             #d_tup = (d_tup[0],d_tup[1] - 0.01,d_tup[2])
                
@@ -135,8 +139,6 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
             #print(d_tup,r_tup)
 
-            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
             last_dire_location = hero_location_by_tup(d_tup)
             last_rad_location = hero_location_by_tup(r_tup)

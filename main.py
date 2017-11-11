@@ -209,6 +209,6 @@ if __name__ == '__main__':
         while True:
             g.send(None)
     elif args.action == "mp_sim":
-        mp_trainer(num_processes,shared_model,shared_grad_buffers,optimizer,it_num = num_iter)
+        mp_trainer(1,shared_model,shared_grad_buffers,optimizer,it_num = num_iter)
     else:
         print("unknow action exit")
