@@ -1,7 +1,7 @@
 #include "Config.h"
 
 const double Config::tick_per_second = 10.0;
-const double Config::map_div =7000.0;
+const double Config::map_div =700.0;
 const pos_tup Config::rad_init_pos
     = pos_tup(
         -0.95714285714286 * Config::map_div,
