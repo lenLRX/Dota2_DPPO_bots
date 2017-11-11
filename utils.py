@@ -104,5 +104,6 @@ class Params():
         self.num_outputs = 3
         self.log_std_bound = 1
         self.use_lstm = False
+        self.grad_clip = 10
 
 param = Params()

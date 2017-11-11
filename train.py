@@ -228,7 +228,7 @@ class trainer(object):
         # new mini_batch
         batch_states, batch_log_actions, batch_returns, batch_advantages, batch_values = self.memory.sample(self.params.batch_size)
 
-        #print("adb",batch_advantages)
+        #print("adv",torch.mean(batch_advantages))
         #print("batch_values",batch_values)
         #print("actions",batch_log_actions)
 
