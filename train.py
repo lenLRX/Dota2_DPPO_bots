@@ -201,7 +201,7 @@ class trainer(object):
         A = Variable(torch.zeros(1, 1))
         for i in reversed(range(len(self.rewards))):
             try:
-                td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1).data[0] - self.values[i].view(-1).data[0]
+                td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1) - self.values[i].view(-1)
                 A = td + self.params.gamma*self.params.gae_param*A
                 self.advantages.insert(0, A)
                 R = A + self.values[i]
