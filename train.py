@@ -144,7 +144,7 @@ class trainer(object):
         self.state = Variable(torch.FloatTensor(self.state)).view(1,1,-1)
 
         s_action, v, log_action = self.model(self.state)
-        print("act",s_action,"value",v)
+        #print("act",s_action,"value",v)
 
         '''
         if np.random.rand() < 0.05:

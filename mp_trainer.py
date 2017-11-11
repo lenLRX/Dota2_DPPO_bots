@@ -51,7 +51,7 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
         if num % param.game_per_update == 0:
             for n,p in shared_model.named_parameters():
                 p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
-                delta = param.lr * p.grad.data / float(param.game_per_update)
+                delta = param.lr * p.grad.data / float(param.game_per_update) / float(np)
                 #print(n,delta,"_grad",p._grad)
                 p.data -= delta
             #optimizer.step()

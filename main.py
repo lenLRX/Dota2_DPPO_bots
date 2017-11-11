@@ -169,7 +169,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.np != None:
-        num_processes = args.np
+        num_processes = int(args.np)
 
     params = Params()
     torch.manual_seed(params.seed)
@@ -209,6 +209,6 @@ if __name__ == '__main__':
         while True:
             g.send(None)
     elif args.action == "mp_sim":
-        mp_trainer(1,shared_model,shared_grad_buffers,optimizer,it_num = num_iter)
+        mp_trainer(num_processes,shared_model,shared_grad_buffers,optimizer,it_num = num_iter)
     else:
         print("unknow action exit")
