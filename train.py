@@ -127,6 +127,8 @@ class trainer(object):
     def pre_train(self):
         self.states = []
         self.actions = []
+        self.lattice_actions = []#calculate reward
+        self.predefined_actions = []#calculate reward
         self.rewards = []
         self.values = []
         self.returns = []
@@ -182,11 +184,16 @@ class trainer(object):
 
             self.rewards.append(self.reward)
 
+            self.lattice_actions.append(self.last_action)
+            self.predefined_actions.append(self.last_predefine_action)
+
         
         self.last_log_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
         self.last_log_action.data[0][self.action] = 1
         self.last_log_action = self.last_log_action * log_action
         self.has_last_action = True
+        self.last_action = get_action(self.action)
+        self.last_predefine_action = predefine
 
         
         #print("%d: action = %f %f value=%f reward = %f"%(
@@ -203,9 +210,13 @@ class trainer(object):
             try:
                 td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1) - self.values[i].view(-1)
                 A = td + self.params.gamma*self.params.gae_param*A
-                self.advantages.insert(0, A)
+                additional_reward = 0.0
+                if not self.predefined_actions[i] is None:
+                    additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
+                #print(additional_reward)
+                self.advantages.insert(0, A + additional_reward)
                 R = A + self.values[i]
-                self.returns.insert(0, Variable(torch.FloatTensor([self.rewards[i]])))
+                self.returns.insert(0, Variable(torch.FloatTensor([self.rewards[i] + additional_reward])))
             except Exception as e:
                 print(str(e))
                 print("error at %d"%i)
