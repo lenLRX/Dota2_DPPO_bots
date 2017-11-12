@@ -146,7 +146,6 @@ class trainer(object):
         self.state = Variable(torch.FloatTensor(self.state)).view(1,1,-1)
 
         s_action, v, log_action = self.model(self.state)
-        #print("act",s_action,"value",v)
 
         '''
         if np.random.rand() < 0.05:
@@ -186,8 +185,10 @@ class trainer(object):
 
             self.lattice_actions.append(self.last_action)
             self.predefined_actions.append(self.last_predefine_action)
+            #print(dotproduct(self.last_predefine_action,self.last_action,1))
 
-        
+        #print("act",s_action,"value",v)
+
         self.last_log_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
         self.last_log_action.data[0][self.action] = 1
         self.last_log_action = self.last_log_action * log_action
@@ -211,8 +212,8 @@ class trainer(object):
                 td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1) - self.values[i].view(-1)
                 A = td + self.params.gamma*self.params.gae_param*A
                 additional_reward = 0.0
-                if not self.predefined_actions[i] is None:
-                    additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
+                #if not self.predefined_actions[i] is None:
+                #    additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
                 #print(additional_reward)
                 self.advantages.insert(0, A + additional_reward)
                 R = A + self.values[i]
@@ -244,10 +245,10 @@ class trainer(object):
         #print("actions",batch_log_actions)
 
         policy_loss = -torch.sum(batch_log_actions * batch_advantages,1).view(-1)
-        policy_loss = torch.sum(policy_loss)
+        policy_loss = torch.mean(policy_loss)
         #print("policy_loss",policy_loss)
         value_loss = torch.sum((batch_returns - batch_values) ** 2,1).view(-1)
-        value_loss = torch.sum(value_loss)
+        value_loss = torch.mean(value_loss)
         #print("value_loss",value_loss)
         #print("batch_return",torch.mean(batch_returns))
 

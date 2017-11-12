@@ -132,8 +132,8 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             #r_tup = (r_tup[0],r_tup[1] - 0.01,r_tup[2])
             #d_tup = (d_tup[0],d_tup[1] - 0.01,d_tup[2])
                
-            dire_act = get_action(dire_agent.step(d_tup,p_dire_act,discount_factor))
-            rad_act = get_action(rad_agent.step(r_tup,p_rad_act,discount_factor))
+            dire_act = get_action(dire_agent.step(d_tup,p_dire_act,1))
+            rad_act = get_action(rad_agent.step(r_tup,p_rad_act,1))
             
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
