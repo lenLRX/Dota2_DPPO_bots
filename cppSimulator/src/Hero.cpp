@@ -3,9 +3,14 @@
 #include "simulatorImp.h"
 #include <unordered_map>
 #include <cmath>
+#include <random>
 
 //TODO use json
 static std::unordered_map<std::string, std::unordered_map<std::string, double> > HeroData;
+
+static std::default_random_engine rnd_gen;
+static std::uniform_int_distribution<int> pos_distribution(1, 1000);
+static std::uniform_int_distribution<int> sign_distribution(-1, 1);
 
 static int init_HeroData = [&]()->int {
     HeroData["ShadowFiend"] = {
@@ -23,6 +28,11 @@ static int init_HeroData = [&]()->int {
     };
     return 0;
 }();
+
+static int get_rand()
+{
+    return sign_distribution(rnd_gen) * pos_distribution(rnd_gen);
+}
 
 Hero::Hero(cppSimulatorImp* _Engine, Side _side, std::string type_name)
 {
@@ -48,11 +58,11 @@ Hero::Hero(cppSimulatorImp* _Engine, Side _side, std::string type_name)
 
     viz_radius = 5;
     if (side == Side::Radiant) {
-        init_loc = pos_tup(-7205, -6610);
+        init_loc = pos_tup(-7205 + get_rand(), -6610 + get_rand());
         color = Config::Radiant_Colors;
     }
     else {
-        init_loc = pos_tup(7000, 6475);
+        init_loc = pos_tup(7000 + get_rand(), 6475 + get_rand());
         color = Config::Dire_Colors;
     }
 
@@ -159,7 +169,7 @@ PyObject* Hero::get_state_tup()
         return NULL;
     }
 
-    double reward = (exp - last_exp) * 0.01 + (HP - last_HP) * 0.01;
+    double reward = (exp - last_exp) * 0.05 + (HP - last_HP) * 0.05;
 
     last_exp = exp;
     last_HP = HP;

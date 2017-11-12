@@ -39,7 +39,14 @@ static int init_CreepData = [&]()->int {
 }();
 
 static std::default_random_engine rnd_gen;
-std::uniform_int_distribution<int> distribution(1, 10);
+static std::uniform_int_distribution<int> distribution(1, 10);
+static std::uniform_int_distribution<int> pos_distribution(1, 500);
+static std::uniform_int_distribution<int> sign_distribution(-1, 1);
+
+static int get_rand()
+{
+    return sign_distribution(rnd_gen) * pos_distribution(rnd_gen);
+}
 
 
 Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
@@ -66,13 +73,13 @@ Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
 
     viz_radius = 2;
     if (side == Side::Radiant) {
-        init_loc = pos_tup(-4899, -4397);
-        dest = pos_tup(4165, 3681);
+        init_loc = pos_tup(-4899 + get_rand(), -4397 + get_rand());
+        dest = pos_tup(4165 + get_rand(), 3681 + get_rand());
         color = Config::Radiant_Colors;
     }
     else {
-        init_loc = pos_tup(4165, 3681);
-        dest = pos_tup(-4899, -4397);
+        init_loc = pos_tup(4165 + get_rand(), 3681 + get_rand());
+        dest = pos_tup(-4899 + get_rand(), -4397 + get_rand());
         color = Config::Dire_Colors;
     }
 
