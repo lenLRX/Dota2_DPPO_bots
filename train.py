@@ -203,6 +203,7 @@ class trainer(object):
         return self.action
 
     def fill_memory(self):
+        
         R = torch.zeros(1, 1)
         self.values.append(self.values[-1])
         R = Variable(R)
@@ -216,8 +217,8 @@ class trainer(object):
                 #    additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
                 #print(additional_reward)
                 self.advantages.insert(0, A + additional_reward)
-                R = A + self.values[i]
-                self.returns.insert(0, Variable(torch.FloatTensor([self.rewards[i] + additional_reward])))
+                R = self.rewards[i] + self.params.gamma*R 
+                self.returns.insert(0, R)
             except Exception as e:
                 print(str(e))
                 print("error at %d"%i)
@@ -227,7 +228,9 @@ class trainer(object):
                     dbgout.write("\n\n\n\n")
                     for v in self.values:
                         dbgout.write("%d  %s\n"%(i,str(v)))
-
+        
+        #print("rewards",self.rewards)
+        #print("returns",self.returns)
         # store usefull info:
         #print(type(self.actions))
         self.memory.push([self.states, self.actions, self.returns, 
@@ -240,8 +243,8 @@ class trainer(object):
         # new mini_batch
         batch_states, batch_log_actions, batch_returns, batch_advantages, batch_values = self.memory.sample(self.params.batch_size)
 
-        #print("adv",torch.mean(batch_advantages))
-        #print("batch_values",torch.mean(batch_values))
+        #print("adv",batch_advantages)
+        #print("batch_values",batch_values)
         #print("actions",batch_log_actions)
 
         policy_loss = -torch.sum(batch_log_actions * batch_advantages,1).view(-1)
@@ -250,7 +253,7 @@ class trainer(object):
         value_loss = torch.sum((batch_returns - batch_values) ** 2,1).view(-1)
         value_loss = torch.mean(value_loss)
         #print("value_loss",value_loss)
-        #print("batch_return",torch.mean(batch_returns))
+        #print("batch_return",(batch_returns))
 
         total_loss = policy_loss + 0.5 * value_loss
         #print("training  loss = ", total_loss, torch.mean(batch_returns,0))
