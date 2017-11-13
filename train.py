@@ -34,7 +34,8 @@ class ReplayMemory(object):
     def sample(self, batch_size):
         if len(self.memory) < batch_size:
             batch_size = len(self.memory)
-        samples = zip(*random.sample(self.memory, batch_size))
+        #samples = zip(*random.sample(self.memory, batch_size))
+        samples = zip(*self.memory)
         _out = []
         first = True
         for _s in samples:
