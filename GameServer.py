@@ -83,8 +83,12 @@ def parse_creep(sign,creep):
         _x = _x + c[5]
         _y = _y + c[6]
     
+    
+    
     _x = _x / count * sign
     _y = _y / count * sign
+    if count == 1:
+        count = 0
     return [_x, _y, count]
 
 def parse_tup(side,raw_tup):
@@ -125,7 +129,7 @@ def gen_model():
 
             tup = parse_tup(side, tup)
 
-            #print("origin output ", tup ,flush=True)
+            print("origin input ", tup ,flush=True)
 
             total_reward += tup[1]
 

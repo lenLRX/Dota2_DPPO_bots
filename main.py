@@ -99,7 +99,7 @@ def start_cppSimulator():
                 #_engine.draw()
                 canvas.update_idletasks()
 
-            #print("origin output ", d_tup , r_tup,flush=True)
+            print("origin output ", d_tup , r_tup,flush=True)
 
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]

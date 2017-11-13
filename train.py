@@ -124,6 +124,8 @@ class trainer(object):
 
         self.has_last_action = False
 
+        self.first_print = True
+
     def pre_train(self):
         self.states = []
         self.actions = []
@@ -186,8 +188,9 @@ class trainer(object):
             self.lattice_actions.append(self.last_action)
             self.predefined_actions.append(self.last_predefine_action)
             #print(dotproduct(self.last_predefine_action,self.last_action,1))
-
-        #print("act",s_action,"value",v)
+        if self.first_print:
+            print("act",s_action,"value",v)
+            self.first_print = False
 
         self.last_log_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
         self.last_log_action.data[0][self.action] = 1
