@@ -101,7 +101,7 @@ def parse_tup(side,raw_tup):
     else:
         sign = -1
         _side = 1
-    ret = [_side,sign * self_input[11],sign * self_input[12]]
+    ret = [sign * self_input[11],sign * self_input[12],_side]
     ret = ret + parse_creep(sign,raw_tup["ally_input"])
     ret = ret + parse_creep(sign,raw_tup["enemy_input"])
     return (ret,origin[1],origin[2])

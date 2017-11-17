@@ -190,7 +190,7 @@ class trainer(object):
             self.predefined_actions.append(self.last_predefine_action)
             #print(dotproduct(self.last_predefine_action,self.last_action,1))
         if self.first_print:
-            print("act",s_action,"value",v)
+            print("act",s_action,"value",v,"action",self.action)
             self.first_print = False
 
         self.last_log_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
@@ -214,15 +214,17 @@ class trainer(object):
         A = Variable(torch.zeros(1, 1))
         for i in reversed(range(len(self.rewards))):
             try:
-                td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1) - self.values[i].view(-1)
-                A = td + self.params.gamma*self.params.gae_param*A
+                #td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1) - self.values[i].view(-1)
+                #A = td + self.params.gamma*self.params.gae_param*A
+                R = self.rewards[i] + self.params.gamma*R
+                A = R - self.values[i].view(-1).data[0]
                 additional_reward = 0.0
-                #if not self.predefined_actions[i] is None:
-                #    additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
+                if not self.predefined_actions[i] is None:
+                    additional_reward = additional_reward + dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
                 #print(additional_reward)
                 self.advantages.insert(0, A + additional_reward)
-                R = self.rewards[i] + self.params.gamma*R 
-                self.returns.insert(0, R)
+                #R = self.rewards[i] + self.params.gamma*R 
+                self.returns.insert(0, R + additional_reward)
             except Exception as e:
                 print(str(e))
                 print("error at %d"%i)
