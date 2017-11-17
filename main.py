@@ -27,7 +27,6 @@ from model import Model, Shared_grad_buffers
 from train import trainer
 from chief import chief
 from utils import *
-from simulator.simulator import *
 from mp_trainer import mp_trainer
 from GameServer import start_env
 

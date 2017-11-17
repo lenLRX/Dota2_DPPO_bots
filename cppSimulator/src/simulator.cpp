@@ -1,6 +1,8 @@
 #include "simulator.h"
 #include "simulatorImp.h"
 
+#define __VERSION__ "0.0.2"
+
 static void
 cppSimulator_dealloc(cppSimulatorObject* self)
 {
@@ -85,6 +87,11 @@ cppSimulator_predefined_step(cppSimulatorObject* self, PyObject *args, PyObject 
     return self->pImp->predefined_step(side, idx);
 }
 
+static PyObject*
+cppSimulator_get_version(cppSimulatorObject* self) {
+    return Py_BuildValue("s", __VERSION__);
+}
+
 static PyMethodDef cppSimulator_methods[] = {
     { "get_time", (PyCFunction)cppSimulator_get_time, METH_NOARGS,
     "get time of simulator"
@@ -101,6 +108,9 @@ static PyMethodDef cppSimulator_methods[] = {
     ,
     { "set_move_order", (PyCFunction)cppSimulator_set_move_order, METH_VARARGS | METH_KEYWORDS,
     "set move order side,idx,x,y"
+    },
+    { "get_version", (PyCFunction)cppSimulator_get_version, METH_NOARGS,
+    "get version of simulator"
     },
     { NULL }  /* Sentinel */
 };
