@@ -92,63 +92,48 @@ for i in range(param.num_outputs ** 2):
 
 class trainer(object):
     def __init__(self,params, shared_model, shared_grad_buffers,
-        shared_obs_stats = None, atomicInt = None, ChiefConV = None):
-        self.atomicInt = atomicInt
+        shared_obs_stats = None):
         self.params = params
-        torch.manual_seed(self.params.seed)
+        torch.manual_seed(int(time.time()))
         self.model = Model(self.params.num_inputs,self.params.num_outputs)
         self.model.load_state_dict(shared_model.state_dict())
 
         self.memory = ReplayMemory(params,10000000)
-
-        self.init_state = {"self_input":[0 for x in range(self.params.num_inputs["self_input"])],
-                "ally_input":[[0 for x in range(self.params.num_inputs["ally_input"])]]}
-        
-        self.state = self.init_state
 
         self.done = False
         self.episode_length = 0
         self.shared_model = shared_model
         self.shared_grad_buffers = shared_grad_buffers
 
-        self.get_action_ConV = threading.Condition()
-        self.get_state_Conv = threading.Condition()
 
         self.is_training = False
 
-        self.ChiefConV = ChiefConV
-
-        self.action_out = [0,0]
         self.state_tuple_in = None
         self.flag = False
-        self.action_spin_flag = False
 
         self.has_last_action = False
 
         self.first_print = True
 
     def pre_train(self):
-        self.states = []
-        self.actions = []
-        self.lattice_actions = []#calculate reward
+        self.decisions = []
+        self.decisions_log = []
+        self.subdecisions = []
+        self.subdecisions_log = []
         self.predefined_actions = []#calculate reward
         self.rewards = []
         self.values = []
         self.returns = []
         self.advantages = []
-        
-        self.av_reward = 0
-        self.cum_reward = 0
-        self.cum_done = 0
 
     def step(self, state_tuple_in,predefine = None, c = 0.2):
         #_start_time = time.time()
 
         self.state, self.reward, self.done = state_tuple_in
 
-        self.state = Variable(torch.FloatTensor(self.state)).view(1,1,-1)
-
-        s_action, v, log_action = self.model(self.state)
+        v_out, decision, decision_layer_log_out,\
+                move_target, move_target_log,\
+                atk_target, atk_target_log = self.model(self.state)
 
         '''
         if np.random.rand() < 0.05:
@@ -171,40 +156,110 @@ class trainer(object):
                 #self.action = int(predefine[0])
         else:
             self.action = np.argmax(s_action.data.numpy()[0])
-            #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
-        #print(s_action)
-        #self.action = np.random.choice(self.params.num_outputs**2,p = s_action.data.numpy()[0])
-
-        self.cum_reward += self.reward
-
+        
+        self.action_log = sdecision_layer_log_out
+        if 0 == decision:
+            #noop
+            self.action = 0
+            self.subaction = None
+            self.subaction_log = None
+        elif 1 == decision:
+            #move
+            self.action = 1
+            self.subaction = move_target
+            self.subaction_log = move_target_log
+        elif 2 == decision:
+            #attack
+            self.action = 2
+            self.subaction = atk_target
+            self.subaction_log = atk_target_log
         
         if self.has_last_action:
-            self.states.append(self.state)
+            self.decisions.append(self.last_action)
+            self.decisions_log.append(self.last_action_log)
+            self.subdecisions.append(self.last_subaction)
+            self.subdecisions_log.append(self.last_subaction_log)
+            self.predefined_actions.append(self.last_predefine_action)
 
-            self.actions.append(self.last_log_action)
             self.values.append(v)
 
             self.rewards.append(self.reward)
-
-            self.lattice_actions.append(self.last_action)
-            self.predefined_actions.append(self.last_predefine_action)
+            
             #print(dotproduct(self.last_predefine_action,self.last_action,1))
+
         if self.first_print:
-            print("act",s_action,"value",v,"action",self.action)
+            print("act",self.action,"value",v_out,"action",self.decision_layer_log_out)
             self.first_print = False
+        
+        
+        self.last_action = self.action
+        self.last_action_log = self.action_log
+        self.last_subaction = self.subaction
+        self.last_subaction_log = self.subaction_log
+        self.last_predefine_action = predefine
+        self.has_last_action = True
 
         self.last_log_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
         self.last_log_action.data[0][self.action] = 1
         self.last_log_action = self.last_log_action * log_action
-        self.has_last_action = True
+        
         self.last_action = get_action(self.action)
         self.last_predefine_action = predefine
 
-        
-        #print("%d: action = %f %f value=%f reward = %f"%(
-        #    self.w,self.action_out[0],self.action_out[1],float(v.data.numpy()[0]),self.reward),sigma_sq.sqrt())
-        #print("total time",time.time() - _start_time)
         return self.action
+
+    def train(self):
+        self.model.zero_grad()
+        R = torch.zeros(1, 1)
+        self.values.append(self.values[-1])
+        R = Variable(R)
+        A = Variable(torch.zeros(1, 1))
+        loss = Variable(torch.FloatTensor([0.0]))
+        for i in reversed(range(len(self.rewards))):
+            R = self.rewards[i] + self.params.gamma*R
+            A = R - self.values[i].view(-1).data[0]
+            additional_reward = 0.0
+            decision = self.decisions[i]
+            subdecision_policy_loss = 0.0
+            if 0 == decision:
+                pass
+            elif 1 == decision:
+                #move
+                if not self.predefined_actions[i] is None:
+                    additional_reward = additional_reward + dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
+                _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                _log.data[0][self.subdecisions] = 1
+                _log = _log * self.subdecisions_log[i]
+                subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                subdecision_policy_loss = torch.sum(subdecision_policy_loss)
+            elif 2 == decision:
+                #atk
+                if not self.subaction[i] is None:
+                    #invalid decision,punish decision
+                    additional_reward = -param.atk_addtion_rwd
+                else:
+                    if not self.predefined_actions[i] is None:
+                        #predefined idx
+                        if self.predefined_actions[i] == self.subaction[i]: 
+                            additional_reward = param.atk_addtion_rwd
+                        else:
+                            additional_reward = -param.atk_addtion_rwd
+                    _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                    _log.data[0][self.subdecisions] = 1
+                    _log = _log * self.subdecisions_log[i]
+                    subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                    subdecision_policy_loss = torch.sum(subdecision_policy_loss)
+            
+            value_loss = (R + additional_reward - self.values[i].view(-1)) ** 2
+            decision_policy_loss = - ((A + additional_reward) * self.decisions_log[i]).view(-1)
+
+            loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
+        
+        loss.backward()
+        self.shared_grad_buffers.add_gradient(self.model)
+        return str(loss)
+
+
 
     def fill_memory(self):
         
@@ -212,6 +267,7 @@ class trainer(object):
         self.values.append(self.values[-1])
         R = Variable(R)
         A = Variable(torch.zeros(1, 1))
+        
         for i in reversed(range(len(self.rewards))):
             try:
                 #td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1) - self.values[i].view(-1)
@@ -243,11 +299,11 @@ class trainer(object):
             self.advantages, self.values])
         #raise "stop"
     
-    def train(self):
+    def train_(self):
         self.model.zero_grad()
 
         # new mini_batch
-        batch_states, batch_log_actions, batch_returns, batch_advantages, batch_values = self.memory.sample(self.params.batch_size)
+        batch_log_actions, batch_returns, batch_advantages, batch_values = self.memory.sample(self.params.batch_size)
 
         #print("adv",batch_advantages)
         #print("batch_values",batch_values)

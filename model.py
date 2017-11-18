@@ -70,12 +70,14 @@ class Model(nn.Module):
         move_target = None
         move_target_log = None
 
-        v = inputs["env_input"]
+        _env_input = Variable(torch.FloatTensor(inputs["env_input"])).view(1,1,-1)
+
+        v = _env_input
         v = F.relu(self.v_input_1(v)).view(-1,self.h_size_2)
         v = F.relu(self.v_input_2(v)).view(-1,self.h_size_2)
         v_out = self.v(v)
 
-        p = inputs["env_input"]
+        p = _env_input
         input_layer_out = F.relu(self.input_layer(p)).view(-1,self.h_size_2)
         decision_layer_out = self.decision_layer(input_layer_out).view(-1,self.h_size_2)
         decision_layer_softmax_out = F.softmax(decision_layer_out)
@@ -88,16 +90,16 @@ class Model(nn.Module):
             pass
         elif 1 == decision:
             #move
-            move_layer_out = F.relu(self.input_move_layer(inputs["env_input"])).view(-1,self.h_size_2)
+            move_layer_out = F.relu(self.input_move_layer(_env_input)).view(-1,self.h_size_2)
             spatial_layer_out = self.spatial(move_layer_out).view(-1,self.spatial_res**2)
             spatial_layer_softmax_out = F.softmax(spatial_layer_out)
             spatial_layer_log_out = F.softmax(spatial_layer_out)
             move_target = np.argmax(decision_layer_softmax_out.data.numpy()[0])
             move_target_log = spatial_layer_log_out
         elif 2 == decision:
-            _raw_inputs = inputs["target_input"]
             #attack
-            if len(_raw_inputs) > 0:
+            if len(inputs["target_input"]) > 0:
+                _raw_inputs = Variable(torch.FloatTensor(inputs["target_input"])).view(1,-1)
                 targets = []
             
                 for t in _raw_inputs:
@@ -111,18 +113,9 @@ class Model(nn.Module):
             raise Exception("unknown decision")
 
 
-        return decision, decision_layer_log_out,\
+        return v_out, decision, decision_layer_log_out,\
                 move_target, move_target_log,\
                 atk_target, atk_target_log
-                
-        spatial_out = self.spatial(p)
-        #import pdb
-        #pdb.set_trace()
-        softmax = nn.Softmax()
-        _sp = (spatial_out).view(-1,self.spatial_res**2)
-        spatial_act_out = softmax(_sp)
-        
-        return spatial_act_out,v_out, F.log_softmax(_sp)
 
 class Shared_grad_buffers():
     def __init__(self, model):

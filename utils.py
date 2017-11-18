@@ -91,6 +91,7 @@ class Params():
         self.game_per_update = 1
         self.lr = 1e-3
         self.gamma = 0.995
+        self.atk_addtion_rwd = 0.2
         self.gae_param = 0.95
         self.clip = 0.2
         self.ent_coeff = 0.1
