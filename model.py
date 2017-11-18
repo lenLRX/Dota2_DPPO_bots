@@ -8,7 +8,13 @@ import torch.nn.init as init
 
 from utils import *
 
+
 class Model(nn.Module):
+    '''
+           noop
+    input->move->9 directions
+           attack->choose 1 target
+    '''
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
         self.params = Params()
@@ -17,37 +23,35 @@ class Model(nn.Module):
         self.spatial_res = self.params.num_outputs
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2
-        self.total_input = num_inputs["self_input"] + num_inputs["ally_input"]
+        self.env_input_dim = num_inputs["env_input"]
+        self.atk_target_dim = num_inputs["atk_target"]
 
-        self.p_input_1 = nn.Linear(self.total_input,h_size_2)
-        self.p_input_2 = nn.Linear(h_size_2,h_size_2)
-        self.p_input_3 = nn.Linear(h_size_2,h_size_2)
-        self.p_input_4 = nn.Linear(h_size_2,h_size_2)
+        #input layer
+        self.input_layer = nn.Linear(self.env_input_dim,h_size_2)
+        self.init_layer(self.input_layer)
 
-        self.init_layer(self.p_input_1)
-        self.init_layer(self.p_input_2)
-        self.init_layer(self.p_input_3)
-        self.init_layer(self.p_input_4)
+        #decision layers
+        self.decision_layer = nn.Linear(h_size_2,3)
+        self.init_layer(self.decision_layer)
 
-        self.v_input_1 = nn.Linear(self.total_input,h_size_2)
+        #value layers
+        self.v_input_1 = nn.Linear(self.env_input_dim,h_size_2)
         self.v_input_2 = nn.Linear(h_size_2,h_size_2)
-        self.v_input_3 = nn.Linear(h_size_2,h_size_2)
-        self.v_input_4 = nn.Linear(h_size_2,h_size_2)
 
         self.init_layer(self.v_input_1)
         self.init_layer(self.v_input_2)
-        self.init_layer(self.v_input_3)
-        self.init_layer(self.v_input_4)
 
         self.v = nn.Linear(h_size_2,1)
         self.init_layer(self.v)
 
-        if self.params.use_lstm:
-            self.lstm = nn.LSTM(h_size_2,h_size_2)
-
+        #move layers
+        self.input_move_layer = nn.Linear(self.env_input_dim,h_size_2)
+        self.init_layer(self.input_move_layer)
         self.spatial = nn.Linear(h_size_2, self.spatial_res ** 2)
         self.init_layer(self.spatial)
-        self.init_lstm()
+
+        #attack
+        self.attack_layer = nn.Linear(h_size_2, 1)
 
         # mode
         self.train()
@@ -61,29 +65,63 @@ class Model(nn.Module):
                            Variable(torch.zeros(1,1,self.h_size_2)))
 
     def forward(self,inputs):
-        p = inputs
-        p = F.relu(self.p_input_1(p)).view(-1,self.h_size_2)
-        p = F.relu(self.p_input_2(p)).view(-1,self.h_size_2)
-        p = F.relu(self.p_input_3(p)).view(-1,self.h_size_2)
-        p = F.relu(self.p_input_4(p)).view(-1,self.h_size_2)
+        atk_target = None
+        atk_target_log = None
+        move_target = None
+        move_target_log = None
 
-        v = inputs
+        v = inputs["env_input"]
         v = F.relu(self.v_input_1(v)).view(-1,self.h_size_2)
         v = F.relu(self.v_input_2(v)).view(-1,self.h_size_2)
-        v = F.relu(self.v_input_3(v)).view(-1,self.h_size_2)
-        v = F.relu(self.v_input_4(v)).view(-1,self.h_size_2)
+        v_out = self.v(v)
 
-        
-        if self.params.use_lstm:
-            p_input_out,self.lstm_hidden = self.lstm(p_input_out,self.lstm_hidden)
-        
+        p = inputs["env_input"]
+        input_layer_out = F.relu(self.input_layer(p)).view(-1,self.h_size_2)
+        decision_layer_out = self.decision_layer(input_layer_out).view(-1,self.h_size_2)
+        decision_layer_softmax_out = F.softmax(decision_layer_out)
+        decision_layer_log_out = F.log_softmax(decision_layer_out)
+
+        decision = np.argmax(decision_layer_softmax_out.data.numpy()[0])
+
+        if 0 == decision:
+            #no op
+            pass
+        elif 1 == decision:
+            #move
+            move_layer_out = F.relu(self.input_move_layer(inputs["env_input"])).view(-1,self.h_size_2)
+            spatial_layer_out = self.spatial(move_layer_out).view(-1,self.spatial_res**2)
+            spatial_layer_softmax_out = F.softmax(spatial_layer_out)
+            spatial_layer_log_out = F.softmax(spatial_layer_out)
+            move_target = np.argmax(decision_layer_softmax_out.data.numpy()[0])
+            move_target_log = spatial_layer_log_out
+        elif 2 == decision:
+            _raw_inputs = inputs["target_input"]
+            #attack
+            if len(_raw_inputs) > 0:
+                targets = []
+            
+                for t in _raw_inputs:
+                    targets.append(self.attack_layer(t))
+                _ts = torch.cat(targets)
+                _ts_softmax = F.softmax(_ts)
+                _ts_log = F.log_softmax(_ts)
+                atk_target = np.argmax(_ts_softmax.data.numpy()[0])
+                atk_target_log = _ts
+        else:
+            raise Exception("unknown decision")
+
+
+        return decision, decision_layer_log_out,\
+                move_target, move_target_log,\
+                atk_target, atk_target_log
+                
         spatial_out = self.spatial(p)
         #import pdb
         #pdb.set_trace()
         softmax = nn.Softmax()
         _sp = (spatial_out).view(-1,self.spatial_res**2)
         spatial_act_out = softmax(_sp)
-        v_out = self.v(v)
+        
         return spatial_act_out,v_out, F.log_softmax(_sp)
 
 class Shared_grad_buffers():
