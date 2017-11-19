@@ -5,35 +5,43 @@
 #include <random>
 
 //TODO use json
-static std::unordered_map<std::string,std::unordered_map<std::string,double> > CreepData;
+static SpriteDataType CreepData;
 
 static int init_CreepData = [&]()->int {
     CreepData["MeleeCreep"] = {
-        {"HP",550},
-        {"MP",0},
-        {"MovementSpeed",325},
-        {"Armor", 2},
-        {"Attack", 21},
-        {"AttackRange",100},
-        {"SightRange", 750},
-        {"Bounty", 36},
-        {"bountyEXP", 57},
-        {"BaseAttackTime", 1},
-        {"AttackSpeed", 100}
+        {"HP",new double(550)},
+        {"MP",new double(0)},
+        {"MovementSpeed",new double(325)},
+        {"Armor", new double(2)},
+        {"Attack", new double(21)},
+        {"AttackRange",new double(100)},
+        {"SightRange", new double(750)},
+        {"Bounty", new double(36)},
+        {"bountyEXP", new double(57)},
+        {"BaseAttackTime", new double(1)},
+        {"AtkPoint", new double(0.467)},
+        {"AtkBackswing", new double(0.533)},
+        {"AttackSpeed", new double(100)},
+        {"ProjectileSpeed", new double(-1) },
+        {"atktype", new AtkType(melee)}
     };
 
     CreepData["RangedCreep"] = {
-        { "HP",300 },
-        { "MP",0 },
-        { "MovementSpeed",325 },
-        { "Armor", 0 },
-        { "Attack", 23.5 },
-        { "AttackRange",500 },
-        { "SightRange", 750 },
-        { "Bounty", 36 },
-        { "bountyEXP", 69 },
-        { "BaseAttackTime", 1 },
-        { "AttackSpeed", 100 }
+        { "HP",new double(300) },
+        { "MP",new double(0) },
+        { "MovementSpeed",new double(325) },
+        { "Armor", new double(0) },
+        { "Attack", new double(23.5) },
+        { "AttackRange",new double(500) },
+        { "SightRange", new double(750) },
+        { "Bounty", new double(36) },
+        { "bountyEXP", new double(69) },
+        { "BaseAttackTime", new double(1) },
+        { "AttackSpeed", new double(100) },
+        { "AtkPoint", new double(0.5) },
+        { "AtkBackswing", new double(0.67) },
+        { "ProjectileSpeed", new double(900) },
+        { "atktype", new AtkType(ranged) }
     };
     return 0;
 }();
@@ -54,17 +62,7 @@ Creep::Creep(cppSimulatorImp* _Engine, Side _side, std::string type_name)
     Engine = _Engine;
     side = _side;
     const auto& data = CreepData[type_name];
-    SETATTR(data, HP);
-    SETATTR(data, MP);
-    SETATTR(data, MovementSpeed);
-    SETATTR(data, BaseAttackTime);
-    SETATTR(data, AttackSpeed);
-    SETATTR(data, Armor);
-    SETATTR(data, Attack);
-    SETATTR(data, AttackRange);
-    SETATTR(data, SightRange);
-    SETATTR(data, Bounty);
-    SETATTR(data, bountyEXP);
+    INIT_ATTR_BY(data);
 
     //random atk
     Attack += (distribution(rnd_gen) - 5);

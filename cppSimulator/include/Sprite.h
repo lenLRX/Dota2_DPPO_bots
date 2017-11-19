@@ -5,11 +5,37 @@
 #include "Config.h"
 
 #include <memory>
+#include <unordered_map>
 
 //forward decl
 class cppSimulatorImp;
 
-#define SETATTR(data,attr) attr = data.at(#attr)
+enum AtkType
+{
+    melee,
+    ranged
+};
+
+#define SETATTR(data,type,attr) attr = *(type*)data.at(#attr)
+
+#define INIT_ATTR_BY(data)\
+SETATTR(data, double, HP);\
+SETATTR(data, double, MP);\
+SETATTR(data, double, MovementSpeed);\
+SETATTR(data, double, BaseAttackTime);\
+SETATTR(data, double, AttackSpeed);\
+SETATTR(data, double, Armor);\
+SETATTR(data, double, Attack);\
+SETATTR(data, double, AttackRange);\
+SETATTR(data, double, SightRange);\
+SETATTR(data, double, Bounty);\
+SETATTR(data, double, bountyEXP);\
+SETATTR(data, double, AtkPoint);\
+SETATTR(data, double, AtkBackswing);\
+SETATTR(data, double, ProjectileSpeed);\
+SETATTR(data, AtkType, atktype)
+
+typedef std::unordered_map<std::string, std::unordered_map<std::string, void*> > SpriteDataType;
 
 class Sprite {
 public:
@@ -31,7 +57,7 @@ public:
     }
 
     Sprite() :LastAttackTime(-1),
-        exp(0), _isDead(false), b_move(false), canvas(NULL), v_handle(NULL) {}
+        exp(0), gold(0), _isDead(false), b_move(false), canvas(NULL), v_handle(NULL) {}
 
     virtual ~Sprite(){
         remove_visual_ent();
@@ -58,20 +84,23 @@ public:
         move_target = target;
     }
     void move();
-    bool damadged(double dmg);
-    void dead();
+    bool damadged(Sprite* attacker, double dmg);
+    void dead(Sprite*  attacker);
     void remove_visual_ent();
 
     static double S2Sdistance(const Sprite& s1,const Sprite& s2);
 
     inline cppSimulatorImp* get_engine() { return Engine; }
 
+    inline double get_HP() { return HP; }
     inline double get_AttackTime() { return AttackTime; }
     inline double get_Attack() { return Attack; }
     inline Side get_side() { return side; }
     inline double get_SightRange() { return SightRange; }
     inline pos_tup get_location() { return location; }
     inline bool isDead(){return _isDead;}
+    inline double get_ProjectileSpeed() { return ProjectileSpeed; }
+    double TimeToDamage(const Sprite* s);
 
 protected:
     cppSimulatorImp* Engine;
@@ -91,9 +120,14 @@ protected:
     double bountyEXP;
     double LastAttackTime;
     double AttackTime;
+    double AtkPoint;
+    double AtkBackswing;
+    double ProjectileSpeed;
     double exp;
+    double gold;
     bool _isDead;
     bool b_move;
+    AtkType atktype;
     PyObject* v_handle;
     pos_tup move_target;
 };

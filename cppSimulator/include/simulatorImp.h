@@ -29,7 +29,7 @@ public:
     std::vector<std::pair<Sprite*, double>> get_nearby_enemy(Sprite * sprite, std::function<bool(Sprite*)> filter);
     std::vector<std::pair<Sprite*, double>> get_nearby_ally(Sprite* s);
     std::vector<std::pair<Sprite*, double>> get_nearby_ally(Sprite * sprite, std::function<bool(Sprite*)> filter);
-    void set_move_order(PyObject *args, PyObject *kwds);
+    void set_order(PyObject *args, PyObject *kwds);
     PyObject* get_state_tup(std::string side, int idx);
     PyObject* predefined_step(std::string side, int idx);
 private:

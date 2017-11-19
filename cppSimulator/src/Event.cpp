@@ -8,10 +8,10 @@ void EventFactory::CreateAttackEvnt(Sprite* attacker, Sprite* victim)
 {
     cppSimulatorImp* engine = attacker->get_engine();
     auto fn = [=]() {
-        victim->damadged(attacker->get_Attack());
+        victim->damadged(attacker, attacker->get_Attack());
     };
     engine->get_queue().push(
-        Event(engine->get_time() + attacker->get_AttackTime(), fn));
+        Event(engine->get_time() + attacker->TimeToDamage(victim), fn));
 }
 
 static void spawn_fn(cppSimulatorImp* Engine) {

@@ -3,21 +3,25 @@
 #include <unordered_map>
 
 //TODO use json
-static std::unordered_map<std::string, std::unordered_map<std::string, double> > TowerData;
+static SpriteDataType TowerData;
 
 static int init_TowerData = [&]()->int {
     TowerData["Tier1Tower"] = {
-        { "HP",14000000 },
-        { "MP",0 },
-        { "MovementSpeed",0 },
-        { "Armor", 14 },
-        { "Attack", 120 },
-        { "AttackRange",700 },
-        { "SightRange", 1900 },
-        { "Bounty", 36 },
-        { "bountyEXP", 0 },
-        { "BaseAttackTime", 1 },
-        { "AttackSpeed", 100 }
+        { "HP",new double(14000000) },
+        { "MP",new double(0) },
+        { "MovementSpeed",new double(0) },
+        { "Armor", new double(14) },
+        { "Attack", new double(120) },
+        { "AttackRange",new double(700) },
+        { "SightRange", new double(1900) },
+        { "Bounty", new double(36) },
+        { "bountyEXP", new double(0) },
+        { "BaseAttackTime", new double(1) },
+        { "AttackSpeed", new double(100) },
+        { "AtkPoint", new double(0.6) },
+        { "AtkBackswing", new double(0.4) },
+        { "ProjectileSpeed", new double(750) },
+        { "atktype", new AtkType(ranged) }
     };
     return 0;
 }();
@@ -28,17 +32,7 @@ Tower::Tower(cppSimulatorImp* _Engine,
     Engine = _Engine;
     side = _side;
     const auto& data = TowerData[type_name];
-    SETATTR(data, HP);
-    SETATTR(data, MP);
-    SETATTR(data, MovementSpeed);
-    SETATTR(data, BaseAttackTime);
-    SETATTR(data, AttackSpeed);
-    SETATTR(data, Armor);
-    SETATTR(data, Attack);
-    SETATTR(data, AttackRange);
-    SETATTR(data, SightRange);
-    SETATTR(data, Bounty);
-    SETATTR(data, bountyEXP);
+    INIT_ATTR_BY(data);
 
     _update_para();
 

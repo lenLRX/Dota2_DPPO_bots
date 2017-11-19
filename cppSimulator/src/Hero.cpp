@@ -1,12 +1,11 @@
 #include "Hero.h"
 #include "Creep.h"
 #include "simulatorImp.h"
-#include <unordered_map>
 #include <cmath>
 #include <random>
 
 //TODO use json
-static std::unordered_map<std::string, std::unordered_map<std::string, double> > HeroData;
+static SpriteDataType HeroData;
 
 static std::default_random_engine rnd_gen;
 static std::uniform_int_distribution<int> pos_distribution(1, 1000);
@@ -14,17 +13,21 @@ static std::uniform_int_distribution<int> sign_distribution(-1, 1);
 
 static int init_HeroData = [&]()->int {
     HeroData["ShadowFiend"] = {
-        { "HP",200 },
-        { "MP",273 },
-        { "MovementSpeed",315 },
-        { "Armor", 0.86 },
-        { "Attack", 21 },
-        { "AttackRange",500 },
-        { "SightRange", 1800 },
-        { "Bounty", 200 },
-        { "bountyEXP", 0 },
-        { "BaseAttackTime", 1.7 },
-        { "AttackSpeed", 120 }
+        { "HP",new double(200) },
+        { "MP",new double(273) },
+        { "MovementSpeed",new double(315) },
+        { "Armor", new double(0.86) },
+        { "Attack", new double(21) },
+        { "AttackRange",new double(500) },
+        { "SightRange", new double(1800) },
+        { "Bounty", new double(200) },
+        { "bountyEXP", new double(0) },
+        { "BaseAttackTime", new double(1.7) },
+        { "AttackSpeed", new double(120) },
+        { "AtkPoint", new double(0.5) },
+        { "AtkBackswing", new double(0.54) },
+        { "ProjectileSpeed", new double(1200) },
+        { "atktype", new AtkType(ranged) }
     };
     return 0;
 }();
@@ -34,22 +37,12 @@ static int get_rand()
     return sign_distribution(rnd_gen) * pos_distribution(rnd_gen);
 }
 
-Hero::Hero(cppSimulatorImp* _Engine, Side _side, std::string type_name)
+Hero::Hero(cppSimulatorImp* _Engine, Side _side, std::string type_name):target(nullptr)
 {
     Engine = _Engine;
     side = _side;
     const auto& data = HeroData[type_name];
-    SETATTR(data, HP);
-    SETATTR(data, MP);
-    SETATTR(data, MovementSpeed);
-    SETATTR(data, BaseAttackTime);
-    SETATTR(data, AttackSpeed);
-    SETATTR(data, Armor);
-    SETATTR(data, Attack);
-    SETATTR(data, AttackRange);
-    SETATTR(data, SightRange);
-    SETATTR(data, Bounty);
-    SETATTR(data, bountyEXP);
+    INIT_ATTR_BY(data);
 
     last_exp = 0.0;
     last_HP = HP;
@@ -92,9 +85,24 @@ Hero::~Hero()
 
 void Hero::step()
 {
-    auto p = pos_tup(std::get<0>(move_order) + std::get<0>(location),
-        std::get<1>(move_order) + std::get<1>(location));
-    set_move(p);
+    if (isAttacking())
+        return;
+    if (decisonType::noop == decision) {
+        ;
+    }
+    else if (decisonType::move == decision) {
+        auto p = pos_tup(std::get<0>(move_order) + std::get<0>(location),
+            std::get<1>(move_order) + std::get<1>(location));
+        set_move(p);
+    }
+    else if (decisonType::attack == decision) {
+        if (nullptr == target) {
+            printf("null target!\n");
+            exit(-1);
+        }
+        attack(target);
+    }
+    
 }
 
 void Hero::draw()
@@ -113,11 +121,39 @@ void Hero::draw()
     
 }
 
-void Hero::set_move_order(pos_tup order)
+void Hero::set_order(PyObject* order)
 {
-    int sign = side == Side::Radiant ? 1 : -1;
-    move_order = pos_tup(sign * std::get<0>(order),
-        sign * std::get<1>(order));
+    PyObject* subdecision;
+    if (!PyArg_ParseTuple(order, "(iO)", &decision, &subdecision)) {
+        printf("Parse Arg error");
+        exit(-1);
+    }
+    if (decisonType::noop == decision) {
+        ;
+    }
+    else if (decisonType::move == decision) {
+        int sign = side == Side::Radiant ? 1 : -1;
+        double x, y;
+        if (!PyArg_ParseTuple(order, "(dd)", &x, &y)) {
+            printf("Parse Arg error");
+            exit(-1);
+        }
+        move_order = pos_tup(sign * x,
+            sign * y);
+    }
+    else if (decisonType::attack == decision) {
+        int target_idx = 0;
+        if (!PyArg_ParseTuple(order, "i", &target_idx)) {
+            printf("Parse Arg error");
+            exit(-1);
+        }
+        if (target_idx >= (int)target_list.size()) {
+            printf("index out of range!\n");
+            exit(-1);
+        }
+        target = target_list[target_idx];
+    }
+    
 }
 
 static auto is_creep = [](Sprite* s) -> bool { return dynamic_cast<Creep*>(s) != nullptr; };
@@ -154,9 +190,10 @@ PyObject* Hero::get_state_tup()
         enemy_y /= (double)enemy_input_size;
     }
 
-    PyObject* state = Py_BuildValue("[ddidddddd]",
+    PyObject* env_state = Py_BuildValue("[dddidddddd]",
         sign * std::get<0>(location) / Config::map_div,
         sign * std::get<1>(location) / Config::map_div,
+        Attack,
         side,
         ally_x,
         ally_y,
@@ -166,15 +203,30 @@ PyObject* Hero::get_state_tup()
         (double)enemy_input_size
     );
 
-    if (NULL == state) {
-        printf("self_input error!\n");
+    if (NULL == env_state) {
+        printf("env_state error!\n");
         return NULL;
     }
 
-    double reward = (exp - last_exp) * 0.01 + (HP - last_HP) * 0.01;
+    PyObject* targets_list;
+    if (enemy_input_size > 0) {
+        targets_list = PyList_New(enemy_input_size);
+        for (int i = 0; i < enemy_input_size; i++) {
+            PyList_SET_ITEM(targets_list,i, Py_BuildValue("(dd)", nearby_enemy[i].first->get_HP(), nearby_enemy[i].second / AttackRange));
+        }
+        
+    }
+    else {
+        targets_list = Py_BuildValue("[]");
+    }
+
+    PyObject* state = Py_BuildValue("{s:O,s:O}", "env_input", env_state, "target_input");
+
+    double reward = (exp - last_exp) * 0.01 + (HP - last_HP) * 0.01 + (gold - last_gold) * 0.01;
 
     last_exp = exp;
     last_HP = HP;
+    last_gold = gold;
 
     PyObject* ret = Py_BuildValue("(OdO)", state, reward, _isDead ? Py_True : Py_False);
 

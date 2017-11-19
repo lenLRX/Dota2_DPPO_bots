@@ -199,13 +199,6 @@ class trainer(object):
         self.last_predefine_action = predefine
         self.has_last_action = True
 
-        self.last_log_action = Variable(torch.zeros(1, self.params.num_outputs ** 2))
-        self.last_log_action.data[0][self.action] = 1
-        self.last_log_action = self.last_log_action * log_action
-        
-        self.last_action = get_action(self.action)
-        self.last_predefine_action = predefine
-
         return self.action
 
     def train(self):

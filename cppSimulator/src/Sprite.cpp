@@ -73,19 +73,19 @@ void Sprite::move()
     }
 }
 
-bool Sprite::damadged(double dmg)
+bool Sprite::damadged(Sprite* attacker, double dmg)
 {
     if (isDead()) {
         return false;
     }
     HP -= dmg;
     if (HP <= 0.0) {
-        dead();
+        dead(attacker);
     }
     return true;
 }
 
-void Sprite::dead()
+void Sprite::dead(Sprite*  attacker)
 {
     _isDead = true;
     remove_visual_ent();
@@ -99,6 +99,9 @@ void Sprite::dead()
             //    s->exp += bountyEXP * (dis - 1300 + 1) / Config::map_div * 0.1;
             //}
         }
+    }
+    if (nullptr != attacker) {
+        attacker->gold += Bounty;
     }
 }
 
@@ -122,4 +125,16 @@ double Sprite::S2Sdistance(const Sprite & s1, const Sprite & s2)
     double dx = std::get<0>(s1.location) - std::get<0>(s2.location);
     double dy = std::get<1>(s1.location) - std::get<1>(s2.location);
     return sqrt(dx * dx + dy * dy);
+}
+
+double Sprite::TimeToDamage(const Sprite * s)
+{
+    double TimeToAtk = AtkPoint / AttackSpeed * 0.01;
+    if (melee == atktype) {
+        return TimeToAtk;
+    }
+    else {
+        double _d = S2Sdistance(*this, *s);
+        return TimeToAtk + _d / ProjectileSpeed;
+    }
 }

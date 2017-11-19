@@ -8,6 +8,12 @@
 //forward decl;
 class cppSimulatorImp;
 
+enum decisonType {
+    noop = 0,
+    move = 1,
+    attack = 2
+};
+
 class Hero:public Sprite {
 public:
     Hero(cppSimulatorImp* _Engine,
@@ -15,13 +21,17 @@ public:
     ~Hero();
     virtual void step();
     virtual void draw();
-    void set_move_order(pos_tup order);
+    void set_order(PyObject* order);
     PyObject* get_state_tup();
     PyObject* predefined_step();
 private:
     pos_tup init_loc;
     pos_tup move_order;
+    int decision;
+    Sprite* target;
+    std::vector<Sprite*> target_list;
     double viz_radius;
+    double last_gold;
     double last_exp;
     double last_HP;
     std::string color;

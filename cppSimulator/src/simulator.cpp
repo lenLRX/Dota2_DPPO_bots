@@ -53,8 +53,8 @@ cppSimulator_loop(cppSimulatorObject* self) {
 }
 
 static PyObject*
-cppSimulator_set_move_order(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
-    self->pImp->set_move_order(args, kwds);
+cppSimulator_set_order(cppSimulatorObject* self, PyObject *args, PyObject *kwds) {
+    self->pImp->set_order(args, kwds);
     //Py_XDECREF(args);
     //Py_XDECREF(kwds);
     Py_INCREF(Py_None);
@@ -106,7 +106,7 @@ static PyMethodDef cppSimulator_methods[] = {
     "get predefined_step by side and idx"
     }
     ,
-    { "set_move_order", (PyCFunction)cppSimulator_set_move_order, METH_VARARGS | METH_KEYWORDS,
+    { "set_order", (PyCFunction)cppSimulator_set_order, METH_VARARGS | METH_KEYWORDS,
     "set move order side,idx,x,y"
     },
     { "get_version", (PyCFunction)cppSimulator_get_version, METH_NOARGS,
