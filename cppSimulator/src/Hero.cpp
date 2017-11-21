@@ -208,19 +208,21 @@ PyObject* Hero::get_state_tup()
         return NULL;
     }
 
-    PyObject* targets_list;
+    PyObject* state_targets_list;
     if (enemy_input_size > 0) {
-        targets_list = PyList_New(enemy_input_size);
+        target_list.clear();
+        state_targets_list = PyList_New(enemy_input_size);
         for (int i = 0; i < enemy_input_size; i++) {
-            PyList_SET_ITEM(targets_list,i, Py_BuildValue("(dd)", nearby_enemy[i].first->get_HP(), nearby_enemy[i].second / AttackRange));
+            PyList_SET_ITEM(state_targets_list,i, Py_BuildValue("(dd)", nearby_enemy[i].first->get_HP(), nearby_enemy[i].second / AttackRange));
+            target_list.push_back(nearby_enemy[i].first);
         }
         
     }
     else {
-        targets_list = Py_BuildValue("[]");
+        state_targets_list = Py_BuildValue("[]");
     }
 
-    PyObject* state = Py_BuildValue("{s:O,s:O}", "env_input", env_state, "target_input");
+    PyObject* state = Py_BuildValue("{s:O,s:O}", "env_input", env_state, "target_input", state_targets_list);
 
     double reward = (exp - last_exp) * 0.01 + (HP - last_HP) * 0.01 + (gold - last_gold) * 0.01;
 
@@ -237,20 +239,36 @@ PyObject* Hero::get_state_tup()
 
 PyObject* Hero::predefined_step()
 {
+    if (isAttacking()) {
+        Py_INCREF(Py_None);
+        PyObject* obj = Py_BuildValue("(iO)", decisonType::attack, Py_None);
+        return obj;
+    }
     int sign = side == Side::Radiant ? 1 : -1;
-    auto nearby_ally = Engine->get_nearby_enemy(this, is_creep);
+    auto nearby_enemy = Engine->get_nearby_enemy(this, is_creep);
+    auto nearby_enemy_size = nearby_enemy.size();
+    auto targetlist_size = target_list.size();
+    if (targetlist_size > 0)
+    {
+        for (int i = 0; i < targetlist_size; ++i) {
+            if (!target_list[i]->isDead() && target_list[i]->get_HP() < Attack) {
+                PyObject* obj = Py_BuildValue("(ii)", decisonType::attack, i);
+                return obj;
+            }
+        }
+    }
     pos_tup ret;
     int _dis = 700;
-    if (nearby_ally.size() > 0)
+    if (nearby_enemy.size() > 0)
     {
-        ret = nearby_ally[0].first->get_location();
+        ret = nearby_enemy[0].first->get_location();
         if (side == Side::Radiant) {
-            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) - _dis,
-                std::get<1>(nearby_ally[0].first->get_location()) - _dis);
+            ret = pos_tup(std::get<0>(nearby_enemy[0].first->get_location()) - _dis,
+                std::get<1>(nearby_enemy[0].first->get_location()) - _dis);
         }
         else {
-            ret = pos_tup(std::get<0>(nearby_ally[0].first->get_location()) + _dis,
-                std::get<1>(nearby_ally[0].first->get_location()) + _dis);
+            ret = pos_tup(std::get<0>(nearby_enemy[0].first->get_location()) + _dis,
+                std::get<1>(nearby_enemy[0].first->get_location()) + _dis);
         }
     }
     else {
@@ -263,6 +281,6 @@ PyObject* Hero::predefined_step()
     dy *= sign;
 
     double a = std::atan2(dy, dx);
-    PyObject* obj = Py_BuildValue("[dd]", std::cos(a), std::sin(a));
+    PyObject* obj = Py_BuildValue("(i(dd))", decisonType::move, std::cos(a), std::sin(a));
     return obj;
 }

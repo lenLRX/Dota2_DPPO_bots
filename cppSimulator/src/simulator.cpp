@@ -1,7 +1,7 @@
 #include "simulator.h"
 #include "simulatorImp.h"
 
-#define __VERSION__ "0.0.2"
+#define __VERSION__ "0.0.3"
 
 static void
 cppSimulator_dealloc(cppSimulatorObject* self)
