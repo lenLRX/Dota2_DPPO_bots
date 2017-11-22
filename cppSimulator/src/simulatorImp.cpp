@@ -3,6 +3,7 @@
 #include "Event.h"
 #include "Tower.h"
 #include "Hero.h"
+#include "log.h"
 
 #include <algorithm>
 
@@ -145,7 +146,7 @@ void cppSimulatorImp::set_order(PyObject * args, PyObject * kwds)
     int idx = 0;
     PyObject* order;
     if (!PyArg_ParseTuple(args, "siO", &side, &idx, &order)) {
-        printf("Parse Arg error");
+        LOG << "Parse Arg error";
         exit(-1);
     }
     if (0 == strcmp(side,"Radiant")) {

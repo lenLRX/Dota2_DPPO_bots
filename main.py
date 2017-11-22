@@ -52,8 +52,8 @@ def start_cppSimulator():
         _engine = cppSimulator(canvas)
         count += 1
         print("%d simulated game starts!"%count)
-        dire_act = np.asarray([0.0,0.0])
-        rad_act = np.asarray([0.0,0.0])
+        dire_act = (0,None)
+        rad_act = (0,None)
         dire_agent = trainer(params,shared_model,shared_grad_buffers)
         rad_agent = trainer(params,shared_model,shared_grad_buffers)
 
@@ -61,9 +61,6 @@ def start_cppSimulator():
 
         d_tup = _engine.get_state_tup("Dire", 0)
         r_tup = _engine.get_state_tup("Radiant", 0)
-
-        last_dire_location = hero_location_by_tup(d_tup)
-        last_rad_location = hero_location_by_tup(r_tup)
 
         r_total_reward = 0.0
         d_total_reward = 0.0
@@ -83,10 +80,9 @@ def start_cppSimulator():
 
         while _engine.get_time() < param.game_duriation:
             tick += 1
-            d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
-            r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
-            _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
-            _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
+            print(dire_act)
+            _engine.set_order("Dire",0,dire_act)
+            _engine.set_order("Radiant",0,rad_act)
 
             _engine.loop()
             d_tup = _engine.get_state_tup("Dire", 0)
@@ -117,8 +113,6 @@ def start_cppSimulator():
             print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
                 %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
-            last_dire_location = hero_location_by_tup(d_tup)
-            last_rad_location = hero_location_by_tup(r_tup)
 
             yield
 

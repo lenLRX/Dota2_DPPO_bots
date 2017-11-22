@@ -1,5 +1,6 @@
 #include "Hero.h"
 #include "Creep.h"
+#include "log.h"
 #include "simulatorImp.h"
 #include <cmath>
 #include <random>
@@ -97,7 +98,7 @@ void Hero::step()
     }
     else if (decisonType::attack == decision) {
         if (nullptr == target) {
-            printf("null target!\n");
+            LOG << "null target!\n";
             exit(-1);
         }
         attack(target);
@@ -124,9 +125,9 @@ void Hero::draw()
 void Hero::set_order(PyObject* order)
 {
     PyObject* subdecision;
-    if (!PyArg_ParseTuple(order, "(iO)", &decision, &subdecision)) {
-        printf("Parse Arg error");
-        exit(-1);
+    if (!PyArg_ParseTuple(order, "iO", &decision, &subdecision)) {
+        LOG << "Parse Arg error";
+        return;
     }
     if (decisonType::noop == decision) {
         ;
@@ -134,9 +135,9 @@ void Hero::set_order(PyObject* order)
     else if (decisonType::move == decision) {
         int sign = side == Side::Radiant ? 1 : -1;
         double x, y;
-        if (!PyArg_ParseTuple(order, "(dd)", &x, &y)) {
-            printf("Parse Arg error");
-            exit(-1);
+        if (!PyArg_ParseTuple(order, "dd", &x, &y)) {
+            LOG << "Parse Arg error";
+            return;
         }
         move_order = pos_tup(sign * x,
             sign * y);
@@ -144,12 +145,12 @@ void Hero::set_order(PyObject* order)
     else if (decisonType::attack == decision) {
         int target_idx = 0;
         if (!PyArg_ParseTuple(order, "i", &target_idx)) {
-            printf("Parse Arg error");
-            exit(-1);
+            LOG << "Parse Arg error";
+            return;
         }
         if (target_idx >= (int)target_list.size()) {
-            printf("index out of range!\n");
-            exit(-1);
+            LOG << "index out of range!\n";
+            return;
         }
         target = target_list[target_idx];
     }

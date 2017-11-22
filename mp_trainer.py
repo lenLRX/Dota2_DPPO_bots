@@ -82,9 +82,6 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         d_tup = _engine.get_state_tup("Dire", 0)
         r_tup = _engine.get_state_tup("Radiant", 0)
 
-        last_dire_location = hero_location_by_tup(d_tup)
-        last_rad_location = hero_location_by_tup(r_tup)
-
         r_total_reward = 0.0
         d_total_reward = 0.0
 
@@ -142,10 +139,6 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             p_rad_act = _engine.predefined_step("Radiant",0)
 
             #print(d_tup,r_tup)
-
-            
-            last_dire_location = hero_location_by_tup(d_tup)
-            last_rad_location = hero_location_by_tup(r_tup)
 
             if d_tup[2] or r_tup[2]:
                 break
