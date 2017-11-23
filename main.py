@@ -99,11 +99,8 @@ def start_cppSimulator():
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
 
-            #r_tup = (r_tup[0],r_tup[1] + dotproduct(p_rad_act,rad_act,1),r_tup[2])
-            #d_tup = (d_tup[0],d_tup[1] + dotproduct(p_dire_act,dire_act,1),d_tup[2])
-               
-            dire_act = get_action(dire_agent.step(d_tup,p_dire_act,0))
-            rad_act = get_action(rad_agent.step(r_tup,p_rad_act,0))
+            #dire_act = get_action(dire_agent.step(d_tup,p_dire_act,0))
+            #rad_act = get_action(rad_agent.step(r_tup,p_rad_act,0))
 
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)

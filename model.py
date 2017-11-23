@@ -79,7 +79,7 @@ class Model(nn.Module):
 
         p = _env_input
         input_layer_out = F.relu(self.input_layer(p)).view(-1,self.h_size_2)
-        decision_layer_out = self.decision_layer(input_layer_out).view(-1,self.h_size_2)
+        decision_layer_out = self.decision_layer(input_layer_out).view(-1,param.num_outputs)
         decision_layer_softmax_out = F.softmax(decision_layer_out)
         decision_layer_log_out = F.log_softmax(decision_layer_out)
 

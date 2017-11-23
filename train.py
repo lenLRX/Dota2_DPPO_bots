@@ -134,12 +134,6 @@ class trainer(object):
         v_out, decision, decision_layer_log_out,\
                 move_target, move_target_log,\
                 atk_target, atk_target_log = self.model(self.state)
-
-        '''
-        if np.random.rand() < 0.05:
-            self.action = Variable(torch.FloatTensor(np.random.rand(2) * 2 -1)).view(1,-1,2)
-        else:
-            self.action = (mu + sigma_sq.sqrt()*Variable(eps))
         '''
         if np.random.rand() < c:
             if predefine is None:
@@ -156,8 +150,9 @@ class trainer(object):
                 #self.action = int(predefine[0])
         else:
             self.action = np.argmax(s_action.data.numpy()[0])
+        '''
         
-        self.action_log = sdecision_layer_log_out
+        self.action_log = decision_layer_log_out
         if 0 == decision:
             #noop
             self.action = 0
@@ -188,7 +183,7 @@ class trainer(object):
             #print(dotproduct(self.last_predefine_action,self.last_action,1))
 
         if self.first_print:
-            print("act",self.action,"value",v_out,"action",self.decision_layer_log_out)
+            print("act",self.action,"value",v_out,"action",decision_layer_log_out)
             self.first_print = False
         
         
@@ -199,7 +194,7 @@ class trainer(object):
         self.last_predefine_action = predefine
         self.has_last_action = True
 
-        return self.action
+        return (self.action,self.subaction)
 
     def train(self):
         self.model.zero_grad()
