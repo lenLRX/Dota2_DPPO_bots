@@ -125,6 +125,8 @@ class Shared_grad_buffers():
 
     def add_gradient(self, model):
         for name, p in model.named_parameters():
+            if p.grad is None:
+                continue
             self.grads[name+'_grad'] += p.grad.data
 
     def reset(self):

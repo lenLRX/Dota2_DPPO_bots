@@ -101,6 +101,8 @@ def start_cppSimulator():
 
             #dire_act = get_action(dire_agent.step(d_tup,p_dire_act,0))
             #rad_act = get_action(rad_agent.step(r_tup,p_rad_act,0))
+            dire_act = dire_agent.step(d_tup,p_dire_act,0)
+            rad_act = rad_agent.step(r_tup,p_rad_act,0)
 
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
@@ -116,8 +118,6 @@ def start_cppSimulator():
             if d_tup[2] or r_tup[2]:
                 break
         print("total reward %f %f"%(r_total_reward, d_total_reward))
-        rad_agent.fill_memory()
-        dire_agent.fill_memory()
 
         if count > 0:
             for it in range(1):
