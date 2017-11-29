@@ -151,21 +151,28 @@ class trainer(object):
         else:
             self.action = np.argmax(s_action.data.numpy()[0])
         '''
-        
+        bUsePredefine = False
+        if np.random.rand() < c:
+            self.action,self.subaction = predefine
+            bUsePredefine = True
+            
         self.action_log = decision_layer_log_out
         if 0 == decision:
             #noop
-            self.action = 0
+            if not bUsePredefine:
+                self.action = 0
             self.subaction = None
             self.subaction_log = None
         elif 1 == decision:
             #move
-            self.action = 1
+            if not bUsePredefine:
+                self.action = 1
             self.subaction = move_target
             self.subaction_log = move_target_log
         elif 2 == decision:
             #attack
-            self.action = 2
+            if not bUsePredefine:
+                self.action = 2
             self.subaction = atk_target
             self.subaction_log = atk_target_log
             if self.subaction is None:
@@ -197,6 +204,9 @@ class trainer(object):
         return (self.action,self.subaction)
 
     def train(self):
+        def equal_to_predifine(self, act, idx):
+            return not self.predefined_actions[idx] is None and self.predefined_actions[idx] == act
+
         self.model.zero_grad()
         R = torch.zeros(1, 1)
         self.values.append(self.values[-1])
@@ -213,7 +223,7 @@ class trainer(object):
                 pass
             elif 1 == decision:
                 #move
-                if not self.predefined_actions[i] is None and self.predefined_actions[i] == 1:
+                if equal_to_predifine(self, 1, i):
                     additional_reward = additional_reward + dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
                 _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
                 _log.data[0][self.subdecisions[i]] = 1
@@ -226,7 +236,7 @@ class trainer(object):
                     #invalid decision,punish decision
                     additional_reward = -param.atk_addtion_rwd
                 else:
-                    if not self.predefined_actions[i] is None:
+                    if equal_to_predifine(self, 2, i):
                         #predefined idx
                         if self.predefined_actions[i] == self.subaction[i]: 
                             additional_reward = param.atk_addtion_rwd

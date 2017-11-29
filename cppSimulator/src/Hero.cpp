@@ -242,8 +242,7 @@ PyObject* Hero::predefined_step()
 {
     if (isAttacking()) {
         Py_INCREF(Py_None);
-        PyObject* obj = Py_BuildValue("(iO)", decisonType::attack, Py_None);
-        return obj;
+        return Py_None;
     }
     int sign = side == Side::Radiant ? 1 : -1;
     auto nearby_enemy = Engine->get_nearby_enemy(this, is_creep);

@@ -51,7 +51,7 @@ class Model(nn.Module):
         self.init_layer(self.spatial)
 
         #attack
-        self.attack_layer = nn.Linear(h_size_2, 1)
+        self.attack_layer = nn.Linear(param.num_inputs["atk_target"], 1)
 
         # mode
         self.train()
