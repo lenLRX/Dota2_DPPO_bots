@@ -101,8 +101,8 @@ def start_cppSimulator():
 
             #dire_act = get_action(dire_agent.step(d_tup,p_dire_act,0))
             #rad_act = get_action(rad_agent.step(r_tup,p_rad_act,0))
-            dire_act = dire_agent.step(d_tup,p_dire_act,0)
-            rad_act = rad_agent.step(r_tup,p_rad_act,0)
+            dire_act = dire_agent.step(d_tup,p_dire_act,1)
+            rad_act = rad_agent.step(r_tup,p_rad_act,1)
 
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)

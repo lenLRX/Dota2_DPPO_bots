@@ -135,16 +135,16 @@ void Hero::set_order(PyObject* order)
     else if (decisonType::move == decision) {
         int sign = side == Side::Radiant ? 1 : -1;
         double x, y;
-        if (!PyArg_ParseTuple(order, "dd", &x, &y)) {
+        if (!PyArg_ParseTuple(subdecision, "dd", &x, &y)) {
             LOG << "Parse Arg error";
             return;
         }
-        move_order = pos_tup(sign * x,
-            sign * y);
+        move_order = pos_tup(sign * x * 1000,
+            sign * y * 1000);
     }
     else if (decisonType::attack == decision) {
         int target_idx = 0;
-        if (!PyArg_ParseTuple(order, "i", &target_idx)) {
+        if (!PyArg_ParseTuple(subdecision, "i", &target_idx)) {
             LOG << "Parse Arg error";
             return;
         }
@@ -242,7 +242,8 @@ PyObject* Hero::predefined_step()
 {
     if (isAttacking()) {
         Py_INCREF(Py_None);
-        return Py_None;
+        PyObject* obj = Py_BuildValue("(iO)", decisonType::noop, Py_None);
+        return obj;
     }
     int sign = side == Side::Radiant ? 1 : -1;
     auto nearby_enemy = Engine->get_nearby_enemy(this, is_creep);

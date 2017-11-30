@@ -90,6 +90,17 @@ for i in range(param.num_outputs ** 2):
     else:
         p_acts.append(100000)
 
+def get_nearest_act(pd):
+    a = math.atan2(*pd)
+    _min = 10000
+    _idx = -1
+    for i in range(param.num_outputs ** 2):
+        _d = abs(p_acts[i] - a)
+        if _d < _min:
+            _min = _d
+            _idx = i
+    return _idx
+
 class trainer(object):
     def __init__(self,params, shared_model, shared_grad_buffers,
         shared_obs_stats = None):
@@ -154,6 +165,9 @@ class trainer(object):
         bUsePredefine = False
         if np.random.rand() < c:
             self.action,self.subaction = predefine
+            if self.action == 1:
+                print(self.subaction)
+                self.subaction = get_nearest_act(self.subaction)
             bUsePredefine = True
             
         self.action_log = decision_layer_log_out
@@ -161,19 +175,19 @@ class trainer(object):
             #noop
             if not bUsePredefine:
                 self.action = 0
-            self.subaction = None
+                self.subaction = None
             self.subaction_log = None
         elif 1 == decision:
             #move
             if not bUsePredefine:
                 self.action = 1
-            self.subaction = move_target
+                self.subaction = move_target
             self.subaction_log = move_target_log
         elif 2 == decision:
             #attack
             if not bUsePredefine:
                 self.action = 2
-            self.subaction = atk_target
+                self.subaction = atk_target
             self.subaction_log = atk_target_log
             if self.subaction is None:
                 self.action = 0
@@ -201,7 +215,10 @@ class trainer(object):
         self.last_predefine_action = predefine
         self.has_last_action = True
 
-        return (self.action,self.subaction)
+        if self.action == 1:
+            return (self.action, get_action(self.subaction))
+        else:
+            return (self.action,self.subaction)
 
     def train(self):
         def equal_to_predifine(self, act, idx):
@@ -225,11 +242,12 @@ class trainer(object):
                 #move
                 if equal_to_predifine(self, 1, i):
                     additional_reward = additional_reward + dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
-                _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
-                _log.data[0][self.subdecisions[i]] = 1
-                _log = _log * self.subdecisions_log[i]
-                subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
-                subdecision_policy_loss = torch.sum(subdecision_policy_loss)
+                if not self.subdecisions_log[i] is None:
+                    _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                    _log.data[0][self.subdecisions[i]] = 1
+                    _log = _log * self.subdecisions_log[i]
+                    subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                    subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             elif 2 == decision:
                 #atk
                 if not self.subaction[i] is None:
@@ -242,11 +260,12 @@ class trainer(object):
                             additional_reward = param.atk_addtion_rwd
                         else:
                             additional_reward = -param.atk_addtion_rwd
-                    _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
-                    _log.data[0][self.subdecisions] = 1
-                    _log = _log * self.subdecisions_log[i]
-                    subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
-                    subdecision_policy_loss = torch.sum(subdecision_policy_loss)
+                    if not self.subdecisions_log[i] is None:
+                        _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                        _log.data[0][self.subdecisions] = 1
+                        _log = _log * self.subdecisions_log[i]
+                        subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                        subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             
             value_loss = (R + additional_reward - self.values[i].view(-1)) ** 2
             decision_policy_loss = - ((A + additional_reward) * self.decisions_log[i]).view(-1)
