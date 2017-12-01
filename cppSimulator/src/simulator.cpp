@@ -1,12 +1,13 @@
 #include "simulator.h"
 #include "simulatorImp.h"
+#include "log.h"
 
-#define __VERSION__ "0.0.4"
+#define __VERSION__ "0.0.5"
 
 static void
 cppSimulator_dealloc(cppSimulatorObject* self)
 {
-    //printf("going to delete pImp\n");
+    printf("going to delete pImp\n");
     delete self->pImp;
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -169,6 +170,7 @@ static PyModuleDef cppSimulatorModule = {
 PyMODINIT_FUNC
 PyInit_cppSimulator(void)
 {
+    Logger::getInstance().redirectStream("log/cpplog.txt");
     PyObject* m;
 
     cppSimulatorType.tp_new = PyType_GenericNew;

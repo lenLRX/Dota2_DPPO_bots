@@ -93,22 +93,24 @@ class Model(nn.Module):
             move_layer_out = F.relu(self.input_move_layer(_env_input)).view(-1,self.h_size_2)
             spatial_layer_out = self.spatial(move_layer_out).view(-1,self.spatial_res**2)
             spatial_layer_softmax_out = F.softmax(spatial_layer_out)
-            spatial_layer_log_out = F.softmax(spatial_layer_out)
-            move_target = np.argmax(decision_layer_softmax_out.data.numpy()[0])
+            spatial_layer_log_out = F.log_softmax(spatial_layer_out)
+            move_target = np.argmax(spatial_layer_softmax_out.data.numpy()[0])
             move_target_log = spatial_layer_log_out
+            assert(spatial_layer_log_out.size()[1] == 9)
         elif 2 == decision:
             #attack
             if len(inputs["target_input"]) > 0:
-                _raw_inputs = Variable(torch.FloatTensor(inputs["target_input"])).view(1,-1)
+                _raw_inputs = Variable(torch.FloatTensor(inputs["target_input"]))
                 targets = []
             
                 for t in _raw_inputs:
                     targets.append(self.attack_layer(t))
                 _ts = torch.cat(targets)
+                
                 _ts_softmax = F.softmax(_ts)
                 _ts_log = F.log_softmax(_ts)
                 atk_target = np.argmax(_ts_softmax.data.numpy()[0])
-                atk_target_log = _ts
+                atk_target_log = _ts_log
         else:
             raise Exception("unknown decision")
 

@@ -80,7 +80,7 @@ def start_cppSimulator():
 
         while _engine.get_time() < param.game_duriation:
             tick += 1
-            print(dire_act)
+            #print(dire_act)
             _engine.set_order("Dire",0,dire_act)
             _engine.set_order("Radiant",0,rad_act)
 
@@ -94,7 +94,7 @@ def start_cppSimulator():
                 #_engine.draw()
                 canvas.update_idletasks()
 
-            print("origin output ", d_tup , r_tup,flush=True)
+            #print("origin output ", d_tup , r_tup,flush=True)
 
             r_total_reward += r_tup[1]
             d_total_reward += d_tup[1]
@@ -109,8 +109,8 @@ def start_cppSimulator():
 
             #print(d_tup,r_tup)
 
-            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             
 
             yield

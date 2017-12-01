@@ -82,6 +82,8 @@ Hero::Hero(cppSimulatorImp* _Engine, Side _side, std::string type_name):target(n
 
 Hero::~Hero()
 {
+    LOG << "gold:" << gold << endl;
+    Logger::getInstance().flush();
 }
 
 void Hero::step()
@@ -143,11 +145,7 @@ void Hero::set_order(PyObject* order)
             sign * y * 1000);
     }
     else if (decisonType::attack == decision) {
-        int target_idx = 0;
-        if (!PyArg_ParseTuple(subdecision, "i", &target_idx)) {
-            LOG << "Parse Arg error";
-            return;
-        }
+        int target_idx = PyLong_AsLong(subdecision);
         if (target_idx >= (int)target_list.size()) {
             LOG << "index out of range!\n";
             return;
