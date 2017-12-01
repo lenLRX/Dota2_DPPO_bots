@@ -12,10 +12,10 @@ try:
     with open(src_path, "r") as fp:
         _v = cppSimulator(None).get_version()
         import re
-        version_matcher = re.compile("#define __VERSION__ \"(.*)\"")
+        version_matcher = re.compile("#define __ENGINE_VERSION__ \"(.*)\"")
         for line in fp:
             m = version_matcher.match(line)
-            if m != None:
+            if m:
                 v_src = m.groups(0)[0]
                 if v_src != _v:
                     raise LibVersionMissMatch("version in lib is %s but version in src is %s"%(_v, v_src))

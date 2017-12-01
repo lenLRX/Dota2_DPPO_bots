@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 //forward decl
 class cppSimulatorImp;

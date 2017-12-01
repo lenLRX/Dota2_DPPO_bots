@@ -2,7 +2,7 @@
 #include "simulatorImp.h"
 #include "log.h"
 
-#define __VERSION__ "0.0.5"
+#define __ENGINE_VERSION__ "0.0.5"
 
 static void
 cppSimulator_dealloc(cppSimulatorObject* self)
@@ -90,7 +90,7 @@ cppSimulator_predefined_step(cppSimulatorObject* self, PyObject *args, PyObject 
 
 static PyObject*
 cppSimulator_get_version(cppSimulatorObject* self) {
-    return Py_BuildValue("s", __VERSION__);
+    return Py_BuildValue("s", __ENGINE_VERSION__);
 }
 
 static PyMethodDef cppSimulator_methods[] = {
