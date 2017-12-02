@@ -101,7 +101,8 @@ void Hero::step()
     else if (decisonType::attack == decision) {
         if (nullptr == target) {
             LOG << "null target!\n";
-            exit(-1);
+            Logger::getInstance().flush();
+            exit(1);
         }
         attack(target);
     }

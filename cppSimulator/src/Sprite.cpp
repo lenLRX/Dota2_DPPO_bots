@@ -43,7 +43,7 @@ void Sprite::move()
     if (std::isnan(a)) {
         printf("found nan dx = %lf dy = %lf\n",dx,dy);
         fflush(stdout);
-        exit(-1);
+        exit(3);
     }
 
     if (!(std::get<0>(move_target) == 0.0

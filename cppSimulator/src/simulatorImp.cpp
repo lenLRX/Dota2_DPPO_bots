@@ -147,7 +147,8 @@ void cppSimulatorImp::set_order(PyObject * args, PyObject * kwds)
     PyObject* order;
     if (!PyArg_ParseTuple(args, "siO", &side, &idx, &order)) {
         LOG << "Parse Arg error";
-        exit(-1);
+        Logger::getInstance().flush();
+        exit(2);
     }
     if (0 == strcmp(side,"Radiant")) {
         RadiantHeros[idx]->set_order(order);
