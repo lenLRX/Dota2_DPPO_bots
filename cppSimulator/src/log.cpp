@@ -2,6 +2,7 @@
 
 Logger& Logger::operator << (ostream& (*_Pfn)(ostream&)){
 	_Pfn(stream);
+    flush();
 	return *this;
 }
 

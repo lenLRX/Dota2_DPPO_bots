@@ -146,10 +146,11 @@ void Hero::set_order(PyObject* order)
             sign * y * 1000);
     }
     else if (decisonType::attack == decision) {
+        target = nullptr;
         int target_idx = PyLong_AsLong(subdecision);
         if (target_idx >= (int)target_list.size()) {
-            LOG << "index out of range!\n";
-            return;
+            LOG << "index out of range! target_list size:" << target_list.size() << "," << target_idx << endl;
+            exit(4);
         }
         target = target_list[target_idx];
     }
@@ -216,7 +217,7 @@ PyObject* Hero::get_state_tup()
             PyList_SET_ITEM(state_targets_list,i, Py_BuildValue("(dd)", nearby_enemy[i].first->get_HP(), nearby_enemy[i].second / AttackRange));
             target_list.push_back(nearby_enemy[i].first);
         }
-        
+        LOG << "target_list.size " << target_list.size() << endl;
     }
     else {
         state_targets_list = Py_BuildValue("[]");
