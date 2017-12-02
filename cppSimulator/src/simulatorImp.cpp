@@ -23,6 +23,19 @@ cppSimulatorImp::cppSimulatorImp(cppSimulatorObject* obj, PyObject* canvas)
 
 cppSimulatorImp::~cppSimulatorImp()
 {
+    std::vector<Event> last_events;
+    while (!queue.empty())
+    {
+        auto event = queue.top();
+        queue.pop();
+        last_events.push_back(event);
+    }
+
+    for (auto& e : last_events)
+    {
+        e.activate();
+    }
+    
     for (auto p : allSprites) {
         delete p;
     }

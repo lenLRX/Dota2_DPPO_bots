@@ -6,10 +6,7 @@ import threading
 import _thread
 
 from cppSimulator.cppSimulator import *
-
-#import ptvsd
-#ptvsd.enable_attach("dota2_bot", address = ('0.0.0.0', 3421))
-
+from visualizer import visualize
 
 from http.server import BaseHTTPRequestHandler,HTTPServer
 import json
@@ -89,7 +86,6 @@ def start_cppSimulator():
             if tick % param.tick_per_action != 0 and not(d_tup[2] or r_tup[2]):
                 continue#for faster training
             if canvas != None:
-                #_engine.draw()
                 canvas.update_idletasks()
 
             #print("origin output ", d_tup , r_tup,flush=True)
