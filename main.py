@@ -81,9 +81,6 @@ def start_cppSimulator():
         while _engine.get_time() < param.game_duriation:
             tick += 1
             #print(dire_act)
-            if not (tick % param.tick_per_action != 0 and not(d_tup[2] or r_tup[2])):
-                _engine.set_order("Dire",0,dire_act)
-                _engine.set_order("Radiant",0,rad_act)
 
             _engine.loop()
             d_tup = _engine.get_state_tup("Dire", 0)
@@ -114,7 +111,8 @@ def start_cppSimulator():
 
             #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
             #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
-            
+            _engine.set_order("Dire",0,dire_act)
+            _engine.set_order("Radiant",0,rad_act)
 
             yield
 
