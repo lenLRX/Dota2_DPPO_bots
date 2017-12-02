@@ -81,8 +81,9 @@ def start_cppSimulator():
         while _engine.get_time() < param.game_duriation:
             tick += 1
             #print(dire_act)
-            _engine.set_order("Dire",0,dire_act)
-            _engine.set_order("Radiant",0,rad_act)
+            if not (tick % param.tick_per_action != 0 and not(d_tup[2] or r_tup[2])):
+                _engine.set_order("Dire",0,dire_act)
+                _engine.set_order("Radiant",0,rad_act)
 
             _engine.loop()
             d_tup = _engine.get_state_tup("Dire", 0)
