@@ -224,6 +224,8 @@ PyObject* Hero::get_state_tup()
     }
 
     PyObject* state = Py_BuildValue("{s:O,s:O}", "env_input", env_state, "target_input", state_targets_list);
+    Py_XDECREF(env_state);
+    Py_XDECREF(state_targets_list);
 
     double reward = (exp - last_exp) * 0.01 + (HP - last_HP) * 0.01 + (gold - last_gold) * 0.01;
 
