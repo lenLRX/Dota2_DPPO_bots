@@ -217,7 +217,7 @@ PyObject* Hero::get_state_tup()
             PyList_SET_ITEM(state_targets_list,i, Py_BuildValue("(dd)", nearby_enemy[i].first->get_HP(), nearby_enemy[i].second / AttackRange));
             target_list.push_back(nearby_enemy[i].first);
         }
-        LOG << "target_list.size " << target_list.size() << endl;
+        //LOG << "target_list.size " << target_list.size() << endl;
     }
     else {
         state_targets_list = Py_BuildValue("[]");
