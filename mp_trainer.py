@@ -74,8 +74,8 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         if id == 0:
             print("%d simulated game starts!"%count)
 
-        dire_act = np.asarray([0.0,0.0])
-        rad_act = np.asarray([0.0,0.0])
+        dire_act = (0,None)
+        rad_act = (0,None)
         dire_agent = trainer(params,shared_model,shared_grad_buffers)
         rad_agent = trainer(params,shared_model,shared_grad_buffers)
 
@@ -104,20 +104,18 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
 
         while _engine.get_time() < param.game_duriation:
             tick += 1
-            d_move_order = (dire_act[0] * 1000,dire_act[1] * 1000)
-            r_move_order = (rad_act[0] * 1000,rad_act[1] * 1000)
-            _engine.set_move_order("Dire",0,dire_act[0] * 1000,dire_act[1] * 1000)
-            _engine.set_move_order("Radiant",0,rad_act[0] * 1000,rad_act[1] * 1000)
 
             _engine.loop()
-            if tick % param.tick_per_action != 0:
+            d_tup = _engine.get_state_tup("Dire", 0)
+            r_tup = _engine.get_state_tup("Radiant", 0)
+
+            if tick % param.tick_per_action != 0 and not(d_tup[2] or r_tup[2]):
                 continue#for faster training
             if canvas != None:
                 #_engine.draw()
                 canvas.update_idletasks()
 
-            d_tup = _engine.get_state_tup("Dire", 0)
-            r_tup = _engine.get_state_tup("Radiant", 0)
+            
 
             #print("origin output ", d_tup , r_tup,flush=True)
 
@@ -132,11 +130,14 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             #r_tup = (r_tup[0],r_tup[1] - 0.01,r_tup[2])
             #d_tup = (d_tup[0],d_tup[1] - 0.01,d_tup[2])
                
-            dire_act = get_action(dire_agent.step(d_tup,p_dire_act,_flag))
-            rad_act = get_action(rad_agent.step(r_tup,p_rad_act,_flag))
-            
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
+            
+            dire_act = dire_agent.step(d_tup,p_dire_act,_flag)
+            rad_act = rad_agent.step(r_tup,p_rad_act,_flag)
+
+            _engine.set_order("Dire",0,dire_act)
+            _engine.set_order("Radiant",0,rad_act)
 
             #print(d_tup,r_tup)
 
@@ -149,11 +150,9 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             shared_score[0] = shared_score[0] / num_process
             print("total reward %f"%(shared_score[0]))
             shared_score[0] = 0
-        rad_agent.fill_memory()
-        dire_agent.fill_memory()
 
         if count > 0:
-            avg_loss = ""
+            avg_loss = 0.0
             for it in range(Params().num_epoch):
                 start_t = time.time()
                 avg_loss += rad_agent.train()
@@ -161,9 +160,9 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
                 t1 = time.time()
                 if id == 0:
                     print("trianing x2 : %fs"%(t1 - start_t))
-            
+            avg_loss *= 0.5
             if id == 0:
-                print("loss %s"%avg_loss)
+                print("loss %s"%str(avg_loss))
             rad_agent.memory.clear()
             dire_agent.memory.clear()
 

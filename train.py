@@ -278,10 +278,9 @@ class trainer(object):
 
             loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
         loss = loss / len(self.rewards)
-        print(loss)
         loss.backward()
         self.shared_grad_buffers.add_gradient(self.model)
-        return str(loss)
+        return float(loss.data.numpy()[0])
 
 
 

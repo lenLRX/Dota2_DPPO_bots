@@ -2,12 +2,12 @@
 #include "simulatorImp.h"
 #include "log.h"
 
-#define __ENGINE_VERSION__ "0.0.5"
+#define __ENGINE_VERSION__ "0.0.6"
 
 static void
 cppSimulator_dealloc(cppSimulatorObject* self)
 {
-    printf("going to delete pImp\n");
+    //printf("going to delete pImp\n");
     delete self->pImp;
     Py_TYPE(self)->tp_free((PyObject*)self);
 }

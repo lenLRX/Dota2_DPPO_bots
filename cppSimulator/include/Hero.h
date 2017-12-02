@@ -14,6 +14,8 @@ enum decisonType {
     attack = 2
 };
 
+using target_list_t = std::vector<Sprite*>;
+
 class Hero:public Sprite {
 public:
     Hero(cppSimulatorImp* _Engine,
@@ -29,7 +31,8 @@ private:
     pos_tup move_order;
     int decision;
     Sprite* target;
-    std::vector<Sprite*> target_list;
+    target_list_t target_list;
+    std::vector<target_list_t> histroy_target_lists;
     double viz_radius;
     double last_gold;
     double last_exp;
