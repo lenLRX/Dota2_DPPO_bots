@@ -6,7 +6,6 @@ import threading
 import _thread
 
 from cppSimulator.cppSimulator import *
-from visualizer import visualize
 
 from http.server import BaseHTTPRequestHandler,HTTPServer
 import json
@@ -28,7 +27,7 @@ from mp_trainer import mp_trainer
 from GameServer import start_env
 
 try:
-    from simulator.visualizer import visualize
+    from visualizer import visualize
 except Exception:
     print("running without tkinter")
 finally:
