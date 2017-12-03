@@ -267,13 +267,16 @@ class trainer(object):
                             additional_reward = -param.atk_addtion_rwd
                     #if not self.subdecisions_log[i] is None:
                         _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
-                        _log.data[0][self.subdecisions] = 1
+                        _log.data[0][self.subdecisions[i]] = 1
                         _log = _log * self.subdecisions_log[i]
                         subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
                         subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             
+            _d_log = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
+            _d_log.data[0][self.decisions[i]] = 1
+            _d_log = _d_log * self.decisions_log[i]
             value_loss = (R + additional_reward - self.values[i].view(-1)) ** 2
-            decision_policy_loss = - ((A + additional_reward) * self.decisions_log[i]).view(-1)
+            decision_policy_loss = - ((A + additional_reward) * _d_log).view(-1)
             decision_policy_loss = torch.mean(decision_policy_loss)
 
             loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
