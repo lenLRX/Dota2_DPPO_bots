@@ -223,7 +223,7 @@ class trainer(object):
 
     def train(self):
         def equal_to_predefine(self, act, idx):
-            return not self.predefined_actions[idx] is None and self.predefined_actions[idx] == act
+            return (not self.predefined_actions[idx] is None) and self.predefined_actions[idx][0] == act
 
         self.model.zero_grad()
         R = torch.zeros(1, 1)
@@ -242,8 +242,8 @@ class trainer(object):
             elif 1 == decision:
                 #move
                 if equal_to_predefine(self, 1, i):
-                    additional_reward = additional_reward + dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
-                #if not self.subdecisions_log[i] is None:
+                    additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
+                    #print(additional_reward)
                     _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
                     try:
                         _log.data[0][self.subdecisions[i]] = 1
