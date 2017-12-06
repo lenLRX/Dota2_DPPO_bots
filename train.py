@@ -229,6 +229,9 @@ class trainer(object):
         def equal_to_original_decision(self, act, idx):
             return self.original_decisions[idx] == act
 
+        def equal_to_predefined_action(self, act, idx):
+            return self.predefined_actions[idx][0] == act
+
         self.model.zero_grad()
         R = torch.zeros(1, 1)
         self.values.append(self.values[-1])
@@ -246,8 +249,11 @@ class trainer(object):
                 pass
             elif 1 == decision:
                 #move
+                #actual action is move AND original action is move
                 if equal_to_original_decision(self, 1, i):
-                    additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
+                    #AND predefined action is move
+                    if equal_to_predefined_action(self, 1, i):
+                        additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
                     #print(additional_reward)
                     _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
                     try:
@@ -264,12 +270,14 @@ class trainer(object):
                     #invalid decision,punish decision
                     additional_reward = -param.atk_addtion_rwd
                 else:
+                    #actual action is attacking AND original action is attacking
                     if equal_to_original_decision(self, 2, i):
-                        #predefined idx
-                        if self.predefined_actions[i][0] == self.subaction[i]: 
-                            additional_reward = param.atk_addtion_rwd
-                        else:
-                            additional_reward = -param.atk_addtion_rwd
+                        #AND predefined action is attacking
+                        if equal_to_predefined_action(self, 2, i):
+                            if self.predefined_actions[i][1] == self.subaction[i]: 
+                                additional_reward = param.atk_addtion_rwd
+                            else:
+                                additional_reward = -param.atk_addtion_rwd
                     #if not self.subdecisions_log[i] is None:
                         _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
                         _log.data[0][self.subdecisions[i]] = 1
