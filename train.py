@@ -128,6 +128,7 @@ class trainer(object):
 
     def pre_train(self):
         self.decisions = []
+        self.original_decisions = []
         self.decisions_log = []
         self.subdecisions = []
         self.subdecisions_log = []
@@ -200,6 +201,8 @@ class trainer(object):
             self.subdecisions_log.append(self.last_subaction_log)
             self.predefined_actions.append(self.last_predefine_action)
 
+            self.original_decisions.append(self.last_original_decision)
+
             self.values.append(v_out)
 
             self.rewards.append(self.reward)
@@ -210,6 +213,7 @@ class trainer(object):
         
         
         self.last_action = self.action
+        self.last_original_decision = decision
         self.last_action_log = self.action_log
         self.last_subaction = self.subaction
         self.last_subaction_log = self.subaction_log
@@ -222,8 +226,8 @@ class trainer(object):
             return (self.action,self.subaction)
 
     def train(self):
-        def equal_to_predefine(self, act, idx):
-            return (not self.predefined_actions[idx] is None) and self.predefined_actions[idx][0] == act
+        def equal_to_original_decision(self, act, idx):
+            return self.original_decisions[idx] == act
 
         self.model.zero_grad()
         R = torch.zeros(1, 1)
@@ -235,13 +239,14 @@ class trainer(object):
             R = self.rewards[i] + self.params.gamma*R
             A = R - self.values[i].view(-1).data[0]
             additional_reward = 0.0
+            #the action we actual taken
             decision = self.decisions[i]
             subdecision_policy_loss = 0.0
             if 0 == decision:
                 pass
             elif 1 == decision:
                 #move
-                if equal_to_predefine(self, 1, i):
+                if equal_to_original_decision(self, 1, i):
                     additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
                     #print(additional_reward)
                     _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
@@ -259,9 +264,9 @@ class trainer(object):
                     #invalid decision,punish decision
                     additional_reward = -param.atk_addtion_rwd
                 else:
-                    if equal_to_predefine(self, 2, i):
+                    if equal_to_original_decision(self, 2, i):
                         #predefined idx
-                        if self.predefined_actions[i] == self.subaction[i]: 
+                        if self.predefined_actions[i][0] == self.subaction[i]: 
                             additional_reward = param.atk_addtion_rwd
                         else:
                             additional_reward = -param.atk_addtion_rwd
