@@ -14,11 +14,11 @@ static std::uniform_int_distribution<int> sign_distribution(-1, 1);
 
 static int init_HeroData = [&]()->int {
     HeroData["ShadowFiend"] = {
-        { "HP",new double(200) },
+        { "HP",new double(500) },
         { "MP",new double(273) },
-        { "MovementSpeed",new double(315) },
+        { "MovementSpeed",new double(313) },
         { "Armor", new double(0.86) },
-        { "Attack", new double(21) },
+        { "Attack", new double(38) },
         { "AttackRange",new double(500) },
         { "SightRange", new double(1800) },
         { "Bounty", new double(200) },
@@ -227,7 +227,7 @@ PyObject* Hero::get_state_tup()
     Py_XDECREF(env_state);
     Py_XDECREF(state_targets_list);
 
-    double reward = (exp - last_exp) * 0.01 + (HP - last_HP) * 0.01 + (gold - last_gold) * 0.01;
+    double reward = (exp - last_exp) * 0.01 + (HP - last_HP) * 0.01 + (gold - last_gold) * 0.1;
 
     last_exp = exp;
     last_HP = HP;
