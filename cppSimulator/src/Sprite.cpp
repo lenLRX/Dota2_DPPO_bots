@@ -124,7 +124,7 @@ double Sprite::S2Sdistance(const Sprite & s1, const Sprite & s2)
 {
     double dx = std::get<0>(s1.location) - std::get<0>(s2.location);
     double dy = std::get<1>(s1.location) - std::get<1>(s2.location);
-    return sqrt(dx * dx + dy * dy);
+    return hypot(dx, dy);
 }
 
 double Sprite::TimeToDamage(const Sprite * s)
