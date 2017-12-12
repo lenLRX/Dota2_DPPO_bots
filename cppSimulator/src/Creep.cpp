@@ -5,10 +5,9 @@
 #include <random>
 
 //TODO use json
-static SpriteDataType CreepData;
 
-static int init_CreepData = [&]()->int {
-    CreepData["MeleeCreep"] = {
+static SpriteDataType CreepData {
+    { "MeleeCreep", {
         {"HP",new double(550)},
         {"MP",new double(0)},
         {"MovementSpeed",new double(325)},
@@ -24,9 +23,9 @@ static int init_CreepData = [&]()->int {
         {"AttackSpeed", new double(100)},
         {"ProjectileSpeed", new double(-1) },
         {"atktype", new AtkType(melee)}
-    };
+    }},
 
-    CreepData["RangedCreep"] = {
+    {"RangedCreep", {
         { "HP",new double(300) },
         { "MP",new double(0) },
         { "MovementSpeed",new double(325) },
@@ -42,9 +41,8 @@ static int init_CreepData = [&]()->int {
         { "AtkBackswing", new double(0.67) },
         { "ProjectileSpeed", new double(900) },
         { "atktype", new AtkType(ranged) }
-    };
-    return 0;
-}();
+    }}
+};
 
 static std::default_random_engine rnd_gen;
 static std::uniform_int_distribution<int> distribution(1, 10);
