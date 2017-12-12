@@ -14,15 +14,16 @@ if (UNIX)
     if (PYTHONLIBS_FOUND)
         MESSAGE("Python LIB: " ${PYTHON_LIBRARIES})
         MESSAGE("Python INC: " ${PYTHON_INCLUDE_DIRS})
+        link_libraries(${PYTHON_LIBRARIES})
     else (NOT PYTHONLIBS_FOUND)
         set(PYTHON_LIBRARIES "/root/anaconda3/lib")
         set(PYTHON_INCLUDE_DIRS "/root/anaconda3/include/python3.6m")
+        link_libraries(python3.6m)
     endif (PYTHONLIBS_FOUND)
-    link_libraries(python3.6m)
 endif(UNIX)
 
-include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
+include_directories(${PYTHON_INCLUDE_DIRS})
 
 include_directories(include)
 
