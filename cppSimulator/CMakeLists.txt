@@ -15,7 +15,7 @@ if (UNIX)
     link_libraries(python3.6m)
 endif(UNIX)
 
-#FIND_PACKAGE(PythonLibs)
+FIND_PACKAGE(PythonLibs)
 include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
 
