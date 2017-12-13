@@ -240,11 +240,14 @@ PyObject* Hero::get_state_tup()
 
 PyObject* Hero::predefined_step()
 {
+    /*
+    //this is real bot should do, but it is hard to train
     if (isAttacking()) {
         Py_INCREF(Py_None);
         PyObject* obj = Py_BuildValue("(iO)", decisonType::noop, Py_None);
         return obj;
     }
+    */
     int sign = side == Side::Radiant ? 1 : -1;
     auto nearby_enemy = Engine->get_nearby_enemy(this, is_creep);
     auto nearby_enemy_size = nearby_enemy.size();
