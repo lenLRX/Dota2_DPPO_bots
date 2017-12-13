@@ -3,10 +3,9 @@
 #include <unordered_map>
 
 //TODO use json
-static SpriteDataType TowerData;
 
-static int init_TowerData = [&]()->int {
-    TowerData["Tier1Tower"] = {
+static SpriteDataType TowerData {
+    { "Tier1Tower", {
         { "HP",new double(14000000) },
         { "MP",new double(0) },
         { "MovementSpeed",new double(0) },
@@ -22,9 +21,8 @@ static int init_TowerData = [&]()->int {
         { "AtkBackswing", new double(0.4) },
         { "ProjectileSpeed", new double(750) },
         { "atktype", new AtkType(ranged) }
-    };
-    return 0;
-}();
+    }}
+};
 
 Tower::Tower(cppSimulatorImp* _Engine,
     Side _side, std::string type_name, pos_tup init_loc)

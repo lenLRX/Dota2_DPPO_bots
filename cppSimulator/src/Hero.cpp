@@ -6,14 +6,13 @@
 #include <random>
 
 //TODO use json
-static SpriteDataType HeroData;
 
 static std::default_random_engine rnd_gen;
 static std::uniform_int_distribution<int> pos_distribution(1, 1000);
 static std::uniform_int_distribution<int> sign_distribution(-1, 1);
 
-static int init_HeroData = [&]()->int {
-    HeroData["ShadowFiend"] = {
+static SpriteDataType HeroData {
+    { "ShadowFiend", {
         { "HP",new double(500) },
         { "MP",new double(273) },
         { "MovementSpeed",new double(313) },
@@ -29,9 +28,8 @@ static int init_HeroData = [&]()->int {
         { "AtkBackswing", new double(0.54) },
         { "ProjectileSpeed", new double(1200) },
         { "atktype", new AtkType(ranged) }
-    };
-    return 0;
-}();
+    }}
+};
 
 static int get_rand()
 {
