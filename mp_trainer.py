@@ -155,8 +155,9 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             avg_loss = 0.0
             for it in range(Params().num_epoch):
                 start_t = time.time()
-                avg_loss += rad_agent.train()
-                avg_loss += dire_agent.train()
+                bHoldon = count % param.games_per_train != 0
+                avg_loss += rad_agent.train(bHoldon)
+                avg_loss += dire_agent.train(bHoldon)
                 t1 = time.time()
                 if id == 0:
                     print("trianing x2 : %fs"%(t1 - start_t))

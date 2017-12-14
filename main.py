@@ -119,8 +119,8 @@ def start_cppSimulator():
             for it in range(1):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
                 start_t = time.time()
-                rad_agent.train()
-                dire_agent.train()
+                rad_agent.train(holdon = (count % 10 != 0))
+                dire_agent.train(holdon = (count % 10 != 0))
                 t1 = time.time()
                 print("trianing x2 : %fs"%(t1 - start_t))
 

@@ -89,7 +89,7 @@ class Params():
         self.game_duriation = 200
         self.tick_per_action = 2
         self.game_per_update = 1
-        self.lr = 1e-2
+        self.lr = 1e-3
         self.gamma = 0.995
         self.atk_addtion_rwd = 0.2
         self.gae_param = 0.95
@@ -106,5 +106,6 @@ class Params():
         self.log_std_bound = 1
         self.use_lstm = False
         self.grad_clip = 10
+        self.games_per_train = 25
 
 param = Params()

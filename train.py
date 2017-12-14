@@ -101,6 +101,13 @@ def get_nearest_act(pd):
             _idx = i
     return _idx
 
+
+def equal_to_original_decision(self, act, idx):
+    return self.original_decisions[idx] == act
+
+def equal_to_predefined_action(self, act, idx):
+    return self.predefined_actions[idx][0] == act
+
 class trainer(object):
     def __init__(self,params, shared_model, shared_grad_buffers,
         shared_obs_stats = None):
@@ -125,6 +132,8 @@ class trainer(object):
         self.has_last_action = False
 
         self.first_print = True
+        self.loss = Variable(torch.FloatTensor([0.0]))
+        self.holdon_cnt = 0
 
     def pre_train(self):
         self.decisions = []
@@ -225,18 +234,13 @@ class trainer(object):
         else:
             return (self.action,self.subaction)
 
-    def train(self):
-        def equal_to_original_decision(self, act, idx):
-            return self.original_decisions[idx] == act
-
-        def equal_to_predefined_action(self, act, idx):
-            return self.predefined_actions[idx][0] == act
+    def train(self, holdon = False):
 
         self.model.zero_grad()
         R = torch.zeros(1, 1)
         self.values.append(self.values[-1])
         R = Variable(R)
-        A = Variable(torch.zeros(1, 1))
+        A = Variable(torch.zeros(1, 1))    
         loss = Variable(torch.FloatTensor([0.0]))
         for i in reversed(range(len(self.rewards))):
             R = self.rewards[i] + self.params.gamma*R
@@ -294,73 +298,13 @@ class trainer(object):
 
             loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
         loss = loss / len(self.rewards)
-        loss.backward()
-        self.shared_grad_buffers.add_gradient(self.model)
-        return float(loss.data.numpy()[0])
-
-
-
-    def fill_memory(self):
-        
-        R = torch.zeros(1, 1)
-        self.values.append(self.values[-1])
-        R = Variable(R)
-        A = Variable(torch.zeros(1, 1))
-        
-        for i in reversed(range(len(self.rewards))):
-            try:
-                #td = self.rewards[i] + self.params.gamma*self.values[i+1].view(-1) - self.values[i].view(-1)
-                #A = td + self.params.gamma*self.params.gae_param*A
-                R = self.rewards[i] + self.params.gamma*R
-                A = R - self.values[i].view(-1).data[0]
-                additional_reward = 0.0
-                if not self.predefined_actions[i] is None:
-                    additional_reward = additional_reward + dotproduct(self.predefined_actions[i],self.lattice_actions[i],1)
-                #print(additional_reward)
-                self.advantages.insert(0, A + additional_reward)
-                #R = self.rewards[i] + self.params.gamma*R 
-                self.returns.insert(0, R + additional_reward)
-            except Exception as e:
-                print(str(e))
-                print("error at %d"%i)
-                with open("./debug.out", "w+") as dbgout:
-                    for r in self.rewards:
-                        dbgout.write("%d  %s\n"%(i,str(r)))
-                    dbgout.write("\n\n\n\n")
-                    for v in self.values:
-                        dbgout.write("%d  %s\n"%(i,str(v)))
-        
-        #print("rewards",self.rewards)
-        #print("returns",self.returns)
-        # store usefull info:
-        #print(type(self.actions))
-        self.memory.push([self.states, self.actions, self.returns, 
-            self.advantages, self.values])
-        #raise "stop"
-    
-    def train_(self):
-        self.model.zero_grad()
-
-        # new mini_batch
-        batch_log_actions, batch_returns, batch_advantages, batch_values = self.memory.sample(self.params.batch_size)
-
-        #print("adv",batch_advantages)
-        #print("batch_values",batch_values)
-        #print("actions",batch_log_actions)
-
-        policy_loss = -torch.sum(batch_log_actions * batch_advantages,1).view(-1)
-        policy_loss = torch.mean(policy_loss)
-        #print("policy_loss",policy_loss)
-        value_loss = torch.sum((batch_returns - batch_values) ** 2,1).view(-1)
-        value_loss = torch.mean(value_loss)
-        #print("value_loss",value_loss)
-        #print("batch_return",(batch_returns))
-
-        total_loss = policy_loss + 0.5 * value_loss
-        #print("training  loss = ", total_loss, torch.mean(batch_returns,0))
-        # prepare for step
-        total_loss.backward()
-        #ensure_shared_grads(model, shared_model)
-        #shared_model.cum_grads()
-        self.shared_grad_buffers.add_gradient(self.model)
-        return str(total_loss)
+        self.loss = self.loss + loss
+        self.holdon_cnt = self.holdon_cnt + 1
+        if not holdon:
+            #hold on loss, do not update until holdon is False
+            self.loss = self.loss / self.holdon_cnt
+            self.loss.backward()
+            self.shared_grad_buffers.add_gradient(self.model)
+            self.loss = Variable(torch.FloatTensor([0.0]))
+            self.holdon_cnt = 0
+        return float(self.loss.data.numpy()[0])
