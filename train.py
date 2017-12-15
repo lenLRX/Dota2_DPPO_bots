@@ -299,7 +299,7 @@ class trainer(object):
             _d_log = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
             _d_log.data[0][self.decisions[i]] = 1
             _d_log = _d_log * self.decisions_log[i]
-            value_loss = (R + additional_reward - self.values[i].view(-1)) ** 2
+            value_loss = (R - self.values[i].view(-1)) ** 2
             decision_policy_loss = - ((A + additional_reward) * _d_log).view(-1)
             decision_policy_loss = torch.mean(decision_policy_loss)
 
