@@ -106,7 +106,7 @@ def equal_to_original_decision(self, act, idx):
     return self.original_decisions[idx] == act
 
 def equal_to_predefined_action(self, act, idx):
-    return self.predefined_actions[idx][0] == act
+    return  (not self.predefined_actions[idx] is None) and self.predefined_actions[idx][0] == act
 
 class trainer(object):
     def __init__(self,params, shared_model, shared_grad_buffers,
@@ -289,6 +289,13 @@ class trainer(object):
                         subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
                         subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             
+            if not self.predefined_actions[i] is None:
+                _p = self.predefined_actions[i][0]
+                if _p != decision:
+                    additional_reward = additional_reward - 0.2
+                else:
+                    additional_reward = additional_reward + 0.2
+
             _d_log = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
             _d_log.data[0][self.decisions[i]] = 1
             _d_log = _d_log * self.decisions_log[i]
