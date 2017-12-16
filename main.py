@@ -5,7 +5,7 @@ import time
 import threading
 import _thread
 
-from cppSimulator.cppSimulator import *
+from SimDota2 import *
 
 from http.server import BaseHTTPRequestHandler,HTTPServer
 import json
@@ -45,7 +45,7 @@ def start_cppSimulator():
     discount_factor = 1.0
 
     while True:
-        _engine = cppSimulator(canvas)
+        _engine = Simulator(canvas)
         count += 1
         print("%d simulated game starts!"%count)
         dire_act = (0,None)

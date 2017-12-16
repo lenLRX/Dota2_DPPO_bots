@@ -8,7 +8,7 @@ from torch.autograd import Variable
 
 import numpy as np
 
-from cppSimulator.cppSimulator import *
+from SimDota2 import *
 from train import trainer
 from utils import *
 
@@ -70,7 +70,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
     discount_factor = 1
     while True:
         count += 1
-        _engine = cppSimulator(canvas)
+        _engine = Simulator(canvas)
         if id == 0:
             print("%d simulated game starts!"%count)
 
