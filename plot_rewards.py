@@ -2,6 +2,7 @@ import sys
 import argparse
 import datetime
 import re
+import os
 
 import matplotlib
 matplotlib.use('Agg')
@@ -35,4 +36,5 @@ if __name__ == "__main__":
     plt.figure()
     plt.plot(list(range(len(reward))),reward)
     plt.savefig(o_file)
+    print(os.path.abspath(o_file))
 
