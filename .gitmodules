@@ -1,0 +1,3 @@
+[submodule "SimDota2"]
+	path = SimDota2
+	url = https://github.com/lenLRX/SimDota2.git
