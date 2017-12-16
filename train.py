@@ -314,4 +314,6 @@ class trainer(object):
             self.shared_grad_buffers.add_gradient(self.model)
             self.loss = Variable(torch.FloatTensor([0.0]))
             self.holdon_cnt = 0
+        else:
+            self.shared_grad_buffers.reset()
         return float(self.loss.data.numpy()[0])
