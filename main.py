@@ -97,8 +97,8 @@ def start_cppSimulator():
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
             
-            dire_act = dire_agent.step(d_tup,p_dire_act,0)
-            rad_act = rad_agent.step(r_tup,p_rad_act,0)
+            dire_act = dire_agent.step(d_tup,p_dire_act,1)
+            rad_act = rad_agent.step(r_tup,p_rad_act,1)
 
             
 
@@ -119,8 +119,8 @@ def start_cppSimulator():
             for it in range(1):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
                 start_t = time.time()
-                rad_agent.train(holdon = (count % 10 != 0))
-                dire_agent.train(holdon = (count % 10 != 0))
+                rad_agent.train(holdon = (count % 2 != 0))
+                dire_agent.train(holdon = (count % 2 != 0))
                 t1 = time.time()
                 print("trianing x2 : %fs"%(t1 - start_t))
 

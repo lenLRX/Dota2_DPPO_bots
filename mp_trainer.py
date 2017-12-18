@@ -48,7 +48,8 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
     while True:
         num += 1
         barrier.wait()
-        if num % param.game_per_update == 0:
+        bHoldon = (num % param.games_per_train) != 0
+        if not bHoldon:
             for n,p in shared_model.named_parameters():
                 p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
                 p._grad.data.clamp_(-param.grad_clip,param.grad_clip)
@@ -155,7 +156,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             avg_loss = 0.0
             for it in range(Params().num_epoch):
                 start_t = time.time()
-                bHoldon = (count % param.games_per_train) == 0
+                bHoldon = (count % param.games_per_train) != 0
                 avg_loss += rad_agent.train(bHoldon)
                 avg_loss += dire_agent.train(bHoldon)
                 t1 = time.time()
