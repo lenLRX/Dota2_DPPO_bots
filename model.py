@@ -73,12 +73,12 @@ class Model(nn.Module):
         _env_input = Variable(torch.FloatTensor(inputs["env_input"])).view(1,1,-1)
 
         v = _env_input
-        v = F.relu(self.v_input_1(v)).view(-1,self.h_size_2)
-        v = F.relu(self.v_input_2(v)).view(-1,self.h_size_2)
+        v = F.sigmoid(self.v_input_1(v)).view(-1,self.h_size_2)
+        v = F.sigmoid(self.v_input_2(v)).view(-1,self.h_size_2)
         v_out = self.v(v)
 
         p = _env_input
-        input_layer_out = F.relu(self.input_layer(p)).view(-1,self.h_size_2)
+        input_layer_out = F.sigmoid(self.input_layer(p)).view(-1,self.h_size_2)
         decision_layer_out = self.decision_layer(input_layer_out).view(-1,param.num_outputs)
         decision_layer_softmax_out = F.softmax(decision_layer_out)
         decision_layer_log_out = F.log_softmax(decision_layer_out)
@@ -90,7 +90,7 @@ class Model(nn.Module):
             pass
         elif 1 == decision:
             #move
-            move_layer_out = F.relu(self.input_move_layer(_env_input)).view(-1,self.h_size_2)
+            move_layer_out = F.sigmoid(self.input_move_layer(_env_input)).view(-1,self.h_size_2)
             spatial_layer_out = self.spatial(move_layer_out).view(-1,self.spatial_res**2)
             spatial_layer_softmax_out = F.softmax(spatial_layer_out)
             spatial_layer_log_out = F.log_softmax(spatial_layer_out)
@@ -123,7 +123,7 @@ class Shared_grad_buffers():
     def __init__(self, model):
         self.grads = {}
         for name, p in model.named_parameters():
-            self.grads[name+'_grad'] = torch.ones(p.size()).share_memory_()
+            self.grads[name+'_grad'] = torch.zeros(p.size()).share_memory_()
 
     def add_gradient(self, model):
         for name, p in model.named_parameters():

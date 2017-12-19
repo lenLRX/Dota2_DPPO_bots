@@ -97,15 +97,15 @@ def start_cppSimulator():
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
             
-            dire_act = dire_agent.step(d_tup,p_dire_act,1)
-            rad_act = rad_agent.step(r_tup,p_rad_act,1)
+            dire_act = dire_agent.step(d_tup,p_dire_act,0)
+            rad_act = rad_agent.step(r_tup,p_rad_act,0)
 
             
 
             #print(d_tup,r_tup)
 
-            print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
-                %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
+            #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
+            #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
             _engine.set_order("Dire",0,dire_act)
             _engine.set_order("Radiant",0,rad_act)
 
@@ -118,9 +118,11 @@ def start_cppSimulator():
         if count > 0:
             for it in range(1):
                 shared_grad_buffers = rad_agent.shared_grad_buffers
+                shared_grad_buffers.reset()
                 start_t = time.time()
-                rad_agent.train(holdon = (count % 2 != 0))
-                dire_agent.train(holdon = (count % 2 != 0))
+                loss = 0
+                loss = loss + rad_agent.train(holdon = False)
+                loss = loss + dire_agent.train(holdon = False)
                 t1 = time.time()
                 print("trianing x2 : %fs"%(t1 - start_t))
 
@@ -128,7 +130,9 @@ def start_cppSimulator():
                 optimizer.zero_grad()
 
                 for n,p in shared_model.named_parameters():
-                    p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
+                    #print(n,p)
+                    p.grad = Variable(shared_grad_buffers.grads[n+'_grad'])
+                    #print(n,p.grad.data)
                     p.data -= param.lr * p.grad.data
                 
                 #optimizer.step()
