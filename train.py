@@ -229,9 +229,8 @@ class trainer(object):
 
         if self.action == 1:
             return (self.action, get_action(self.subaction))
-        elif self.action == 2:
-            if self.subaction is None:
-                return (0,None)
+        elif self.action == 2 and self.subaction is None:
+            return (0,None)
         else:
             return (self.action,self.subaction)
 
