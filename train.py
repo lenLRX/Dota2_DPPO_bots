@@ -199,9 +199,7 @@ class trainer(object):
                 self.action = 2
                 self.subaction = atk_target
             self.subaction_log = atk_target_log
-            if self.subaction is None:
-                self.action = 0
-                self.subaction_log = None
+            
         
         if self.has_last_action:
             self.decisions.append(self.last_action)
@@ -231,6 +229,9 @@ class trainer(object):
 
         if self.action == 1:
             return (self.action, get_action(self.subaction))
+        elif self.action == 2:
+            if self.subaction is None:
+                return (0,None)
         else:
             return (self.action,self.subaction)
 
@@ -283,7 +284,7 @@ class trainer(object):
                                 additional_reward = param.atk_addtion_rwd
                             else:
                                 additional_reward = -param.atk_addtion_rwd
-                    #if not self.subdecisions_log[i] is None:
+                    if not self.subdecisions_log[i] is None:
                         _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
                         _log.data[0][self.subdecisions[i]] = 1
                         _log = _log * self.subdecisions_log[i]
@@ -294,16 +295,16 @@ class trainer(object):
             if not self.predefined_actions[i] is None:
                 _p = self.predefined_actions[i][0]
                 if _p != decision:
-                    additional_reward = additional_reward - 0.2
+                    additional_reward = additional_reward - 0.02
                 else:
-                    additional_reward = additional_reward + 0.2
+                    additional_reward = additional_reward + 0.02
 
             _d_log = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
             _d_log.data[0][self.decisions[i]] = 1
             _d_log = _d_log * self.decisions_log[i]
             value_loss = (R - self.values[i].view(-1)) ** 2
-            #decision_policy_loss = - ((A + additional_reward) * _d_log).view(-1)
-            decision_policy_loss = - (A * _d_log).view(-1)
+            decision_policy_loss = - ((A + additional_reward) * _d_log).view(-1)
+            #decision_policy_loss = - (A * _d_log).view(-1)
             decision_policy_loss = torch.mean(decision_policy_loss)
 
             loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
