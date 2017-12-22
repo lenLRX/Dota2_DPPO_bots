@@ -266,8 +266,8 @@ class trainer(object):
                         print(_log,self.subdecisions[i],decision,i)
                         raise
                     _log = _log * self.subdecisions_log[i]
-                    #subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
-                    subdecision_policy_loss = - (A * _log).view(-1)
+                    subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                    #subdecision_policy_loss = - (A * _log).view(-1)
                     subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             elif 2 == decision:
                 #atk
@@ -287,8 +287,8 @@ class trainer(object):
                         _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
                         _log.data[0][self.subdecisions[i]] = 1
                         _log = _log * self.subdecisions_log[i]
-                        #subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
-                        subdecision_policy_loss = - (A * _log).view(-1)
+                        subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                        #subdecision_policy_loss = - (A * _log).view(-1)
                         subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             
             if not self.predefined_actions[i] is None:
