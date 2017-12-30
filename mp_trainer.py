@@ -63,9 +63,8 @@ def optimizer_process(np,batch_size,num,barrier,optimizer,condition,shared_model
             shared_grad_buffers.reset()
 
             shared_score[0] = shared_score[0] / batch_size
-            shared_score[0] = 0
-
             print("optimized %d total reward %f"%(num,shared_score[0]))
+            shared_score[0] = 0
             torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         barrier.wait()
 
