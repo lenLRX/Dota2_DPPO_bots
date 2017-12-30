@@ -150,16 +150,21 @@ if __name__ == '__main__':
     #1 process per cpu
     os.environ['OMP_NUM_THREADS'] = '1'
     num_processes = os.cpu_count()
+    process_batch_size = 20
 
     parser = argparse.ArgumentParser()
     parser.add_argument("action",help = "start_server or simulator")
     parser.add_argument("--model",help = "path to pretrained model")
     parser.add_argument("-i",help = "start iteration")
     parser.add_argument("-np",help = "num of process")
+    parser.add_argument("-bs",help = "batch_size of parallel traning")
     args = parser.parse_args()
 
     if args.np != None:
         num_processes = int(args.np)
+    
+    if args.bs != None:
+        process_batch_size = int(args.bs)
 
     params = Params()
     torch.manual_seed(params.seed)
@@ -199,6 +204,6 @@ if __name__ == '__main__':
         while True:
             g.send(None)
     elif args.action == "mp_sim":
-        mp_trainer(num_processes,shared_model,shared_grad_buffers,optimizer,it_num = num_iter)
+        mp_trainer(num_processes,process_batch_size,shared_model,shared_grad_buffers,optimizer,it_num = num_iter)
     else:
         print("unknow action exit")

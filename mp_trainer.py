@@ -12,27 +12,30 @@ from SimDota2 import *
 from train import trainer
 from utils import *
 
-def mp_trainer(np, model, grad_buffer, optimizer, it_num = 0):
+def mp_trainer(np, batch_size, model, grad_buffer, optimizer, it_num = 0):
     if np is None:
         print("can not get num of process!")
         sys.exit(-1)
     
     #np trainers and an optmizer
-    Barrier = mp.Barrier(np + 1)
+    Barrier = mp.Barrier(batch_size + 1)
     Condition = mp.Condition()
+    Semaphore = mp.Semaphore(np)
 
-    p_opt_args = (np,it_num,Barrier,optimizer,Condition,model,grad_buffer)
+    shared_score = torch.FloatTensor([0])
+    shared_score.share_memory_()
+
+    p_opt_args = (np,batch_size,it_num,Barrier,optimizer,Condition,model,grad_buffer,shared_score)
     p_opt = mp.Process(target = optimizer_process,args = p_opt_args)
     p_opt.start()
 
     processes = []
     processes.append(p_opt)
 
-    shared_score = torch.FloatTensor([0])
-    shared_score.share_memory_()
+    
 
-    for id in range(np):
-        p_trainer_args = (id,it_num,Barrier,optimizer,Condition,model,grad_buffer,shared_score,np)
+    for id in range(batch_size):
+        p_trainer_args = (id,it_num,Barrier,Semaphore,optimizer,Condition,model,grad_buffer,shared_score,np)
         p_trainer = mp.Process(target = trainer_process, args = p_trainer_args)
         p_trainer.start()
         processes.append(p_trainer)
@@ -41,7 +44,7 @@ def mp_trainer(np, model, grad_buffer, optimizer, it_num = 0):
         p.join()
 
 
-def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_grad_buffers):
+def optimizer_process(np,batch_size,num,barrier,optimizer,condition,shared_model,shared_grad_buffers,shared_score):
     #optimizer may use all cpus because all other process are waiting
     os.environ['OMP_NUM_THREADS'] = str(np)
 
@@ -53,23 +56,27 @@ def optimizer_process(np,num,barrier,optimizer,condition,shared_model,shared_gra
             for n,p in shared_model.named_parameters():
                 p._grad = Variable(shared_grad_buffers.grads[n+'_grad'])
                 p._grad.data.clamp_(-param.grad_clip,param.grad_clip)
-                delta = param.lr * p._grad.data / float(np)
+                delta = param.lr * p._grad.data / float(batch_size)
                 #print(n,delta,"_grad",p._grad)
                 p.data -= delta
             #optimizer.step()
             shared_grad_buffers.reset()
 
-            print("optimized %d"%num)
+            shared_score[0] = shared_score[0] / batch_size
+            shared_score[0] = 0
+
+            print("optimized %d total reward %f"%(num,shared_score[0]))
             torch.save(shared_model.state_dict(),"./model/%d"%int(num))
         barrier.wait()
 
-def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_buffers,shared_score,num_process):
+def trainer_process(id,num,barrier,semaphore,optimizer,condition,shared_model,shared_grad_buffers,shared_score,num_process):
     randst = np.random.mtrand.RandomState(os.getpid())
     params = Params()
     canvas = None
     count = 0
     discount_factor = 1
     while True:
+        semaphore.acquire()
         count += 1
         _engine = Simulator(canvas)
         if id == 0:
@@ -147,11 +154,6 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
         
         shared_score[0] += (r_total_reward + d_total_reward) * 0.5
 
-        if id == 0:
-            shared_score[0] = shared_score[0] / num_process
-            print("total reward %f"%(shared_score[0]))
-            shared_score[0] = 0
-
         if count > 0:
             avg_loss = 0.0
             for it in range(Params().num_epoch):
@@ -168,6 +170,7 @@ def trainer_process(id,num,barrier,optimizer,condition,shared_model,shared_grad_
             rad_agent.memory.clear()
             dire_agent.memory.clear()
 
+        semaphore.release()
         barrier.wait()
         #training finished and wait for optimizer
         barrier.wait()
