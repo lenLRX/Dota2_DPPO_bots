@@ -18,17 +18,21 @@ class Model(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
         self.params = Params()
-        self.h_size_1 = 20
-        self.h_size_2 = 20
+        self.h_size_1 = 100
+        self.h_size_2 = 100
         self.spatial_res = self.params.num_outputs
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2
         self.env_input_dim = num_inputs["env_input"]
         self.atk_target_dim = num_inputs["atk_target"]
 
+        self.act_fn = F.sigmoid
+
         #input layer
-        self.input_layer = nn.Linear(self.env_input_dim,h_size_2)
-        self.init_layer(self.input_layer)
+        self.input_layer_1 = nn.Linear(self.env_input_dim,h_size_2)
+        self.input_layer_2 = nn.Linear(self.h_size_2,h_size_2)
+        self.init_layer(self.input_layer_1)
+        self.init_layer(self.input_layer_2)
 
         #decision layers
         self.decision_layer = nn.Linear(h_size_2,3)
@@ -45,8 +49,10 @@ class Model(nn.Module):
         self.init_layer(self.v)
 
         #move layers
-        self.input_move_layer = nn.Linear(self.env_input_dim,h_size_2)
-        self.init_layer(self.input_move_layer)
+        self.input_move_layer_1 = nn.Linear(self.env_input_dim,h_size_2)
+        self.input_move_layer_2 = nn.Linear(self.h_size_2,h_size_2)
+        self.init_layer(self.input_move_layer_1)
+        self.init_layer(self.input_move_layer_2)
         self.spatial = nn.Linear(h_size_2, self.spatial_res ** 2)
         self.init_layer(self.spatial)
 
@@ -73,12 +79,13 @@ class Model(nn.Module):
         _env_input = Variable(torch.FloatTensor(inputs["env_input"])).view(1,1,-1)
 
         v = _env_input
-        v = F.sigmoid(self.v_input_1(v)).view(-1,self.h_size_2)
-        v = F.sigmoid(self.v_input_2(v)).view(-1,self.h_size_2)
+        v = self.act_fn(self.v_input_1(v)).view(-1,self.h_size_2)
+        v = self.act_fn(self.v_input_2(v)).view(-1,self.h_size_2)
         v_out = self.v(v)
 
         p = _env_input
-        input_layer_out = F.sigmoid(self.input_layer(p)).view(-1,self.h_size_2)
+        input_layer_out = self.act_fn(self.input_layer_1(p)).view(-1,self.h_size_2)
+        input_layer_out = self.act_fn(self.input_layer_2(input_layer_out)).view(-1,self.h_size_2)
         decision_layer_out = self.decision_layer(input_layer_out).view(-1,param.num_outputs)
         decision_layer_softmax_out = F.softmax(decision_layer_out)
         decision_layer_log_out = F.log_softmax(decision_layer_out)
@@ -90,7 +97,8 @@ class Model(nn.Module):
             pass
         elif 1 == decision:
             #move
-            move_layer_out = F.sigmoid(self.input_move_layer(_env_input)).view(-1,self.h_size_2)
+            move_layer_out = self.act_fn(self.input_move_layer_1(_env_input)).view(-1,self.h_size_2)
+            move_layer_out = self.act_fn(self.input_move_layer_2(move_layer_out)).view(-1,self.h_size_2)
             spatial_layer_out = self.spatial(move_layer_out).view(-1,self.spatial_res**2)
             spatial_layer_softmax_out = F.softmax(spatial_layer_out)
             spatial_layer_log_out = F.log_softmax(spatial_layer_out)

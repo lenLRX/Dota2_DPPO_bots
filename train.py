@@ -257,7 +257,7 @@ class trainer(object):
                 if equal_to_original_decision(self, 1, i):
                     #AND predefined action is move
                     if equal_to_predefined_action(self, 1, i):
-                        additional_reward = additional_reward + 0.1 * dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
+                        additional_reward = additional_reward + dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
                     #print(additional_reward)
                     _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
                     try:
