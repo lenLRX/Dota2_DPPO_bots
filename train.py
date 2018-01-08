@@ -294,9 +294,9 @@ class trainer(object):
             if not self.predefined_actions[i] is None:
                 _p = self.predefined_actions[i][0]
                 if _p != decision:
-                    additional_reward = -0.02
+                    additional_reward = -0.2
                 else:
-                    additional_reward =  0.02
+                    additional_reward =  0.2
 
             _d_log = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
             _d_log.data[0][self.decisions[i]] = 1

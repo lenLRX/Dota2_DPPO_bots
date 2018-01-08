@@ -26,7 +26,7 @@ if __name__ == "__main__":
     with open(i_file) as fp_log:
         reward = []
         
-        reward_matcher = re.compile("total reward (.*)")
+        reward_matcher = re.compile(".*total reward (.*)")
         for line in fp_log:
             ret = reward_matcher.match(line)
             if ret is not None:

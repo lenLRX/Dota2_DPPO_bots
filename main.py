@@ -150,7 +150,7 @@ if __name__ == '__main__':
     #1 process per cpu
     os.environ['OMP_NUM_THREADS'] = '1'
     num_processes = os.cpu_count()
-    process_batch_size = 20
+    process_batch_size = 4
 
     parser = argparse.ArgumentParser()
     parser.add_argument("action",help = "start_server or simulator")
