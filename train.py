@@ -242,8 +242,12 @@ class trainer(object):
         R = Variable(R)
         A = Variable(torch.zeros(1, 1))    
         loss = Variable(torch.FloatTensor([0.0]))
+        R_max = -10
         for i in reversed(range(len(self.rewards))):
             R = self.rewards[i] + self.params.gamma*R
+            R_float = float(R.data[0].numpy()[0])
+            if R_float > R_max:
+                R_max = R_float
             A = R - self.values[i].view(-1).data[0]
             additional_reward = 0.0
             #the action we actual taken
@@ -257,16 +261,19 @@ class trainer(object):
                 if equal_to_original_decision(self, 1, i):
                     #AND predefined action is move
                     if equal_to_predefined_action(self, 1, i):
-                        additional_reward = additional_reward + dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
+                        additional_reward = dotproduct(self.predefined_actions[i][1],get_action(self.subdecisions[i]),1)
+                        #preserve sig
+                        additional_reward  = additional_reward * abs(additional_reward)
                     #print(additional_reward)
-                    _log = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
-                    try:
-                        _log.data[0][self.subdecisions[i]] = 1
-                    except Exception as e:
-                        print(_log,self.subdecisions[i],decision,i)
-                        raise
+                    _log_origin = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                    _log = _log_origin
+                    _log.data[0][self.subdecisions[i]] = 1
                     _log = _log * self.subdecisions_log[i]
                     subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                    if equal_to_predefined_action(self, 1, i):
+                        _log_origin = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                        _log_origin.data[0][get_nearest_act(self.predefined_actions[i][1])] = 1
+                        subdecision_policy_loss = subdecision_policy_loss - (_log_origin * self.subdecisions_log[i]).view(-1)
                     #subdecision_policy_loss = - (A * _log).view(-1)
                     subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             elif 2 == decision:
@@ -290,6 +297,10 @@ class trainer(object):
                         subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
                         #subdecision_policy_loss = - (A * _log).view(-1)
                         subdecision_policy_loss = torch.sum(subdecision_policy_loss)
+                        if equal_to_predefined_action(self, 2, i):
+                            _log_origin = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                            _log_origin.data[0][self.predefined_actions[i][1]] = 1
+                            subdecision_policy_loss = subdecision_policy_loss - (_log_origin * self.subdecisions_log[i]).view(-1)
             
             if not self.predefined_actions[i] is None:
                 _p = self.predefined_actions[i][0]
@@ -304,6 +315,9 @@ class trainer(object):
             value_loss = (R - self.values[i].view(-1)) ** 2
             decision_policy_loss = - ((A + additional_reward) * _d_log).view(-1)
             #decision_policy_loss = - (A * _d_log).view(-1)
+            _d_log2 = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
+            _d_log2.data[0][self.predefined_actions[i][0]] = 1
+            decision_policy_loss = decision_policy_loss - 1 * (_d_log2 * self.decisions_log[i]).view(-1)
             decision_policy_loss = torch.mean(decision_policy_loss)
 
             loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
@@ -319,4 +333,5 @@ class trainer(object):
             self.holdon_cnt = 0
         else:
             self.shared_grad_buffers.reset()
+        #print("R_max:", R_max)
         return float(self.loss.data.numpy()[0])
