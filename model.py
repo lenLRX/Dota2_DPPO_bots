@@ -18,8 +18,8 @@ class Model(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
         self.params = Params()
-        self.h_size_1 = 100
-        self.h_size_2 = 100
+        self.h_size_1 = 20
+        self.h_size_2 = 20
         self.spatial_res = self.params.num_outputs
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2
@@ -53,8 +53,12 @@ class Model(nn.Module):
         self.input_move_layer_2 = nn.Linear(self.h_size_2,h_size_2)
         self.init_layer(self.input_move_layer_1)
         self.init_layer(self.input_move_layer_2)
-        self.spatial = nn.Linear(h_size_2, self.spatial_res ** 2)
+        self.spatial = nn.Linear(h_size_2 * 2, self.spatial_res ** 2)
         self.init_layer(self.spatial)
+
+        #moving creep layer
+        self.moving_creep_layer = nn.Linear(param.num_inputs["atk_target"], h_size_2,bias=False)
+
 
         #attack
         self.attack_layer = nn.Linear(param.num_inputs["atk_target"], 1)
@@ -99,7 +103,17 @@ class Model(nn.Module):
             #move
             move_layer_out = self.act_fn(self.input_move_layer_1(_env_input)).view(-1,self.h_size_2)
             move_layer_out = self.act_fn(self.input_move_layer_2(move_layer_out)).view(-1,self.h_size_2)
-            spatial_layer_out = self.spatial(move_layer_out).view(-1,self.spatial_res**2)
+
+            creeps = inputs["target_input"]
+            if len(inputs["target_input"]) == 0:
+                creeps = [[0,0]]
+            creeps_input = Variable(torch.FloatTensor(creeps))
+            creep_out = self.act_fn(self.moving_creep_layer(creeps_input))
+            creep_out = torch.sum(creep_out,0).view(-1,self.h_size_2)
+
+            spatial_layer_in = torch.cat((move_layer_out,creep_out),1)
+
+            spatial_layer_out = self.spatial(spatial_layer_in).view(-1,self.spatial_res**2)
             spatial_layer_softmax_out = F.softmax(spatial_layer_out)
             spatial_layer_log_out = F.log_softmax(spatial_layer_out)
             move_target = np.argmax(spatial_layer_softmax_out.data.numpy()[0])

@@ -86,8 +86,8 @@ def reward(last, now, a):
 class Params():
     def __init__(self):
         self.batch_size = 200000
-        self.game_duriation = 400
-        self.tick_per_action = 2
+        self.game_duriation = 200
+        self.tick_per_action = 1
         self.game_per_update = 1
         self.lr = 1e-2
         self.gamma = 0.99
@@ -101,7 +101,7 @@ class Params():
         self.update_treshold = 2 - 1
         self.max_episode_length = 100
         self.seed = int(time.time())
-        self.num_inputs = {"env_input":10,"atk_target":2}
+        self.num_inputs = {"env_input":4,"atk_target":2}
         self.num_outputs = 3
         self.log_std_bound = 1
         self.use_lstm = False
