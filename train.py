@@ -323,6 +323,7 @@ class trainer(object):
             loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
         loss = loss / len(self.rewards)
         self.loss = self.loss + loss
+        float_loss = float(self.loss.data.numpy()[0])
         self.holdon_cnt = self.holdon_cnt + 1
         if not holdon:
             #hold on loss, do not update until holdon is False
@@ -334,4 +335,4 @@ class trainer(object):
         else:
             self.shared_grad_buffers.reset()
         #print("R_max:", R_max)
-        return float(self.loss.data.numpy()[0])
+        return float_loss

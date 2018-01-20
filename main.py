@@ -97,8 +97,8 @@ def start_cppSimulator():
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
             
-            dire_act = dire_agent.step(d_tup,p_dire_act,1)
-            rad_act = rad_agent.step(r_tup,p_rad_act,1)
+            dire_act = dire_agent.step(d_tup,p_dire_act,0)
+            rad_act = rad_agent.step(r_tup,p_rad_act,0)
 
             
 
@@ -124,7 +124,7 @@ def start_cppSimulator():
                 loss = loss + rad_agent.train(holdon = False)
                 loss = loss + dire_agent.train(holdon = False)
                 t1 = time.time()
-                print("trianing x2 : %fs"%(t1 - start_t))
+                print("trianing x2 : %fs loss: %f"%(t1 - start_t, loss))
 
                 num_iter = num_iter + 1
                 optimizer.zero_grad()
@@ -140,9 +140,8 @@ def start_cppSimulator():
                 print("opt time: %fs"%(time.time() - t1))
                 
                 
-
-            torch.save(shared_model.state_dict(),"./model/%d"%int(count))
-            print('update')
+            if count % 100 == 0:
+                torch.save(shared_model.state_dict(),"./model/%d"%int(count))
             rad_agent.memory.clear()
             dire_agent.memory.clear()
 
