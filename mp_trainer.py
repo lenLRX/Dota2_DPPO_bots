@@ -96,7 +96,7 @@ def trainer_process(id,num,barrier,semaphore,optimizer,condition,shared_model,sh
         discount_factor = randst.rand()
         print(id,discount_factor)
         _flag = 0
-        if discount_factor < 0.5:
+        if discount_factor < 0.0:
             _flag = 1
         
         dire_agent.pre_train()
