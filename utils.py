@@ -4,6 +4,33 @@ import threading
 import time
 import math
 
+class Params():
+    def __init__(self):
+        self.batch_size = 200000
+        self.game_duriation = 300
+        self.tick_per_action = 1
+        self.game_per_update = 1
+        self.lr = 1e-5
+        self.gamma = 0.99
+        self.atk_addtion_rwd = 0.2
+        self.gae_param = 0.95
+        self.clip = 0.2
+        self.ent_coeff = 0.1
+        self.num_epoch = 1
+        self.num_steps = 20000
+        self.exploration_size = 50#make it small
+        self.update_treshold = 2 - 1
+        self.max_episode_length = 100
+        self.seed = int(time.time())
+        self.num_inputs = {"env_input":4,"atk_target":2}
+        self.num_outputs = 3
+        self.log_std_bound = 1
+        self.use_lstm = False
+        self.grad_clip = 10
+        self.games_per_train = 25
+
+param = Params()
+
 class AtomicInteger:
     def __init__(self):
         self.val = 0
@@ -83,29 +110,31 @@ def reward(last, now, a):
     _ld = dist2mid(last)
     return ((_ld - _d) * 0.01) * a
 
-class Params():
-    def __init__(self):
-        self.batch_size = 200000
-        self.game_duriation = 300
-        self.tick_per_action = 1
-        self.game_per_update = 1
-        self.lr = 1e-4
-        self.gamma = 0.99
-        self.atk_addtion_rwd = 0.2
-        self.gae_param = 0.95
-        self.clip = 0.2
-        self.ent_coeff = 0.1
-        self.num_epoch = 1
-        self.num_steps = 20000
-        self.exploration_size = 50#make it small
-        self.update_treshold = 2 - 1
-        self.max_episode_length = 100
-        self.seed = int(time.time())
-        self.num_inputs = {"env_input":4,"atk_target":2}
-        self.num_outputs = 3
-        self.log_std_bound = 1
-        self.use_lstm = False
-        self.grad_clip = 10
-        self.games_per_train = 25
+p_acts = []
 
-param = Params()
+for i in range(param.num_outputs ** 2):
+    _act = get_action(i)
+    if _act[0] != 0 and _act[1] != 0:
+        p_acts.append(math.atan2(*_act))
+    else:
+        p_acts.append(100000)
+
+def get_nearest_act(pd):
+    a = math.atan2(*pd)
+    _min = 10000
+    _idx = -1
+    for i in range(param.num_outputs ** 2):
+        _d = abs(p_acts[i] - a)
+        if _d < _min:
+            _min = _d
+            _idx = i
+    return _idx
+
+def get_act_from_pred(p):
+    act, subact = p
+    if act == 1:
+        subact = get_nearest_act(subact)
+    return (act, subact)
+
+def same_act(a1, a2):
+    return get_act_from_pred(a1) == get_act_from_pred(a2)

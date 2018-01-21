@@ -70,6 +70,7 @@ def start_cppSimulator():
             discount_factor = 0.0
 
         tick = 0
+        ErrorCount = 0
 
         p_dire_act = _engine.predefined_step("Dire",0)
         p_rad_act = _engine.predefined_step("Radiant",0)
@@ -97,12 +98,12 @@ def start_cppSimulator():
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
             
-            dire_act = dire_agent.step(d_tup,p_dire_act,0)
-            rad_act = rad_agent.step(r_tup,p_rad_act,0)
+            dire_act = dire_agent.step(d_tup,p_dire_act,1)
+            rad_act = rad_agent.step(r_tup,p_rad_act,1)
 
             
 
-            #print(d_tup,r_tup)
+            #print(get_act_from_pred(dire_act),get_act_from_pred(p_dire_act))
 
             #print("game %d t=%f,r_act=%s,r_reward=%f,d_act=%s,d_reward=%f"\
             #    %(count, _engine.get_time(),str(rad_act),r_tup[1],str(dire_act),d_tup[1]))
@@ -110,6 +111,14 @@ def start_cppSimulator():
             _engine.set_order("Radiant",0,rad_act)
 
             yield
+            '''
+            if (not same_act(dire_act, p_dire_act)
+                or not same_act(rad_act, p_rad_act)):
+                ErrorCount = ErrorCount + 1
+            
+            if ErrorCount > 10:
+                break
+            '''
 
             if d_tup[2] or r_tup[2]:
                 break

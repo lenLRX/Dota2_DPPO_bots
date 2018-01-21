@@ -81,26 +81,6 @@ def detach_state(state):
     
     return new_state
 
-p_acts = []
-
-for i in range(param.num_outputs ** 2):
-    _act = get_action(i)
-    if _act[0] != 0 and _act[1] != 0:
-        p_acts.append(math.atan2(*_act))
-    else:
-        p_acts.append(100000)
-
-def get_nearest_act(pd):
-    a = math.atan2(*pd)
-    _min = 10000
-    _idx = -1
-    for i in range(param.num_outputs ** 2):
-        _d = abs(p_acts[i] - a)
-        if _d < _min:
-            _min = _d
-            _idx = i
-    return _idx
-
 
 def equal_to_original_decision(self, act, idx):
     return self.original_decisions[idx] == act
@@ -214,7 +194,7 @@ class trainer(object):
 
             self.rewards.append(self.reward)
 
-        if self.first_print:
+        if False and self.first_print:
             print("act",self.action,"value",v_out,"action",decision_layer_log_out)
             self.first_print = False
         
