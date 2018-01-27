@@ -18,8 +18,8 @@ class Model(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Model, self).__init__()
         self.params = Params()
-        self.h_size_1 = 256
-        self.h_size_2 = 256
+        self.h_size_1 = 16
+        self.h_size_2 = 16
         self.spatial_res = self.params.num_outputs
         h_size_1 = self.h_size_1
         h_size_2 = self.h_size_2

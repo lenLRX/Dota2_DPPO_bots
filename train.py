@@ -194,7 +194,7 @@ class trainer(object):
 
             self.rewards.append(self.reward)
 
-        if False and self.first_print:
+        if self.first_print:
             print("act",self.action,"value",v_out,"action",decision_layer_log_out)
             self.first_print = False
         
@@ -223,7 +223,11 @@ class trainer(object):
         A = Variable(torch.zeros(1, 1))    
         loss = Variable(torch.FloatTensor([0.0]))
         R_max = -10
+        cnt = 0
         for i in reversed(range(len(self.rewards))):
+            cnt = cnt + 1
+            if cnt > 100:
+                break
             R = self.rewards[i] + self.params.gamma*R
             R_float = float(R.data[0].numpy()[0])
             if R_float > R_max:
@@ -251,9 +255,10 @@ class trainer(object):
                     _log = _log * self.subdecisions_log[i]
                     subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
                     if equal_to_predefined_action(self, 1, i):
-                        _log_origin = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
-                        _log_origin.data[0][get_nearest_act(self.predefined_actions[i][1])] = 1
-                        subdecision_policy_loss = subdecision_policy_loss - (_log_origin * self.subdecisions_log[i]).view(-1)
+                        if self.subdecisions[i] != get_nearest_act(self.predefined_actions[i][1]):
+                            _log_origin = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
+                            _log_origin.data[0][get_nearest_act(self.predefined_actions[i][1])] = 1
+                            subdecision_policy_loss = subdecision_policy_loss - (_log_origin * self.subdecisions_log[i]).view(-1)
                     #subdecision_policy_loss = - (A * _log).view(-1)
                     subdecision_policy_loss = torch.sum(subdecision_policy_loss)
             elif 2 == decision:
@@ -295,13 +300,16 @@ class trainer(object):
             value_loss = (R - self.values[i].view(-1)) ** 2
             decision_policy_loss = - ((A + additional_reward) * _d_log).view(-1)
             #decision_policy_loss = - (A * _d_log).view(-1)
-            _d_log2 = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
-            _d_log2.data[0][self.predefined_actions[i][0]] = 1
-            decision_policy_loss = decision_policy_loss - 1 * (_d_log2 * self.decisions_log[i]).view(-1)
-            decision_policy_loss = torch.mean(decision_policy_loss)
+            if not self.predefined_actions[i] is None:
+                _p = self.predefined_actions[i][0]
+                if _p != decision:
+                    _d_log2 = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
+                    _d_log2.data[0][self.predefined_actions[i][0]] = 1
+                    decision_policy_loss = decision_policy_loss - _d_log2.data[0][self.predefined_actions[i][0]] * self.decisions_log[i]
+            decision_policy_loss = torch.sum(decision_policy_loss)
 
             loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
-        loss = loss / len(self.rewards)
+        loss = loss / cnt
         self.loss = self.loss + loss
         float_loss = float(self.loss.data.numpy()[0])
         self.holdon_cnt = self.holdon_cnt + 1

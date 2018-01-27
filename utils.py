@@ -7,7 +7,7 @@ import math
 class Params():
     def __init__(self):
         self.batch_size = 200000
-        self.game_duriation = 300
+        self.game_duriation = 3000
         self.tick_per_action = 1
         self.game_per_update = 1
         self.lr = 1e-4

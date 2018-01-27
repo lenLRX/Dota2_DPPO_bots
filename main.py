@@ -98,8 +98,8 @@ def start_cppSimulator():
             p_dire_act = _engine.predefined_step("Dire",0)
             p_rad_act = _engine.predefined_step("Radiant",0)
             
-            dire_act = dire_agent.step(d_tup,p_dire_act,1)
-            rad_act = rad_agent.step(r_tup,p_rad_act,1)
+            dire_act = dire_agent.step(d_tup,p_dire_act,0)
+            rad_act = rad_agent.step(r_tup,p_rad_act,0)
 
             
 
@@ -111,14 +111,14 @@ def start_cppSimulator():
             _engine.set_order("Radiant",0,rad_act)
 
             yield
-            '''
+            
             if (not same_act(dire_act, p_dire_act)
                 or not same_act(rad_act, p_rad_act)):
                 ErrorCount = ErrorCount + 1
             
-            if ErrorCount > 10:
+            if ErrorCount > 100:
                 break
-            '''
+            
 
             if d_tup[2] or r_tup[2]:
                 break
@@ -133,7 +133,7 @@ def start_cppSimulator():
                 loss = loss + rad_agent.train(holdon = False)
                 loss = loss + dire_agent.train(holdon = False)
                 t1 = time.time()
-                print("trianing x2 : %fs loss: %f"%(t1 - start_t, loss))
+                print("trianing x2 : %fs loss %f"%(t1 - start_t, loss))
 
                 num_iter = num_iter + 1
                 optimizer.zero_grad()
@@ -156,7 +156,6 @@ def start_cppSimulator():
 
 if __name__ == '__main__':
     #1 process per cpu
-    os.environ['OMP_NUM_THREADS'] = '1'
     num_processes = os.cpu_count()
     process_batch_size = 4
 
