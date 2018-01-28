@@ -53,11 +53,11 @@ class Model(nn.Module):
         self.input_move_layer_2 = nn.Linear(self.h_size_2,h_size_2)
         self.init_layer(self.input_move_layer_1)
         self.init_layer(self.input_move_layer_2)
-        self.spatial = nn.Linear(h_size_2 * 2, self.spatial_res ** 2)
+        self.spatial = nn.Linear(h_size_2 + 2, self.spatial_res ** 2)
         self.init_layer(self.spatial)
 
         #moving creep layer
-        self.moving_creep_layer = nn.Linear(param.num_inputs["atk_target"], h_size_2,bias=False)
+        self.moving_creep_layer = nn.Linear(param.num_inputs["atk_target"], 2,bias=False)
 
 
         #attack
@@ -109,7 +109,7 @@ class Model(nn.Module):
                 creeps = [[0,0]]
             creeps_input = Variable(torch.FloatTensor(creeps))
             creep_out = self.act_fn(self.moving_creep_layer(creeps_input))
-            creep_out = torch.sum(creep_out,0).view(-1,self.h_size_2)
+            creep_out = torch.sum(creep_out,0).view(-1,2)
 
             spatial_layer_in = torch.cat((move_layer_out,creep_out),1)
 

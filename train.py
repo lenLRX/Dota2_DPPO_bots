@@ -213,6 +213,9 @@ class trainer(object):
             return (0,None)
         else:
             return (self.action,self.subaction)
+    
+    def str_action(self, i):
+        return '%s_%s'%(str(self.decisions[i]), str(self.subdecisions[i]))
 
     def train(self, holdon = False):
 
@@ -224,10 +227,11 @@ class trainer(object):
         loss = Variable(torch.FloatTensor([0.0]))
         R_max = -10
         cnt = 0
+
+        d_buffers = {}
+
         for i in reversed(range(len(self.rewards))):
             cnt = cnt + 1
-            if cnt > 100:
-                break
             R = self.rewards[i] + self.params.gamma*R
             R_float = float(R.data[0].numpy()[0])
             if R_float > R_max:
@@ -253,7 +257,7 @@ class trainer(object):
                     _log = _log_origin
                     _log.data[0][self.subdecisions[i]] = 1
                     _log = _log * self.subdecisions_log[i]
-                    subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
+                    subdecision_policy_loss = - ((A) * _log).view(-1)
                     if equal_to_predefined_action(self, 1, i):
                         if self.subdecisions[i] != get_nearest_act(self.predefined_actions[i][1]):
                             _log_origin = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
@@ -305,11 +309,23 @@ class trainer(object):
                 if _p != decision:
                     _d_log2 = Variable(torch.zeros(1, self.decisions_log[i].view(-1).size()[0]))
                     _d_log2.data[0][self.predefined_actions[i][0]] = 1
-                    decision_policy_loss = decision_policy_loss - _d_log2.data[0][self.predefined_actions[i][0]] * self.decisions_log[i]
+                    decision_policy_loss = decision_policy_loss - _d_log2 * self.decisions_log[i]
             decision_policy_loss = torch.sum(decision_policy_loss)
 
-            loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
-        loss = loss / cnt
+            loss = decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
+
+            _str_action = self.str_action(i)
+            if _str_action not in d_buffers:
+                d_buffers[_str_action] = [loss]
+            else:
+                d_buffers[_str_action].append(loss)
+        
+        loss = Variable(torch.FloatTensor([0.0]))
+        for k in d_buffers:
+            list_loss = d_buffers[k]
+            loss = loss + sum(list_loss) / len(list_loss)
+
+        loss = loss / len(d_buffers)
         self.loss = self.loss + loss
         float_loss = float(self.loss.data.numpy()[0])
         self.holdon_cnt = self.holdon_cnt + 1

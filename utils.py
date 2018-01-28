@@ -10,7 +10,7 @@ class Params():
         self.game_duriation = 3000
         self.tick_per_action = 1
         self.game_per_update = 1
-        self.lr = 1e-4
+        self.lr = 1e-3
         self.gamma = 0.99
         self.atk_addtion_rwd = 0.2
         self.gae_param = 0.95
