@@ -215,7 +215,10 @@ class trainer(object):
             return (self.action,self.subaction)
     
     def str_action(self, i):
-        return '%s_%s'%(str(self.decisions[i]), str(self.subdecisions[i]))
+        if self.predefined_actions[i][0] == 1:
+            return '%s_%s'%(str(self.predefined_actions[i][0]), str(get_nearest_act(self.predefined_actions[i][1])))
+        else:
+            return '%s_%s'%(str(self.predefined_actions[i][0]), str(self.predefined_actions[i][1]))
 
     def train(self, holdon = False):
 
@@ -257,7 +260,7 @@ class trainer(object):
                     _log = _log_origin
                     _log.data[0][self.subdecisions[i]] = 1
                     _log = _log * self.subdecisions_log[i]
-                    subdecision_policy_loss = - ((A) * _log).view(-1)
+                    subdecision_policy_loss = - ((A + additional_reward) * _log).view(-1)
                     if equal_to_predefined_action(self, 1, i):
                         if self.subdecisions[i] != get_nearest_act(self.predefined_actions[i][1]):
                             _log_origin = Variable(torch.zeros(1, self.subdecisions_log[i].view(-1).size()[0]))
@@ -324,6 +327,7 @@ class trainer(object):
         for k in d_buffers:
             list_loss = d_buffers[k]
             loss = loss + sum(list_loss) / len(list_loss)
+            print(k, len(list_loss))
 
         loss = loss / len(d_buffers)
         self.loss = self.loss + loss
