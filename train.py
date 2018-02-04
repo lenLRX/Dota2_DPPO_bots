@@ -134,6 +134,7 @@ class trainer(object):
         self.first_print = True
         self.loss = Variable(torch.FloatTensor([0.0]))
         self.holdon_cnt = 0
+        self.act_ratio = [0,0,0]
 
     def pre_train(self):
         self.decisions = []
@@ -234,7 +235,14 @@ class trainer(object):
         else:
             return (self.action,self.subaction)
 
+    def str_action(self, i):
+        return '%s_%s'%(str(self.decisions[i]), str(self.subdecisions[i]))
+
     def train(self, holdon = False):
+
+        d_buffers = {}
+
+        act_cnts = [0,0,0]
 
         self.model.zero_grad()
         R = torch.zeros(1, 1)
@@ -253,6 +261,8 @@ class trainer(object):
             #the action we actual taken
             decision = self.decisions[i]
             subdecision_policy_loss = 0.0
+
+            act_cnts[decision] += 1
             if 0 == decision:
                 pass
             elif 1 == decision:
@@ -320,8 +330,19 @@ class trainer(object):
             decision_policy_loss = decision_policy_loss - 1 * (_d_log2 * self.decisions_log[i]).view(-1)
             decision_policy_loss = torch.mean(decision_policy_loss)
 
-            loss = loss + decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
-        loss = loss / len(self.rewards)
+            loss = decision_policy_loss + 0.5 * value_loss + subdecision_policy_loss
+            _str_action = self.str_action(i)
+            if _str_action not in d_buffers:
+                d_buffers[_str_action] = [loss]
+            else:
+                d_buffers[_str_action].append(loss)
+        loss = Variable(torch.FloatTensor([0.0]))
+        for k in d_buffers:
+            list_loss = d_buffers[k]
+            loss = loss + sum(list_loss) / len(list_loss) / len(d_buffers)
+        
+        self.act_ratio = list(map(lambda x:float(x)/len(self.rewards), act_cnts))
+
         self.loss = self.loss + loss
         float_loss = float(self.loss.data.numpy()[0])
         self.holdon_cnt = self.holdon_cnt + 1

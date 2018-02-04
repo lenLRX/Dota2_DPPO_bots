@@ -124,7 +124,7 @@ def start_cppSimulator():
                 loss = loss + rad_agent.train(holdon = False)
                 loss = loss + dire_agent.train(holdon = False)
                 t1 = time.time()
-                print("trianing x2 : %fs loss: %f"%(t1 - start_t, loss))
+                print("trianing x2 : %fs loss %f"%(t1 - start_t, loss))
 
                 num_iter = num_iter + 1
                 optimizer.zero_grad()

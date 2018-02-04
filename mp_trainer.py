@@ -164,6 +164,7 @@ def trainer_process(id,num,barrier,semaphore,optimizer,condition,shared_model,sh
                 t1 = time.time()
                 if id == 0:
                     print("trianing x2 : %fs"%(t1 - start_t))
+                    print("ratio %s"%str(rad_agent.act_ratio))
             avg_loss *= 0.5
             if id == 0:
                 print("loss %s"%str(avg_loss))

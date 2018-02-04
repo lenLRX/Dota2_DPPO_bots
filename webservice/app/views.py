@@ -19,6 +19,34 @@ def plot_score():
     finally:
         os.chdir(pwd)
 
+@app.route('/ratio_img')
+def plot_ratio():
+    pwd = os.getcwd()
+    try:
+        source_dir = os.path.realpath(__file__)
+        source_dir = os.path.dirname(source_dir)
+        top_dir = os.path.join(source_dir,'..','..')
+        os.chdir(top_dir)
+        ret = subprocess.run([sys.executable, 'plot_ratio.py'],stdout = subprocess.PIPE)
+        filename = ret.stdout.decode().strip()
+        return  send_file(filename, mimetype='image/png')
+    finally:
+        os.chdir(pwd)
+
+@app.route('/loss_img')
+def plot_loss():
+    pwd = os.getcwd()
+    try:
+        source_dir = os.path.realpath(__file__)
+        source_dir = os.path.dirname(source_dir)
+        top_dir = os.path.join(source_dir,'..','..')
+        os.chdir(top_dir)
+        ret = subprocess.run([sys.executable, 'plot_loss.py'],stdout = subprocess.PIPE)
+        filename = ret.stdout.decode().strip()
+        return  send_file(filename, mimetype='image/png')
+    finally:
+        os.chdir(pwd)
+
 @app.route('/')
 @app.route('/index')
 def index():
