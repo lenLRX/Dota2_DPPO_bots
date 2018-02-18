@@ -101,7 +101,7 @@ class Params():
         self.update_treshold = 2 - 1
         self.max_episode_length = 100
         self.seed = int(time.time())
-        self.num_inputs = {"env_input":6,"atk_target":2}
+        self.num_inputs = {"env_input":10,"atk_target":2}
         self.num_outputs = 3
         self.log_std_bound = 1
         self.use_lstm = False
