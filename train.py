@@ -86,10 +86,10 @@ p_acts = []
 for i in range(param.num_outputs ** 2):
     _act = get_action(i)
     if _act[0] != 0 or _act[1] != 0:
-        p_acts.append(math.atan2(*_act))
+        p_acts.append(math.atan2(_act[1], _act[0]))
     else:
         p_acts.append(100000)
-
+print(p_acts)
 def get_nearest_act(pd):
     a = math.atan2(*pd)
     _min = 10000
