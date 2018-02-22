@@ -91,7 +91,7 @@ for i in range(param.num_outputs ** 2):
         p_acts.append(100000)
 print(p_acts)
 def get_nearest_act(pd):
-    a = math.atan2(*pd)
+    a = math.atan2(pd[1],pd[0])
     _min = 10000
     _idx = -1
     for i in range(param.num_outputs ** 2):
